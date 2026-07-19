@@ -1,0 +1,52 @@
+import 'package:shared_preferences/shared_preferences.dart';
+
+abstract interface class ILocalStorage {
+  Future<void> setString(String key, String value);
+  Future<String?> getString(String key);
+
+  Future<void> setBool(String key, {required bool value});
+  Future<bool?> getBool(String key);
+
+  Future<void> setInt(String key, {required int value});
+  Future<int?> getInt(String key);
+
+  Future<void> remove(String key);
+  Future<void> clear();
+  bool containsKey(String key);
+}
+
+final class LocalStorage implements ILocalStorage {
+  const LocalStorage(this._prefs);
+
+  final SharedPreferences _prefs;
+
+  @override
+  Future<void> setString(String key, String value) async =>
+      _prefs.setString(key, value);
+
+  @override
+  Future<String?> getString(String key) async => _prefs.getString(key);
+
+  @override
+  Future<void> setBool(String key, {required bool value}) async =>
+      _prefs.setBool(key, value);
+
+  @override
+  Future<bool?> getBool(String key) async => _prefs.getBool(key);
+
+  @override
+  Future<void> setInt(String key, {required int value}) async =>
+      _prefs.setInt(key, value);
+
+  @override
+  Future<int?> getInt(String key) async => _prefs.getInt(key);
+
+  @override
+  Future<void> remove(String key) async => _prefs.remove(key);
+
+  @override
+  Future<void> clear() async => _prefs.clear();
+
+  @override
+  bool containsKey(String key) => _prefs.containsKey(key);
+}

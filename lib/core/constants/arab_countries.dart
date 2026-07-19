@@ -1,0 +1,26 @@
+import '../models/country_code.dart';
+
+const List<CountryCode> arabCountries = [
+  CountryCode(name: 'المملكة العربية السعودية', dialCode: '+966', countryCode: 'SA'),
+  CountryCode(name: 'مصر', dialCode: '+20', countryCode: 'EG'),
+  CountryCode(name: 'الإمارات العربية المتحدة', dialCode: '+971', countryCode: 'AE'),
+  CountryCode(name: 'الكويت', dialCode: '+965', countryCode: 'KW'),
+  CountryCode(name: 'قطر', dialCode: '+974', countryCode: 'QA'),
+  CountryCode(name: 'البحرين', dialCode: '+973', countryCode: 'BH'),
+  CountryCode(name: 'عُمان', dialCode: '+968', countryCode: 'OM'),
+  CountryCode(name: 'الأردن', dialCode: '+962', countryCode: 'JO'),
+  CountryCode(name: 'العراق', dialCode: '+964', countryCode: 'IQ'),
+  CountryCode(name: 'سوريا', dialCode: '+963', countryCode: 'SY'),
+  CountryCode(name: 'لبنان', dialCode: '+961', countryCode: 'LB'),
+  CountryCode(name: 'فلسطين', dialCode: '+970', countryCode: 'PS'),
+  CountryCode(name: 'اليمن', dialCode: '+967', countryCode: 'YE'),
+  CountryCode(name: 'ليبيا', dialCode: '+218', countryCode: 'LY'),
+  CountryCode(name: 'تونس', dialCode: '+216', countryCode: 'TN'),
+  CountryCode(name: 'الجزائر', dialCode: '+213', countryCode: 'DZ'),
+  CountryCode(name: 'المغرب', dialCode: '+212', countryCode: 'MA'),
+  CountryCode(name: 'السودان', dialCode: '+249', countryCode: 'SD'),
+  CountryCode(name: 'الصومال', dialCode: '+252', countryCode: 'SO'),
+  CountryCode(name: 'موريتانيا', dialCode: '+222', countryCode: 'MR'),
+  CountryCode(name: 'جيبوتي', dialCode: '+253', countryCode: 'DJ'),
+  CountryCode(name: 'جزر القمر', dialCode: '+269', countryCode: 'KM'),
+];
