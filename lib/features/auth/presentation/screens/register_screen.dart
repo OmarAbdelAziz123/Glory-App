@@ -1,13 +1,16 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/di/service_locator.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../../core/models/otp_args.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_styles_extension.dart';
 import '../../../../core/utils/app_validators.dart';
 import '../../../../core/widgets/widgets.dart';
+import '../cubits/register/register_cubit.dart';
 import '../widgets/login_terms_row.dart';
 import '../widgets/register_header.dart';
 
@@ -22,6 +25,7 @@ final class _RegisterScreenState extends State<RegisterScreen> {
   final _usernameCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
+  final _phoneFieldKey = GlobalKey<AppPhoneFieldState>();
 
   final _usernameFocus = FocusNode();
   final _phoneFocus = FocusNode();
@@ -38,7 +42,7 @@ final class _RegisterScreenState extends State<RegisterScreen> {
       _emailCtrl.text.isNotEmpty &&
       _termsAccepted;
 
-  void _onOtpPressed() {
+  void _onOtpPressed(BuildContext context) {
     final usernameErr = AppValidators.required(_usernameCtrl.text);
     final phoneErr = AppValidators.phone(_phoneCtrl.text);
     final emailErr = AppValidators.email(_emailCtrl.text);
@@ -49,17 +53,17 @@ final class _RegisterScreenState extends State<RegisterScreen> {
       _emailError = emailErr;
     });
 
-    if (usernameErr == null && phoneErr == null && emailErr == null) {
-      FocusManager.instance.primaryFocus?.unfocus();
-      if (!context.mounted) return;
-      context.pushNamed(
-        'otp',
-        extra: OtpArgs(
+    if (usernameErr != null || phoneErr != null || emailErr != null) return;
+
+    FocusManager.instance.primaryFocus?.unfocus();
+
+    context.read<RegisterCubit>().register(
+          fullName: _usernameCtrl.text.trim(),
+          phoneCountryCode: _phoneFieldKey.currentState?.countryCode.dialCode ??
+              '+20',
+          phone: _phoneCtrl.text.trim(),
           email: _emailCtrl.text.trim(),
-          source: OtpSource.register,
-        ),
-      );
-    }
+        );
   }
 
   @override
@@ -75,72 +79,105 @@ final class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return AppScaffold(
-      resizeToAvoidBottomInset: true,
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    32.vertical,
-                    const RegisterHeader(),
-                    24.vertical,
-                    AppTextField(
-                      label: 'اسم المستخدم',
-                      controller: _usernameCtrl,
-                      focusNode: _usernameFocus,
-                      hint: 'قم بإدخال اسم المستخدم الخاصة بك',
-                      textInputAction: TextInputAction.next,
-                      errorMessage: _usernameError,
-                      onChanged: (_) => setState(() => _usernameError = null),
-                      onFieldSubmitted: (_) => _phoneFocus.requestFocus(),
-                    ),
-                    16.vertical,
-                    AppPhoneField(
-                      label: 'رقم الهاتف',
-                      controller: _phoneCtrl,
-                      focusNode: _phoneFocus,
-                      hint: 'قم بإدخال او رقم الهاتف الخاصة بك',
-                      textInputAction: TextInputAction.next,
-                      errorMessage: _phoneError,
-                      onChanged: (_) => setState(() => _phoneError = null),
-                    ),
-                    16.vertical,
-                    AppTextField(
-                      label: 'البريد الإلكتروني',
-                      controller: _emailCtrl,
-                      focusNode: _emailFocus,
-                      hint: 'قم بإدخال بريدك الإلكتروني الخاصة بك',
-                      keyboardType: TextInputType.emailAddress,
-                      textInputAction: TextInputAction.done,
-                      errorMessage: _emailError,
-                      onChanged: (_) => setState(() => _emailError = null),
-                    ),
-                    10.vertical,
-                    LoginTermsRow(
-                      accepted: _termsAccepted,
-                      onToggle: () =>
-                          setState(() => _termsAccepted = !_termsAccepted),
-                    ),
-                    16.vertical,
-                    const AppDividerLabel(label: 'تسجيل الدخول سريع مع'),
-                    16.vertical,
-                    AppSocialLoginRow(onApple: () {}, onGoogle: () {}),
-                    24.vertical,
-                  ],
-                ),
+    return BlocProvider(
+      create: (_) => sl<RegisterCubit>(),
+      child: BlocListener<RegisterCubit, RegisterState>(
+        listener: (context, state) {
+          if (state.status == RegisterStatus.failure &&
+              state.errorMessage != null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.errorMessage!)),
+            );
+          }
+
+          if (state.status == RegisterStatus.success && state.otpSent != null) {
+            final otp = state.otpSent!;
+            context.pushNamed(
+              'otp',
+              extra: OtpArgs(
+                email: otp.email,
+                source: OtpSource.register,
+                purpose: otp.purpose,
+                expiresInSeconds: otp.expiresInSeconds,
+                resendCooldownSeconds: otp.resendCooldownSeconds,
               ),
+            );
+            context.read<RegisterCubit>().reset();
+          }
+        },
+        child: AppScaffold(
+          resizeToAvoidBottomInset: true,
+          body: SafeArea(
+            child: Column(
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        32.vertical,
+                        const RegisterHeader(),
+                        24.vertical,
+                        AppTextField(
+                          label: 'اسم المستخدم',
+                          controller: _usernameCtrl,
+                          focusNode: _usernameFocus,
+                          hint: 'قم بإدخال اسم المستخدم الخاصة بك',
+                          textInputAction: TextInputAction.next,
+                          errorMessage: _usernameError,
+                          onChanged: (_) =>
+                              setState(() => _usernameError = null),
+                          onFieldSubmitted: (_) => _phoneFocus.requestFocus(),
+                        ),
+                        16.vertical,
+                        AppPhoneField(
+                          key: _phoneFieldKey,
+                          label: 'رقم الهاتف',
+                          controller: _phoneCtrl,
+                          focusNode: _phoneFocus,
+                          hint: 'قم بإدخال او رقم الهاتف الخاصة بك',
+                          textInputAction: TextInputAction.next,
+                          errorMessage: _phoneError,
+                          onChanged: (_) => setState(() => _phoneError = null),
+                        ),
+                        16.vertical,
+                        AppTextField(
+                          label: 'البريد الإلكتروني',
+                          controller: _emailCtrl,
+                          focusNode: _emailFocus,
+                          hint: 'قم بإدخال بريدك الإلكتروني الخاصة بك',
+                          keyboardType: TextInputType.emailAddress,
+                          textInputAction: TextInputAction.done,
+                          errorMessage: _emailError,
+                          onChanged: (_) => setState(() => _emailError = null),
+                        ),
+                        10.vertical,
+                        LoginTermsRow(
+                          accepted: _termsAccepted,
+                          onToggle: () =>
+                              setState(() => _termsAccepted = !_termsAccepted),
+                        ),
+                        16.vertical,
+                        const AppDividerLabel(label: 'تسجيل الدخول سريع مع'),
+                        16.vertical,
+                        AppSocialLoginRow(onApple: () {}, onGoogle: () {}),
+                        24.vertical,
+                      ],
+                    ),
+                  ),
+                ),
+                BlocBuilder<RegisterCubit, RegisterState>(
+                  builder: (context, state) => _BottomSection(
+                    canSubmit: _canSubmit,
+                    isLoading: state.isLoading,
+                    onOtp: () => _onOtpPressed(context),
+                    onLogin: () => context.pop(),
+                  ),
+                ),
+              ],
             ),
-            _BottomSection(
-              canSubmit: _canSubmit,
-              onOtp: _onOtpPressed,
-              onLogin: () => context.pop(),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -152,11 +189,13 @@ final class _RegisterScreenState extends State<RegisterScreen> {
 final class _BottomSection extends StatelessWidget {
   const _BottomSection({
     required this.canSubmit,
+    required this.isLoading,
     required this.onOtp,
     required this.onLogin,
   });
 
   final bool canSubmit;
+  final bool isLoading;
   final VoidCallback onOtp;
   final VoidCallback onLogin;
 
@@ -169,7 +208,11 @@ final class _BottomSection extends StatelessWidget {
         children: [
           _AlreadyHaveAccountRow(onLogin: onLogin),
           16.vertical,
-          AppButton(label: 'طلب OTP', onPressed: canSubmit ? onOtp : null),
+          AppButton(
+            label: 'طلب OTP',
+            isLoading: isLoading,
+            onPressed: canSubmit && !isLoading ? onOtp : null,
+          ),
         ],
       ),
     );

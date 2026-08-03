@@ -6,8 +6,6 @@ import '../../../../../core/widgets/app_button.dart';
 
 // ── Model ─────────────────────────────────────────────────────────────────────
 
-enum BookingStatus { canCheckIn, checkedIn }
-
 final class BookingItem {
   const BookingItem({
     required this.packageName,
@@ -15,7 +13,10 @@ final class BookingItem {
     required this.trainerName,
     required this.date,
     required this.time,
-    this.status = BookingStatus.canCheckIn,
+    this.canCheckIn = false,
+    this.canCancel = false,
+    this.canRate = false,
+    this.isCheckedIn = false,
     this.trainerAvatarAsset,
     this.onCheckIn,
     this.onCancel,
@@ -27,7 +28,10 @@ final class BookingItem {
   final String trainerName;
   final String date;
   final String time;
-  final BookingStatus status;
+  final bool canCheckIn;
+  final bool canCancel;
+  final bool canRate;
+  final bool isCheckedIn;
   final String? trainerAvatarAsset;
   final VoidCallback? onCheckIn;
   final VoidCallback? onCancel;
@@ -55,7 +59,7 @@ final class BookingCard extends StatelessWidget {
           _CardHeader(
             packageName: item.packageName,
             type: item.type,
-            isFinished: item.status == BookingStatus.checkedIn,
+            showEvaluate: item.canRate,
             onPressed: item.onEvaluate,
           ),
           const Divider(height: 1, color: AppColors.neutral200),
@@ -70,7 +74,8 @@ final class BookingCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 _ActionRow(
-                  status: item.status,
+                  canCheckIn: item.canCheckIn,
+                  canCancel: item.canCancel,
                   onCheckIn: item.onCheckIn,
                   onCancel: item.onCancel,
                 ),
@@ -89,13 +94,13 @@ final class _CardHeader extends StatelessWidget {
   const _CardHeader({
     required this.packageName,
     required this.type,
-    required this.isFinished,
+    required this.showEvaluate,
     required this.onPressed,
   });
 
   final String packageName;
   final String type;
-  final bool isFinished;
+  final bool showEvaluate;
   final VoidCallback? onPressed;
 
   @override
@@ -121,8 +126,7 @@ final class _CardHeader extends StatelessWidget {
               ],
             ),
           ),
-
-          if (isFinished)
+          if (showEvaluate)
             TextButton(
               onPressed: onPressed,
               style: TextButton.styleFrom(
@@ -221,9 +225,15 @@ final class _DetailColumn extends StatelessWidget {
 }
 
 final class _ActionRow extends StatelessWidget {
-  const _ActionRow({required this.status, this.onCheckIn, this.onCancel});
+  const _ActionRow({
+    required this.canCheckIn,
+    required this.canCancel,
+    this.onCheckIn,
+    this.onCancel,
+  });
 
-  final BookingStatus status;
+  final bool canCheckIn;
+  final bool canCancel;
   final VoidCallback? onCheckIn;
   final VoidCallback? onCancel;
 
@@ -232,18 +242,21 @@ final class _ActionRow extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: _CheckInButton(status: status, onTap: onCheckIn),
+          child: _CheckInButton(canCheckIn: canCheckIn, onTap: onCheckIn),
         ),
         const SizedBox(width: 10),
-        Expanded(child: _CancelButton(onTap: onCancel)),
+        Expanded(
+          child: _CancelButton(canCancel: canCancel, onTap: onCancel),
+        ),
       ],
     );
   }
 }
 
 final class _CancelButton extends StatelessWidget {
-  const _CancelButton({this.onTap});
+  const _CancelButton({required this.canCancel, this.onTap});
 
+  final bool canCancel;
   final VoidCallback? onTap;
 
   @override
@@ -252,26 +265,26 @@ final class _CancelButton extends StatelessWidget {
       label: 'الغاء الحصة',
       variant: AppButtonVariant.outlined,
       height: 48,
-      onPressed: onTap,
+      onPressed: canCancel ? onTap : null,
     );
   }
 }
 
 final class _CheckInButton extends StatelessWidget {
-  const _CheckInButton({required this.status, this.onTap});
+  const _CheckInButton({required this.canCheckIn, this.onTap});
 
-  final BookingStatus status;
+  final bool canCheckIn;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    final isActive = status == BookingStatus.canCheckIn;
     return SizedBox(
       height: 48,
       child: ElevatedButton(
-        onPressed: isActive ? onTap : null,
+        onPressed: canCheckIn ? onTap : null,
         style: ElevatedButton.styleFrom(
-          backgroundColor: isActive ? AppColors.primary : AppColors.neutral300,
+          backgroundColor:
+              canCheckIn ? AppColors.primary : AppColors.neutral300,
           disabledBackgroundColor: AppColors.neutral300,
           elevation: 0,
           shape: RoundedRectangleBorder(

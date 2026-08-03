@@ -1,12 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../../core/di/service_locator.dart';
 import '../../../../../core/router/app_routes.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_styles_extension.dart';
+import '../../../../../core/widgets/app_confirm_dialog.dart';
+import '../../../../../core/widgets/app_entrance.dart';
+import '../../../../../core/widgets/app_member_avatar.dart';
 import '../../../../../core/widgets/app_primary_header.dart';
 import '../../../../../core/widgets/app_scaffold.dart';
+import '../../../auth/presentation/cubits/logout/logout_cubit.dart';
+import '../../../auth/presentation/cubits/user_profile/user_profile_cubit.dart';
 
 final class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -18,48 +25,128 @@ final class SettingsScreen extends StatefulWidget {
 enum _AppLanguage { arabic, english }
 
 final class _SettingsScreenState extends State<SettingsScreen> {
-  bool _notificationsEnabled = false;
-  _AppLanguage _selectedLanguage = _AppLanguage.arabic;
-
   void _showLanguageSheet() {
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (_) => _LanguageSheet(
-        selected: _selectedLanguage,
+        selected: _selectedLanguageFromProfile(context),
         onSelect: (lang) {
-          setState(() => _selectedLanguage = lang);
           Navigator.of(context).pop();
         },
       ),
     );
   }
 
+  _AppLanguage _selectedLanguageFromProfile(BuildContext context) {
+    final language =
+        context.read<UserProfileCubit>().state.member?.appLanguage ?? 'ar';
+    return language == 'en' ? _AppLanguage.english : _AppLanguage.arabic;
+  }
+
+  Future<void> _confirmLogout(BuildContext context) async {
+    final shouldLogout = await AppConfirmDialog.show(
+      context,
+      title: 'تسجيل خروج',
+      message: 'هل أنت متأكد أنك تريد تسجيل الخروج؟',
+      confirmLabel: 'تسجيل خروج',
+    );
+
+    if (shouldLogout == true && context.mounted) {
+      context.read<LogoutCubit>().logout();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return AppScaffold(
-      appBar: const AppPrimaryHeader(
-        title: 'الإعدادات',
-        showBack: false,
-        centerTitle: true,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(18),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _ProfileCard(
-              onEditProfile: () => context.push(AppRoutes.editProfile),
-            ),
-            const SizedBox(height: 16),
-            _buildTilesGroup(context),
-          ],
+    return BlocProvider(
+      create: (_) => sl<LogoutCubit>(),
+      child: BlocListener<LogoutCubit, LogoutState>(
+        listener: (context, state) {
+          if (state.status == LogoutStatus.failure &&
+              state.errorMessage != null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.errorMessage!)),
+            );
+          }
+
+          if (state.status == LogoutStatus.success) {
+            context.read<UserProfileCubit>().clear();
+            context.go(AppRoutes.login);
+            context.read<LogoutCubit>().reset();
+          }
+        },
+        child: BlocListener<UserProfileCubit, UserProfileState>(
+          listenWhen: (previous, current) =>
+              previous.errorMessage != current.errorMessage &&
+              current.errorMessage != null &&
+              current.status == UserProfileStatus.loaded,
+          listener: (context, state) {
+            final message = state.errorMessage;
+            if (message == null) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(message)),
+            );
+          },
+          child: BlocBuilder<LogoutCubit, LogoutState>(
+            builder: (context, logoutState) {
+              final profile = context.watch<UserProfileCubit>().state;
+
+            return AppScaffold(
+              appBar: const AppPrimaryHeader(
+                title: 'الإعدادات',
+                showBack: false,
+                centerTitle: true,
+              ),
+              body: Stack(
+                children: [
+                  SingleChildScrollView(
+                    padding: const EdgeInsets.all(18),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        AppEntrance(
+                          delay: const Duration(milliseconds: 40),
+                          offset: const Offset(0, 0.05),
+                          child: _ProfileCard(
+                            fullName: profile.displayName,
+                            email: profile.displayEmail,
+                            avatarUrl: profile.member?.avatarUrl,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        _buildTilesGroup(
+                          context,
+                          logoutState.isLoading,
+                          profile,
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (logoutState.isLoading)
+                    const ColoredBox(
+                      color: Color(0x33000000),
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
+                ],
+              ),
+            );
+          },
+        ),
         ),
       ),
     );
   }
 
-  Widget _buildTilesGroup(BuildContext context) {
+  Widget _buildTilesGroup(
+    BuildContext context,
+    bool isLoggingOut,
+    UserProfileState profile,
+  ) {
+    final selectedLanguage = profile.member?.appLanguage == 'en'
+        ? _AppLanguage.english
+        : _AppLanguage.arabic;
+
     final tiles = <Widget>[
       _SettingsTile(
         iconAsset: 'person_icon.svg',
@@ -82,11 +169,6 @@ final class _SettingsScreenState extends State<SettingsScreen> {
         onTap: () => context.push(AppRoutes.subscriptions),
       ),
       _SettingsTile(
-        iconAsset: 'change_password_icon.svg',
-        label: 'تغير كلمة السر',
-        onTap: () => context.push(AppRoutes.forgotPassword),
-      ),
-      _SettingsTile(
         iconAsset: 'items_family_icon.svg',
         label: 'أفراد العائلة',
         onTap: () => context.push(AppRoutes.family),
@@ -100,8 +182,11 @@ final class _SettingsScreenState extends State<SettingsScreen> {
         iconAsset: 'notifications_icon.svg',
         label: 'الاشعارات',
         trailing: _NotificationsTrailing(
-          enabled: _notificationsEnabled,
-          onChanged: (v) => setState(() => _notificationsEnabled = v),
+          enabled: profile.pushEnabled,
+          isLoading: profile.isUpdatingNotifications,
+          onChanged: (enabled) => context
+              .read<UserProfileCubit>()
+              .updatePushNotifications(enabled),
         ),
       ),
       _SettingsTile(
@@ -109,14 +194,15 @@ final class _SettingsScreenState extends State<SettingsScreen> {
         label: 'لغة التطبيق',
         onTap: _showLanguageSheet,
         trailing: Text(
-          _selectedLanguage == _AppLanguage.arabic ? 'العربية' : 'English',
+          selectedLanguage == _AppLanguage.arabic ? 'العربية' : 'English',
           style: context.captionRegular.copyWith(color: AppColors.neutral500),
         ),
       ),
-      const _SettingsTile(
+      _SettingsTile(
         iconAsset: 'logout_icon.svg',
         label: 'تسجيل خروج',
         isDestructive: true,
+        onTap: isLoggingOut ? null : () => _confirmLogout(context),
       ),
       const _SettingsTile(
         iconAsset: 'delete_icon.svg',
@@ -128,7 +214,11 @@ final class _SettingsScreenState extends State<SettingsScreen> {
     return Column(
       children: [
         for (int i = 0; i < tiles.length; i++) ...[
-          tiles[i],
+          AppEntrance(
+            delay: Duration(milliseconds: 40 + (i.clamp(0, 8) * 45)),
+            offset: const Offset(0, 0.04),
+            child: tiles[i],
+          ),
           if (i < tiles.length - 1)
             const Divider(height: 1, color: AppColors.neutral200),
         ],
@@ -140,9 +230,15 @@ final class _SettingsScreenState extends State<SettingsScreen> {
 // ── Private widgets ───────────────────────────────────────────────────────────
 
 final class _ProfileCard extends StatelessWidget {
-  const _ProfileCard({required this.onEditProfile});
+  const _ProfileCard({
+    required this.fullName,
+    required this.email,
+    required this.avatarUrl,
+  });
 
-  final VoidCallback? onEditProfile;
+  final String fullName;
+  final String email;
+  final String? avatarUrl;
 
   @override
   Widget build(BuildContext context) {
@@ -153,77 +249,24 @@ final class _ProfileCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: AppColors.neutral200),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(99),
-                child: Image.asset(
-                  'assets/images/pngs/profile_image.png',
-                  width: 60,
-                  height: 60,
-                  fit: BoxFit.cover,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('اسم المستخدم', style: context.highlightBold),
-                    const SizedBox(height: 4),
-                    Text(
-                      'uiux@ahmedsaudi.com',
-                      style: context.captionRegular.copyWith(
-                        color: AppColors.neutral500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          _EditProfileButton(onTap: onEditProfile),
-        ],
-      ),
-    );
-  }
-}
-
-final class _EditProfileButton extends StatelessWidget {
-  const _EditProfileButton({this.onTap});
-
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return OutlinedButton(
-      onPressed: onTap,
-      style: OutlinedButton.styleFrom(
-        foregroundColor: AppColors.primary,
-        side: const BorderSide(color: AppColors.primary),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        minimumSize: const Size(double.infinity, 48),
-      ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
         children: [
-          SvgPicture.asset(
-            'assets/images/svgs/edit_icon.svg',
-            width: 18,
-            height: 18,
-            colorFilter: const ColorFilter.mode(
-              AppColors.primary,
-              BlendMode.srcIn,
+          AppMemberAvatar(avatarUrl: avatarUrl, size: 60),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(fullName, style: context.highlightBold),
+                const SizedBox(height: 4),
+                Text(
+                  email,
+                  style: context.captionRegular.copyWith(
+                    color: AppColors.neutral500,
+                  ),
+                ),
+              ],
             ),
-          ),
-          const SizedBox(width: 8),
-          Text(
-            'تعديل الملف الشخصي',
-            style: context.captionRegular.copyWith(color: AppColors.primary),
           ),
         ],
       ),
@@ -408,10 +451,12 @@ final class _NotificationsTrailing extends StatelessWidget {
   const _NotificationsTrailing({
     required this.enabled,
     required this.onChanged,
+    this.isLoading = false,
   });
 
   final bool enabled;
   final ValueChanged<bool> onChanged;
+  final bool isLoading;
 
   @override
   Widget build(BuildContext context) {
@@ -427,7 +472,7 @@ final class _NotificationsTrailing extends StatelessWidget {
           scale: 0.8,
           child: Switch(
             value: enabled,
-            onChanged: onChanged,
+            onChanged: isLoading ? null : onChanged,
             activeThumbColor: AppColors.primary,
             activeTrackColor: AppColors.primary300,
             materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,

@@ -1,16 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:glory_gym/core/core.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
-// ── Args ──────────────────────────────────────────────────────────────────────
-
-final class SimpleContentArgs {
-  const SimpleContentArgs({required this.title, required this.content});
-
-  final String title;
-  final String content;
-}
-
-// ── Screen ────────────────────────────────────────────────────────────────────
+import '../../../../core/di/service_locator.dart';
+import '../../../../core/models/content_args.dart';
+import '../cubits/info_page/info_page_cubit.dart';
 
 final class SimpleContentScreen extends StatelessWidget {
   const SimpleContentScreen({super.key, required this.args});
@@ -19,46 +14,74 @@ final class SimpleContentScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppScaffold(
-      appBar: AppPrimaryHeader(
-        title: args.title,
-        showBack: true,
-        centerTitle: false,
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _GymImage(),
-            Padding(
-              padding: const EdgeInsets.all(18),
-              child: Text(
-                args.content,
-                style: context.contentRegular.copyWith(
-                  color: AppColors.neutral700,
-                  height: 1.8,
-                ),
-                textAlign: TextAlign.start,
-              ),
+    return BlocProvider(
+      create: (_) => sl<InfoPageCubit>()..loadPage(args.pageKey),
+      child: BlocBuilder<InfoPageCubit, InfoPageState>(
+        builder: (context, state) {
+          final isArabic = ContentUtils.isArabic(context);
+          final title = state.page?.titleFor(isArabic: isArabic) ?? ' ';
+          final content = state.page?.contentFor(isArabic: isArabic) ?? ' ';
+
+          return AppScaffold(
+            appBar: AppPrimaryHeader(
+              title: state.isLoading ? args.pageKey : title,
+              showBack: true,
+              centerTitle: false,
             ),
-          ],
-        ),
+            body: state.status == InfoPageStatus.failure
+                ? _ErrorView(
+                    message: state.errorMessage ?? 'حدث خطأ، حاول مرة أخرى',
+                    onRetry: () =>
+                        context.read<InfoPageCubit>().loadPage(args.pageKey),
+                  )
+                : Skeletonizer(
+                    enabled: state.isLoading,
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          ContentHeroImage(imageUrl: state.page?.imageUrl),
+                          Padding(
+                            padding: const EdgeInsets.all(18),
+                            child: Text(
+                              content,
+                              style: context.contentRegular.copyWith(
+                                color: AppColors.neutral700,
+                                height: 1.8,
+                              ),
+                              textAlign: TextAlign.start,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+          );
+        },
       ),
     );
   }
 }
 
-// ── Private widgets ───────────────────────────────────────────────────────────
+final class _ErrorView extends StatelessWidget {
+  const _ErrorView({required this.message, required this.onRetry});
 
-final class _GymImage extends StatelessWidget {
+  final String message;
+  final VoidCallback onRetry;
+
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 220,
-      child: Image.asset(
-        'assets/images/pngs/classes_image.png',
-        fit: BoxFit.cover,
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(message, textAlign: TextAlign.center),
+            const SizedBox(height: 16),
+            AppButton(label: 'إعادة المحاولة', onPressed: onRetry),
+          ],
+        ),
       ),
     );
   }

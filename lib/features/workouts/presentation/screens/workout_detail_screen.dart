@@ -1,40 +1,200 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:glory_gym/core/core.dart';
+import 'package:glory_gym/features/auth/presentation/cubits/user_profile/user_profile_cubit.dart';
+import 'package:glory_gym/features/home/presentation/widgets/group_class_card.dart';
+import 'package:glory_gym/features/workouts/presentation/cubits/workout_detail/workout_detail_cubit.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-import '../../../home/presentation/widgets/group_class_card.dart';
+final class WorkoutDetailScreen extends StatelessWidget {
+  const WorkoutDetailScreen({super.key, required this.id});
 
-// ── Private models ────────────────────────────────────────────────────────────
+  final String id;
 
-final class _WorkoutPhase {
-  const _WorkoutPhase({
-    required this.phaseLabel,
-    required this.type,
-    required this.imageAsset,
-    required this.suggestedWeight,
-    this.actualWeight,
-    this.showPlayButton = false,
-  });
-
-  final String phaseLabel;
-  final String type;
-  final String imageAsset;
-  final String suggestedWeight;
-  final String? actualWeight;
-  final bool showPlayButton;
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => sl<WorkoutDetailCubit>(param1: id)..loadDetail(),
+      child: _WorkoutDetailView(assignmentId: id),
+    );
+  }
 }
 
-final class _WorkoutDetailData {
-  const _WorkoutDetailData({
+final class _WorkoutDetailView extends StatelessWidget {
+  const _WorkoutDetailView({required this.assignmentId});
+
+  final String assignmentId;
+
+  Future<void> _openAddWeight(BuildContext context) async {
+    final added = await context.push<bool>(
+      '/workouts/$assignmentId/add-weight',
+    );
+
+    if (added == true && context.mounted) {
+      await context.read<WorkoutDetailCubit>().loadDetail();
+    }
+  }
+
+  Future<void> _openVideo(String url) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final profile = context.watch<UserProfileCubit>().state;
+    final locale =
+        WorkoutUtils.localeFromAppLanguage(profile.member?.appLanguage);
+
+    return BlocListener<WorkoutDetailCubit, WorkoutDetailState>(
+      listenWhen: (previous, current) =>
+          previous.errorMessage != current.errorMessage &&
+          current.errorMessage != null,
+      listener: (context, state) {
+        final message = state.errorMessage;
+        if (message == null) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(message)),
+        );
+      },
+      child: AppScaffold(
+        appBar: const AppPrimaryHeader(
+          title: 'تفاصيل التمرين',
+          showBack: true,
+          centerTitle: true,
+        ),
+        body: BlocBuilder<WorkoutDetailCubit, WorkoutDetailState>(
+          builder: (context, state) {
+            if (state.isLoading && state.detail == null) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            final detail = state.detail;
+            if (detail == null) {
+              return Center(
+                child: Text(
+                  state.errorMessage ?? 'حدث خطأ، حاول مرة أخرى',
+                  style: context.captionRegular,
+                ),
+              );
+            }
+
+            final cardStatus = WorkoutUtils.cardStatus(detail.status);
+            final workoutType = WorkoutUtils.typeLabel(detail.workoutType);
+
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  AppEntrance(
+                    delay: const Duration(milliseconds: 40),
+                    offset: const Offset(0, 0.05),
+                    child: _HeaderCard(
+                      name: WorkoutUtils.workoutNameFromDetail(
+                        detail,
+                        locale: locale,
+                      ),
+                      status: cardStatus,
+                      time: WorkoutUtils.durationLabel(detail.durationDays),
+                      type: workoutType,
+                      startDate: WorkoutUtils.formatDate(detail.startDate),
+                      endDate: WorkoutUtils.formatDate(detail.endDate),
+                      remainingDays:
+                          WorkoutUtils.remainingDaysLabel(detail.remainingDays),
+                      issuedBy: detail.status == 'UPCOMING'
+                          ? detail.instructorName
+                          : null,
+                      suggestedWeight:
+                          WorkoutUtils.weightLabel(detail.suggestedWeight),
+                      userWeight: WorkoutUtils.weightLabel(detail.userWeight),
+                      userWeightLast:
+                          WorkoutUtils.weightLabel(detail.userWeightLast),
+                    ),
+                  ),
+                  if (detail.canAddWeight) ...[
+                    const SizedBox(height: 12),
+                    AppEntrance(
+                      delay: const Duration(milliseconds: 100),
+                      child: AppButton(
+                        label: 'اضافة وزن',
+                        height: 48,
+                        onPressed: state.status ==
+                                WorkoutDetailStatus.submittingWeight
+                            ? null
+                            : () => _openAddWeight(context),
+                        isLoading: state.status ==
+                            WorkoutDetailStatus.submittingWeight,
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 16),
+                  AppEntrance(
+                    delay: const Duration(milliseconds: 140),
+                    child: Text(
+                      'تعليمات التمرين العامة',
+                      textAlign: TextAlign.end,
+                      style: context.highlightBold.copyWith(
+                        color: AppColors.neutral900,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  ...detail.instructions.asMap().entries.map(
+                    (entry) {
+                      final instruction = entry.value;
+                      return AppEntrance(
+                        key: ValueKey('phase-${instruction.stepNumber}'),
+                        delay: Duration(
+                          milliseconds: 180 + (entry.key.clamp(0, 5) * 80),
+                        ),
+                        offset: const Offset(0, 0.06),
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: _PhaseCard(
+                            phaseLabel: WorkoutUtils.phaseLabel(
+                              instruction.stepNumber,
+                            ),
+                            workoutType: workoutType,
+                            thumbnailUrl: instruction.videos.isNotEmpty
+                                ? instruction.videos.first.thumbnailUrl
+                                : null,
+                            onPlay: instruction.videos.isNotEmpty
+                                ? () => _openVideo(
+                                      instruction.videos.first.videoUrl,
+                                    )
+                                : null,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+final class _HeaderCard extends StatelessWidget {
+  const _HeaderCard({
     required this.name,
     required this.status,
     required this.time,
     required this.type,
     required this.startDate,
     this.endDate,
-    this.createdDate,
-    this.daysRemaining,
-    required this.phases,
+    this.remainingDays,
+    this.issuedBy,
+    this.suggestedWeight,
+    this.userWeight,
+    this.userWeightLast,
   });
 
   final String name;
@@ -43,127 +203,11 @@ final class _WorkoutDetailData {
   final String type;
   final String startDate;
   final String? endDate;
-  final String? createdDate;
-  final String? daysRemaining;
-  final List<_WorkoutPhase> phases;
-}
-
-// ── Screen ────────────────────────────────────────────────────────────────────
-
-final class WorkoutDetailScreen extends StatelessWidget {
-  const WorkoutDetailScreen({super.key, required this.id});
-
-  final String id;
-
-  static final _demos = <String, _WorkoutDetailData>{
-    '0': _WorkoutDetailData(
-      name: 'اسم التمرين',
-      status: GroupClassStatus.completed,
-      time: '40 يوم',
-      type: 'كارديو',
-      startDate: '١ مايو ٢٠٢٦',
-      endDate: '١٠ يونيو ٢٠٢٦',
-      phases: [
-        const _WorkoutPhase(
-          phaseLabel: 'المرحلة الاولة',
-          type: 'كارديو',
-          imageAsset: 'assets/images/pngs/classes_image.png',
-          suggestedWeight: '10 كيلو',
-        ),
-        const _WorkoutPhase(
-          phaseLabel: 'المرحلة الثانية',
-          type: 'كارديو',
-          imageAsset: 'assets/images/pngs/classes_image.png',
-          suggestedWeight: '10 كيلو',
-        ),
-      ],
-    ),
-    '1': _WorkoutDetailData(
-      name: 'اسم التمرين',
-      status: GroupClassStatus.ongoing,
-      time: '40 يوم',
-      type: 'كارديو',
-      startDate: '١ مايو ٢٠٢٦',
-      createdDate: '١٠ يونيو ٢٠٢٦',
-      daysRemaining: '22 يوم',
-      phases: [
-        _WorkoutPhase(
-          phaseLabel: 'المرحلة الاولة',
-          type: 'كارديو',
-          imageAsset: 'assets/images/pngs/classes_image.png',
-          suggestedWeight: '10 كيلو',
-          actualWeight: '20 كيلو',
-        ),
-        const _WorkoutPhase(
-          phaseLabel: 'المرحلة الثانية',
-          type: 'كارديو',
-          imageAsset: 'assets/images/pngs/classes_image.png',
-          suggestedWeight: '10 كيلو',
-          actualWeight: '40 يوم',
-          showPlayButton: true,
-        ),
-      ],
-    ),
-  };
-
-  _WorkoutDetailData get _data => _demos[id] ?? _demos['1']!;
-
-  @override
-  Widget build(BuildContext context) {
-    final detail = _data;
-    return AppScaffold(
-      appBar: const AppPrimaryHeader(
-        title: 'تفاصيل التمرين',
-        showBack: true,
-        centerTitle: true,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(18),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _HeaderCard(detail: detail),
-            if (detail.status == GroupClassStatus.completed) ...[
-              const SizedBox(height: 12),
-              AppButton(
-                label: 'تقييم الحصة',
-                height: 48,
-                onPressed: () => context.push(AppRoutes.classEvaluation),
-              ),
-            ],
-            const SizedBox(height: 16),
-            Text(
-              'تعليمات التمرين العامة',
-              textAlign: TextAlign.end,
-              style: context.highlightBold.copyWith(
-                color: AppColors.neutral900,
-              ),
-            ),
-            const SizedBox(height: 12),
-            ...detail.phases.map(
-              (phase) => Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: _PhaseCard(
-                  phase: phase,
-                  onAddWeight: detail.status == GroupClassStatus.ongoing
-                      ? () => context.push(AppRoutes.addWeight)
-                      : null,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ── Private widgets ───────────────────────────────────────────────────────────
-
-final class _HeaderCard extends StatelessWidget {
-  const _HeaderCard({required this.detail});
-
-  final _WorkoutDetailData detail;
+  final String? remainingDays;
+  final String? issuedBy;
+  final String? suggestedWeight;
+  final String? userWeight;
+  final String? userWeightLast;
 
   @override
   Widget build(BuildContext context) {
@@ -176,19 +220,165 @@ final class _HeaderCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          _TitleRow(name: detail.name, status: detail.status),
+          _TitleRow(name: name, status: status),
           const SizedBox(height: 12),
           const Divider(height: 1, color: AppColors.neutral200),
           const SizedBox(height: 12),
           _ThreeColumnRow(
-            col1: (label: 'الوقت', value: detail.time),
-            col2: (label: 'نوع التمرين', value: detail.type),
-            col3: (label: 'تاريخ البداية', value: detail.startDate),
+            col1: (label: 'الوقت', value: time),
+            col2: (label: 'نوع التمرين', value: type),
+            col3: issuedBy != null
+                ? (label: 'اصدرت بواسطة', value: issuedBy!)
+                : startDate.isNotEmpty
+                    ? (label: 'تاريخ البداية', value: startDate)
+                    : null,
+          ),
+          if (status == GroupClassStatus.ongoing &&
+              remainingDays != null &&
+              remainingDays!.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            const Divider(height: 1, color: AppColors.neutral200),
+            const SizedBox(height: 12),
+            _DetailColumn(
+              label: 'عدد الايام المتبقية',
+              value: remainingDays!,
+            ),
+          ],
+          if (status == GroupClassStatus.completed &&
+              endDate != null &&
+              endDate!.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            const Divider(height: 1, color: AppColors.neutral200),
+            const SizedBox(height: 12),
+            _DetailColumn(label: 'تاريخ الانتهاء', value: endDate!),
+          ],
+          if ((suggestedWeight?.isNotEmpty ?? false) ||
+              (userWeight?.isNotEmpty ?? false) ||
+              (userWeightLast?.isNotEmpty ?? false)) ...[
+            const SizedBox(height: 12),
+            const Divider(height: 1, color: AppColors.neutral200),
+            const SizedBox(height: 12),
+            IntrinsicHeight(
+              child: Row(
+                children: [
+                  if (suggestedWeight?.isNotEmpty ?? false)
+                    Expanded(
+                      child: _DetailColumn(
+                        label: 'الوزن المقترح',
+                        value: suggestedWeight!,
+                      ),
+                    ),
+                  if (userWeight?.isNotEmpty ?? false) ...[
+                    if (suggestedWeight?.isNotEmpty ?? false)
+                      const VerticalDivider(
+                        width: 1,
+                        color: AppColors.neutral200,
+                      ),
+                    Expanded(
+                      child: _DetailColumn(
+                        label: 'وزنك',
+                        value: userWeight!,
+                      ),
+                    ),
+                  ],
+                  if (userWeightLast?.isNotEmpty ?? false) ...[
+                    const VerticalDivider(width: 1, color: AppColors.neutral200),
+                    Expanded(
+                      child: _DetailColumn(
+                        label: 'الوزن السابق',
+                        value: userWeightLast!,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+final class _PhaseCard extends StatelessWidget {
+  const _PhaseCard({
+    required this.phaseLabel,
+    required this.workoutType,
+    this.thumbnailUrl,
+    this.onPlay,
+  });
+
+  final String phaseLabel;
+  final String workoutType;
+  final String? thumbnailUrl;
+  final VoidCallback? onPlay;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColors.neutral200),
+      ),
+      child: Column(
+        children: [
+          IntrinsicHeight(
+            child: Row(
+              children: [
+                Expanded(
+                  child: _DetailColumn(label: phaseLabel, value: workoutType),
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 12),
-          const Divider(height: 1, color: AppColors.neutral200),
-          const SizedBox(height: 12),
-          _StatusExtraRow(detail: detail),
+          GestureDetector(
+            onTap: onPlay,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: SizedBox(
+                width: double.infinity,
+                height: 160,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    if (thumbnailUrl != null && thumbnailUrl!.isNotEmpty)
+                      Image.network(
+                        thumbnailUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) => Image.asset(
+                          'assets/images/pngs/classes_image.png',
+                          fit: BoxFit.cover,
+                        ),
+                      )
+                    else
+                      Image.asset(
+                        'assets/images/pngs/classes_image.png',
+                        fit: BoxFit.cover,
+                      ),
+                    if (onPlay != null)
+                      Center(
+                        child: Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: AppColors.white.withValues(alpha: 0.85),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.play_arrow_rounded,
+                            size: 28,
+                            color: AppColors.neutral900,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -211,7 +401,7 @@ final class _TitleRow extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(name, style: context.highlightBold),
+        Expanded(child: Text(name, style: context.highlightBold)),
         _Chip(label: label, color: color),
       ],
     );
@@ -237,64 +427,16 @@ final class _Chip extends StatelessWidget {
   }
 }
 
-final class _StatusExtraRow extends StatelessWidget {
-  const _StatusExtraRow({required this.detail});
-
-  final _WorkoutDetailData detail;
-
-  @override
-  Widget build(BuildContext context) {
-    if (detail.status == GroupClassStatus.completed && detail.endDate != null) {
-      return IntrinsicHeight(
-        child: Row(
-          children: [
-            Expanded(
-              child: _DetailColumn(
-                label: 'تاريخ الانتهاء',
-                value: detail.endDate!,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-    if (detail.status == GroupClassStatus.ongoing &&
-        detail.createdDate != null &&
-        detail.daysRemaining != null) {
-      return IntrinsicHeight(
-        child: Row(
-          children: [
-            Expanded(
-              child: _DetailColumn(
-                label: 'عدد الايام المتبقية',
-                value: detail.daysRemaining!,
-              ),
-            ),
-            const VerticalDivider(width: 1, color: AppColors.neutral200),
-            Expanded(
-              child: _DetailColumn(
-                label: 'تاريخ الانشاء',
-                value: detail.createdDate!,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-    return const SizedBox.shrink();
-  }
-}
-
 final class _ThreeColumnRow extends StatelessWidget {
   const _ThreeColumnRow({
     required this.col1,
     required this.col2,
-    required this.col3,
+    this.col3,
   });
 
   final ({String label, String value}) col1;
   final ({String label, String value}) col2;
-  final ({String label, String value}) col3;
+  final ({String label, String value})? col3;
 
   @override
   Widget build(BuildContext context) {
@@ -308,126 +450,13 @@ final class _ThreeColumnRow extends StatelessWidget {
           Expanded(
             child: _DetailColumn(label: col2.label, value: col2.value),
           ),
-          const VerticalDivider(width: 1, color: AppColors.neutral200),
-          Expanded(
-            child: _DetailColumn(label: col3.label, value: col3.value),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ──────────────────────────────────────────────────────────────────────────────
-
-final class _PhaseCard extends StatelessWidget {
-  const _PhaseCard({required this.phase, this.onAddWeight});
-
-  final _WorkoutPhase phase;
-  final VoidCallback? onAddWeight;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.neutral200),
-      ),
-      child: Column(
-        children: [
-          _PhaseDetailsRow(phase: phase),
-          const SizedBox(height: 12),
-          _PhaseImage(
-            imageAsset: phase.imageAsset,
-            showPlayButton: phase.showPlayButton,
-          ),
-          if (onAddWeight != null) ...[
-            const SizedBox(height: 12),
-            AppButton(
-              label: 'اضافة وزن',
-              variant: AppButtonVariant.outlined,
-              height: 48,
-              onPressed: onAddWeight,
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-final class _PhaseDetailsRow extends StatelessWidget {
-  const _PhaseDetailsRow({required this.phase});
-
-  final _WorkoutPhase phase;
-
-  @override
-  Widget build(BuildContext context) {
-    return IntrinsicHeight(
-      child: Row(
-        children: [
-          Expanded(
-            child: _DetailColumn(label: phase.phaseLabel, value: phase.type),
-          ),
-          const VerticalDivider(width: 1, color: AppColors.neutral200),
-          Expanded(
-            child: _DetailColumn(
-              label: 'الوزن المقترح',
-              value: phase.suggestedWeight,
-            ),
-          ),
-          if (phase.actualWeight != null) ...[
+          if (col3 != null) ...[
             const VerticalDivider(width: 1, color: AppColors.neutral200),
             Expanded(
-              child: _DetailColumn(
-                label: 'الوزن اللعب',
-                value: phase.actualWeight!,
-              ),
+              child: _DetailColumn(label: col3!.label, value: col3!.value),
             ),
           ],
         ],
-      ),
-    );
-  }
-}
-
-final class _PhaseImage extends StatelessWidget {
-  const _PhaseImage({required this.imageAsset, this.showPlayButton = false});
-
-  final String imageAsset;
-  final bool showPlayButton;
-
-  @override
-  Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(8),
-      child: SizedBox(
-        width: double.infinity,
-        height: 160,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            Image.asset(imageAsset, fit: BoxFit.cover),
-            if (showPlayButton)
-              Center(
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: AppColors.white.withValues(alpha: 0.85),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.play_arrow_rounded,
-                    size: 28,
-                    color: AppColors.neutral900,
-                  ),
-                ),
-              ),
-          ],
-        ),
       ),
     );
   }

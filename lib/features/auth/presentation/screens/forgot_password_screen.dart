@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:glory_gym/core/models/otp_args.dart';
-import 'package:glory_gym/core/router/app_routes.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/di/service_locator.dart';
 import '../../../../core/extensions/extensions.dart';
+import '../../../../core/models/otp_args.dart';
+import '../../../../core/router/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_styles_extension.dart';
 import '../../../../core/utils/app_validators.dart';
 import '../../../../core/widgets/widgets.dart';
+import '../cubits/forgot_password/forgot_password_cubit.dart';
 import '../widgets/forgot_password_header.dart';
 
 final class ForgotPasswordScreen extends StatefulWidget {
@@ -23,18 +26,15 @@ final class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   bool get _canSubmit => _emailOrPhoneCtrl.text.isNotEmpty;
 
-  void _onOtpPressed() {
+  void _onOtpPressed(BuildContext context) {
     final error = AppValidators.emailOrPhone(_emailOrPhoneCtrl.text);
     setState(() => _emailError = error);
-    if (error == null) {
-      context.push(
-        AppRoutes.otp,
-        extra: OtpArgs(
-          email: _emailOrPhoneCtrl.text,
-          source: OtpSource.forgotPassword,
-        ),
-      );
-    }
+    if (error != null) return;
+
+    FocusManager.instance.primaryFocus?.unfocus();
+    context.read<ForgotPasswordCubit>().requestOtp(
+          identifier: _emailOrPhoneCtrl.text.trim(),
+        );
   }
 
   @override
@@ -45,43 +45,75 @@ final class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return AppScaffold(
-      resizeToAvoidBottomInset: true,
-      appBar: const AppBackHeader(),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    32.vertical,
-                    const ForgotPasswordHeader(),
-                    32.vertical,
-                    AppTextField(
-                      label: 'البريد الإلكتروني او رقم الهاتف',
-                      controller: _emailOrPhoneCtrl,
-                      hint:
-                          'قم بإدخال بريدك الإلكتروني او رقم الهاتف الخاصة بك',
-                      keyboardType: TextInputType.emailAddress,
-                      textInputAction: TextInputAction.done,
-                      errorMessage: _emailError,
-                      onChanged: (_) => setState(() => _emailError = null),
-                      onFieldSubmitted: (_) => _onOtpPressed(),
-                    ),
-                    24.vertical,
-                  ],
-                ),
+    return BlocProvider(
+      create: (_) => sl<ForgotPasswordCubit>(),
+      child: BlocListener<ForgotPasswordCubit, ForgotPasswordState>(
+        listener: (context, state) {
+          if (state.status == ForgotPasswordStatus.failure &&
+              state.errorMessage != null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.errorMessage!)),
+            );
+          }
+
+          if (state.status == ForgotPasswordStatus.success &&
+              state.otpSent != null) {
+            final otp = state.otpSent!;
+            context.push(
+              AppRoutes.otp,
+              extra: OtpArgs(
+                email: otp.email,
+                source: OtpSource.forgotPassword,
+                purpose: otp.purpose,
+                expiresInSeconds: otp.expiresInSeconds,
+                resendCooldownSeconds: otp.resendCooldownSeconds,
               ),
+            );
+            context.read<ForgotPasswordCubit>().reset();
+          }
+        },
+        child: AppScaffold(
+          resizeToAvoidBottomInset: true,
+          appBar: const AppBackHeader(),
+          body: SafeArea(
+            child: Column(
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        32.vertical,
+                        const ForgotPasswordHeader(),
+                        32.vertical,
+                        AppTextField(
+                          label: 'البريد الإلكتروني او رقم الهاتف',
+                          controller: _emailOrPhoneCtrl,
+                          hint:
+                              'قم بإدخال بريدك الإلكتروني او رقم الهاتف الخاصة بك',
+                          keyboardType: TextInputType.emailAddress,
+                          textInputAction: TextInputAction.done,
+                          errorMessage: _emailError,
+                          onChanged: (_) => setState(() => _emailError = null),
+                          onFieldSubmitted: (_) => _onOtpPressed(context),
+                        ),
+                        24.vertical,
+                      ],
+                    ),
+                  ),
+                ),
+                BlocBuilder<ForgotPasswordCubit, ForgotPasswordState>(
+                  builder: (context, state) => _BottomSection(
+                    canSubmit: _canSubmit,
+                    isLoading: state.isLoading,
+                    onOtp: () => _onOtpPressed(context),
+                    onCreateAccount: () => context.push(AppRoutes.register),
+                  ),
+                ),
+              ],
             ),
-            _BottomSection(
-              canSubmit: _canSubmit,
-              onOtp: _onOtpPressed,
-              onCreateAccount: () {},
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -93,11 +125,13 @@ final class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 final class _BottomSection extends StatelessWidget {
   const _BottomSection({
     required this.canSubmit,
+    required this.isLoading,
     required this.onOtp,
     required this.onCreateAccount,
   });
 
   final bool canSubmit;
+  final bool isLoading;
   final VoidCallback onOtp;
   final VoidCallback onCreateAccount;
 
@@ -110,7 +144,11 @@ final class _BottomSection extends StatelessWidget {
         children: [
           _CreateAccountRow(onTap: onCreateAccount),
           16.vertical,
-          AppButton(label: 'طلب OTP', onPressed: canSubmit ? onOtp : null),
+          AppButton(
+            label: 'طلب OTP',
+            isLoading: isLoading,
+            onPressed: canSubmit && !isLoading ? onOtp : null,
+          ),
         ],
       ),
     );

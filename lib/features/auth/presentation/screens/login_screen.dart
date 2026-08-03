@@ -1,12 +1,19 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:glory_gym/core/router/app_routes.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/di/service_locator.dart';
+import '../../../../core/di/service_locator.dart';
+import '../../../../core/router/app_routes.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_styles_extension.dart';
 import '../../../../core/utils/app_validators.dart';
 import '../../../../core/widgets/widgets.dart';
+import '../cubits/login/login_cubit.dart';
+import '../cubits/user_profile/user_profile_cubit.dart';
 import '../widgets/login_header.dart';
 import '../widgets/login_terms_row.dart';
 
@@ -29,14 +36,18 @@ final class _LoginScreenState extends State<LoginScreen> {
       _passwordCtrl.text.isNotEmpty &&
       _termsAccepted;
 
-  void _onLoginPressed() {
+  void _onLoginPressed(BuildContext context) {
     setState(() {
       _emailError = AppValidators.emailOrPhone(_emailOrPhoneCtrl.text);
       _passwordError = AppValidators.password(_passwordCtrl.text);
     });
-    if (_canLogin) {
-      context.push(AppRoutes.home);
-    }
+
+    if (_emailError != null || _passwordError != null) return;
+
+    context.read<LoginCubit>().login(
+          identifier: _emailOrPhoneCtrl.text.trim(),
+          password: _passwordCtrl.text,
+        );
   }
 
   @override
@@ -48,68 +59,95 @@ final class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return AppScaffold(
-      resizeToAvoidBottomInset: true,
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    32.vertical,
-                    const LoginHeader(),
-                    24.vertical,
-                    AppTextField(
-                      label: 'البريد الإلكتروني او رقم الهاتف',
-                      controller: _emailOrPhoneCtrl,
-                      hint:
-                          'قم بإدخال بريدك الإلكتروني او رقم الهاتف الخاصة بك',
-                      keyboardType: TextInputType.emailAddress,
-                      textInputAction: TextInputAction.next,
-                      errorMessage: _emailError,
-                      onChanged: (_) => setState(() => _emailError = null),
+    return BlocProvider(
+      create: (_) => sl<LoginCubit>(),
+      child: BlocListener<LoginCubit, LoginState>(
+        listener: (context, state) {
+          if (state.status == LoginStatus.failure &&
+              state.errorMessage != null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.errorMessage!)),
+            );
+          }
+
+          if (state.status == LoginStatus.success) {
+            final session = state.session;
+            if (session != null) {
+              context.read<UserProfileCubit>().setMember(session.member);
+            }
+            unawaited(context.read<UserProfileCubit>().fetchProfile());
+            context.go(AppRoutes.home);
+            context.read<LoginCubit>().reset();
+          }
+        },
+        child: AppScaffold(
+          resizeToAvoidBottomInset: true,
+          body: SafeArea(
+            child: Column(
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        32.vertical,
+                        const LoginHeader(),
+                        24.vertical,
+                        AppTextField(
+                          label: 'البريد الإلكتروني او رقم الهاتف',
+                          controller: _emailOrPhoneCtrl,
+                          hint:
+                              'قم بإدخال بريدك الإلكتروني او رقم الهاتف الخاصة بك',
+                          keyboardType: TextInputType.emailAddress,
+                          textInputAction: TextInputAction.next,
+                          errorMessage: _emailError,
+                          onChanged: (_) => setState(() => _emailError = null),
+                        ),
+                        16.vertical,
+                        AppPasswordField(
+                          label: 'كلمة المرور',
+                          controller: _passwordCtrl,
+                          hint: 'قم بإدخال كلمة المرور الخاصة بك',
+                          textInputAction: TextInputAction.done,
+                          errorMessage: _passwordError,
+                          onChanged: (_) =>
+                              setState(() => _passwordError = null),
+                        ),
+                        10.vertical,
+                        LoginTermsRow(
+                          accepted: _termsAccepted,
+                          onToggle: () =>
+                              setState(() => _termsAccepted = !_termsAccepted),
+                        ),
+                        10.vertical,
+                        _ForgotPasswordLink(
+                          onTap: () {
+                            context.push(AppRoutes.forgotPassword);
+                          },
+                        ),
+                        16.vertical,
+                        const AppDividerLabel(label: 'تسجيل الدخول سريع مع'),
+                        16.vertical,
+                        AppSocialLoginRow(onApple: () {}, onGoogle: () {}),
+                        24.vertical,
+                      ],
                     ),
-                    16.vertical,
-                    AppPasswordField(
-                      label: 'كلمة المرور',
-                      controller: _passwordCtrl,
-                      hint: 'قم بإدخال كلمة المرور الخاصة بك',
-                      textInputAction: TextInputAction.done,
-                      errorMessage: _passwordError,
-                      onChanged: (_) => setState(() => _passwordError = null),
-                    ),
-                    10.vertical,
-                    LoginTermsRow(
-                      accepted: _termsAccepted,
-                      onToggle: () =>
-                          setState(() => _termsAccepted = !_termsAccepted),
-                    ),
-                    10.vertical,
-                    _ForgotPasswordLink(
-                      onTap: () {
-                        context.push(AppRoutes.forgotPassword);
-                      },
-                    ),
-                    16.vertical,
-                    const AppDividerLabel(label: 'تسجيل الدخول سريع مع'),
-                    16.vertical,
-                    AppSocialLoginRow(onApple: () {}, onGoogle: () {}),
-                    24.vertical,
-                  ],
+                  ),
                 ),
-              ),
+                BlocBuilder<LoginCubit, LoginState>(
+                  builder: (context, state) => _BottomSection(
+                    canLogin: _canLogin,
+                    isLoading: state.isLoading,
+                    onLogin: () => _onLoginPressed(context),
+                    onCreateAccount: () {
+                      context.push(AppRoutes.register);
+                    },
+                  ),
+                ),
+              ],
             ),
-            _BottomSection(
-              canLogin: _canLogin,
-              onLogin: _onLoginPressed,
-              onCreateAccount: () {
-                context.push(AppRoutes.register);
-              },
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -145,11 +183,13 @@ final class _ForgotPasswordLink extends StatelessWidget {
 final class _BottomSection extends StatelessWidget {
   const _BottomSection({
     required this.canLogin,
+    required this.isLoading,
     required this.onLogin,
     required this.onCreateAccount,
   });
 
   final bool canLogin;
+  final bool isLoading;
   final VoidCallback onLogin;
   final VoidCallback onCreateAccount;
 
@@ -164,7 +204,8 @@ final class _BottomSection extends StatelessWidget {
           16.vertical,
           AppButton(
             label: 'تسجيل الدخول',
-            onPressed: canLogin ? onLogin : null,
+            isLoading: isLoading,
+            onPressed: canLogin && !isLoading ? onLogin : null,
           ),
         ],
       ),

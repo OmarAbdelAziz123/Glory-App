@@ -15,16 +15,28 @@ final class ErrorInterceptor extends Interceptor {
       DioExceptionType.sendTimeout ||
       DioExceptionType.connectionError =>
         const NetworkException(),
-      DioExceptionType.badResponse => _mapStatusCode(e.response?.statusCode),
+      DioExceptionType.badResponse =>
+        _mapStatusCode(e.response?.statusCode, e.response),
       DioExceptionType.cancel => const ServerException('Request cancelled'),
       _ => ServerException(e.message ?? 'Unexpected error'),
     };
   }
 
-  AppException _mapStatusCode(int? statusCode) => switch (statusCode) {
-        401 => const UnauthorizedException(),
-        int s when s >= 500 => const ServerException('Server error'),
-        int s when s >= 400 => const ServerException('Client error'),
-        _ => const ServerException(),
-      };
+  AppException _mapStatusCode(int? statusCode, Response<dynamic>? response) {
+    final message = _extractMessage(response?.data);
+    return switch (statusCode) {
+      401 => UnauthorizedException(message ?? 'Unauthorized access'),
+      int s when s >= 500 => ServerException(message ?? 'Server error'),
+      int s when s >= 400 => ServerException(message ?? 'Client error'),
+      _ => ServerException(message ?? 'Unexpected error'),
+    };
+  }
+
+  String? _extractMessage(dynamic data) {
+    if (data is Map<String, dynamic>) {
+      final message = data['message'];
+      if (message is String && message.isNotEmpty) return message;
+    }
+    return null;
+  }
 }

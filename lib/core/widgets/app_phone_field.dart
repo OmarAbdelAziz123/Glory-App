@@ -30,11 +30,13 @@ final class AppPhoneField extends StatefulWidget {
   final String? errorMessage;
 
   @override
-  State<AppPhoneField> createState() => _AppPhoneFieldState();
+  State<AppPhoneField> createState() => AppPhoneFieldState();
 }
 
-final class _AppPhoneFieldState extends State<AppPhoneField> {
+final class AppPhoneFieldState extends State<AppPhoneField> {
   CountryCode _selected = arabCountries.first;
+
+  CountryCode get countryCode => _selected;
 
   void _openPicker() {
     showModalBottomSheet<CountryCode>(

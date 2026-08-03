@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/di/service_locator.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../../../core/widgets/app_scaffold.dart';
+import '../cubits/splash_cubit.dart';
 import '../widgets/splash_brand_name.dart';
 import '../widgets/splash_loader.dart';
 import '../widgets/splash_logo.dart';
@@ -28,9 +31,7 @@ final class _SplashScreenState extends State<SplashScreen>
   void initState() {
     super.initState();
     _setupAnimations();
-    _controller
-        .forward()
-        .then((_) => _navigateAfterDelay());
+    WidgetsBinding.instance.addPostFrameCallback((_) => _runSplash());
   }
 
   void _setupAnimations() {
@@ -76,9 +77,20 @@ final class _SplashScreenState extends State<SplashScreen>
     );
   }
 
-  Future<void> _navigateAfterDelay() async {
-    await Future<void>.delayed(const Duration(milliseconds: 900));
-    if (mounted) context.go(AppRoutes.login);
+  Future<void> _runSplash() async {
+    final cubit = context.read<SplashCubit>();
+
+    await Future.wait([
+      _controller.forward(),
+      Future<void>.delayed(const Duration(milliseconds: 900)),
+      cubit.checkSession(),
+    ]);
+
+    if (!mounted) return;
+
+    context.go(
+      cubit.state.isAuthenticated ? AppRoutes.home : AppRoutes.login,
+    );
   }
 
   @override
@@ -120,6 +132,18 @@ final class _SplashScreenState extends State<SplashScreen>
           ],
         ),
       ),
+    );
+  }
+}
+
+final class SplashScreenProvider extends StatelessWidget {
+  const SplashScreenProvider({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => sl<SplashCubit>(),
+      child: const SplashScreen(),
     );
   }
 }

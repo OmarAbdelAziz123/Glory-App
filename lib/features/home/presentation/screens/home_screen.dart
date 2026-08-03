@@ -1,26 +1,30 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:glory_gym/core/router/app_routes.dart';
-import 'package:glory_gym/core/widgets/app_home_header.dart';
-import 'package:glory_gym/core/widgets/app_scaffold.dart';
-import 'package:glory_gym/core/widgets/app_segmented_tab_bar.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:glory_gym/core/core.dart';
+import 'package:glory_gym/core/utils/greeting_utils.dart';
+import 'package:glory_gym/features/auth/presentation/cubits/user_profile/user_profile_cubit.dart';
+import 'package:glory_gym/features/bookings/presentation/cubits/bookings_list/bookings_list_cubit.dart';
+import 'package:glory_gym/features/checkin/presentation/cubits/gym_qr/gym_qr_cubit.dart';
 import 'package:glory_gym/features/home/presentation/widgets/home_tab_contents.dart';
+import 'package:glory_gym/features/notifications/presentation/cubits/notifications_unread/notifications_unread_cubit.dart';
+import 'package:glory_gym/features/workouts/presentation/cubits/workouts_list/workouts_list_cubit.dart';
 import 'package:go_router/go_router.dart';
 
 final class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key, this.onOpenBookingsTab});
+  const HomeScreen({
+    super.key,
+    this.onOpenBookingsTab,
+    this.onOpenWorkoutsTab,
+  });
 
-  /// Switches main bottom nav to the bookings tab (index 1).
   final VoidCallback? onOpenBookingsTab;
+  final VoidCallback? onOpenWorkoutsTab;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 final class _HomeScreenState extends State<HomeScreen> {
-  static const _countdownSeconds = 15;
-
   static const _tabLabels = <String>[
     'تسجيل للجيم',
     'المواعيد',
@@ -29,87 +33,246 @@ final class _HomeScreenState extends State<HomeScreen> {
 
   int _selectedTabIndex = 0;
 
-  String? _qrData;
-  int _secondsLeft = 0;
-  Timer? _timer;
-
-  bool get _hasQr => _qrData != null;
-  bool get _isCountingDown => _secondsLeft > 0;
-
-  void _generateQr() {
-    _timer?.cancel();
-    setState(() {
-      _qrData = 'glory-gym-${DateTime.now().millisecondsSinceEpoch}';
-      _secondsLeft = _countdownSeconds;
-    });
-    _timer = Timer.periodic(const Duration(seconds: 1), (t) {
-      if (!mounted) {
-        t.cancel();
-        return;
-      }
-      setState(() => _secondsLeft--);
-      if (_secondsLeft <= 0) t.cancel();
-    });
-  }
-
   @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
+  Widget build(BuildContext context) {
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => sl<GymQrCubit>()),
+        BlocProvider(
+          create: (_) => sl<BookingsListCubit>()..loadBookings(limit: 2),
+        ),
+        BlocProvider(
+          create: (_) => sl<WorkoutsListCubit>()..loadWorkouts(limit: 1),
+        ),
+      ],
+      child: Builder(
+        builder: (providerContext) {
+          return MultiBlocListener(
+            listeners: [
+              BlocListener<GymQrCubit, GymQrState>(
+                listenWhen: (previous, current) =>
+                    previous.status != current.status &&
+                    current.status == GymQrStatus.consumed,
+                listener: (context, state) {
+                  final days = state.daysRemaining ?? 0;
+                  AppSuccessSheet.show(
+                    context,
+                    title: 'تسجيل للجيم',
+                    headline: 'لقد تم دخول الجيم بنجاح!',
+                    highlightWord: 'بنجاح',
+                    description:
+                        'أهلاً بك في عائلة جلوري جيم! و نود ابلاغك بانه متبقي $days يوم من اشتراكك في الجيم',
+                    buttonLabel: 'الرئيسية',
+                    badgeAsset:
+                        'assets/images/svgs/success_when_create_anew_password_icon.svg',
+                    onButtonPressed: () => Navigator.of(context).pop(),
+                  );
+                },
+              ),
+              BlocListener<BookingsListCubit, BookingsListState>(
+                listenWhen: (previous, current) =>
+                    previous.lastCheckInResult != current.lastCheckInResult &&
+                    current.lastCheckInResult != null,
+                listener: (context, state) {
+                  final result = state.lastCheckInResult;
+                  if (result == null) return;
+
+                  AppSuccessSheet.show(
+                    context,
+                    title: 'تسجيل دخول التدريب',
+                    headline: 'لقد تم دخولك للحصة بنجاح!',
+                    highlightWord: 'بنجاح',
+                    description:
+                        'أهلاً بك في عائلة جلوري جيم! لقد تم تسجيل دخول لحصة (${result.packageNameAr}) '
+                        'مع الكوتش (${result.instructorName}) متبقي معك ${result.remainingSessions} حصص',
+                    buttonLabel: 'الرئيسية',
+                    badgeAsset:
+                        'assets/images/svgs/success_when_create_anew_password_icon.svg',
+                    onButtonPressed: () {
+                      context.read<BookingsListCubit>().clearCheckInResult();
+                      Navigator.of(context).pop();
+                    },
+                  );
+                },
+              ),
+            ],
+            child: _HomeBody(
+              selectedTabIndex: _selectedTabIndex,
+              tabLabels: _tabLabels,
+              onOpenBookingsTab: widget.onOpenBookingsTab,
+              onOpenWorkoutsTab: widget.onOpenWorkoutsTab,
+              onTabSelected: (index) =>
+                  setState(() => _selectedTabIndex = index),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+final class _HomeBody extends StatelessWidget {
+  const _HomeBody({
+    required this.selectedTabIndex,
+    required this.tabLabels,
+    required this.onTabSelected,
+    this.onOpenBookingsTab,
+    this.onOpenWorkoutsTab,
+  });
+
+  final int selectedTabIndex;
+  final List<String> tabLabels;
+  final ValueChanged<int> onTabSelected;
+  final VoidCallback? onOpenBookingsTab;
+  final VoidCallback? onOpenWorkoutsTab;
+
+  Widget _tabContent(BuildContext context) {
+    final profile = context.watch<UserProfileCubit>().state;
+    final qrState = context.watch<GymQrCubit>().state;
+    final bookingsState = context.watch<BookingsListCubit>().state;
+    final locale =
+        BookingUtils.localeFromAppLanguage(profile.member?.appLanguage);
+
+    return switch (selectedTabIndex) {
+      0 => HomeGymRegistrationTabContent(
+          key: const ValueKey('home-tab-qr'),
+          hasQr: qrState.hasActiveQr,
+          qrData: qrState.qrToken,
+          secondsLeft: qrState.secondsLeft,
+          isGenerating: qrState.isGenerating,
+          canRegenerate: qrState.canRegenerate,
+          onGenerateQr: () => context.read<GymQrCubit>().generateQr(),
+        ),
+      1 => SingleChildScrollView(
+          key: const ValueKey('home-tab-appointments'),
+          child: HomeAppointmentsTabContent(
+            bookings: bookingsState.bookings,
+            locale: locale,
+            isLoading: bookingsState.isLoading,
+            onViewAll: onOpenBookingsTab,
+            onCheckIn: (id) =>
+                context.read<BookingsListCubit>().checkInBooking(id),
+            onCancel: (id) => _confirmCancel(context, id),
+            onEvaluate: (id) => context.push(
+              AppRoutes.classEvaluation,
+              extra: id,
+            ),
+          ),
+        ),
+      _ => SingleChildScrollView(
+          key: const ValueKey('home-tab-classes'),
+          child: HomeGroupClassesTabContent(
+            onViewAll: onOpenWorkoutsTab,
+          ),
+        ),
+    };
   }
 
   @override
   Widget build(BuildContext context) {
+    final profile = context.watch<UserProfileCubit>().state;
+    final unreadCount = context.watch<NotificationsUnreadCubit>().state.count;
+
     return AppScaffold(
-      appBar: AppHomeHeader(
-        username: 'احمد حسام',
-        greeting: 'صباح الخير',
-        notificationCount: 3,
-        avatarAsset: 'assets/images/pngs/profile_image.png',
-        onNotificationTap: () => context.push(AppRoutes.notifications),
-      ),
-      body: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.all(18),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              AppSegmentedTabBar(
-                tabs: _tabLabels,
-                selectedIndex: _selectedTabIndex,
-                onSelected: (i) => setState(() => _selectedTabIndex = i),
-              ),
-              const SizedBox(height: 24),
-              Expanded(
-                child: IndexedStack(
-                  index: _selectedTabIndex,
-                  sizing: StackFit.expand,
-                  children: [
-                    HomeGymRegistrationTabContent(
-                      hasQr: _hasQr,
-                      qrData: _qrData,
-                      secondsLeft: _secondsLeft,
-                      isCountingDown: _isCountingDown,
-                      onGenerateQr: _generateQr,
-                    ),
-                    SingleChildScrollView(
-                      child: HomeAppointmentsTabContent(
-                        onViewAll: widget.onOpenBookingsTab,
-                      ),
-                    ),
-                    SingleChildScrollView(
-                      child: HomeGroupClassesTabContent(
-                        onViewAll: () {},
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          AppHomeHeader(
+            username: profile.displayName,
+            greeting: GreetingUtils.greeting(),
+            notificationCount: unreadCount,
+            avatarUrl: profile.member?.avatarUrl,
+            onNotificationTap: () async {
+              await context.push(AppRoutes.notifications);
+              if (context.mounted) {
+                context.read<NotificationsUnreadCubit>().fetchUnreadCount();
+              }
+            },
           ),
-        ),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(18, 8, 18, 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  AppEntrance(
+                    delay: const Duration(milliseconds: 120),
+                    offset: const Offset(0, 0.05),
+                    child: AppSegmentedTabBar(
+                      tabs: tabLabels,
+                      selectedIndex: selectedTabIndex,
+                      onSelected: onTabSelected,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Expanded(
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 320),
+                      switchInCurve: Curves.easeOutCubic,
+                      switchOutCurve: Curves.easeInCubic,
+                      layoutBuilder: (currentChild, previousChildren) {
+                        return Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            for (final child in previousChildren)
+                              Positioned.fill(child: child),
+                            if (currentChild != null)
+                              Positioned.fill(child: currentChild),
+                          ],
+                        );
+                      },
+                      transitionBuilder: (child, animation) {
+                        final slide = Tween<Offset>(
+                          begin: const Offset(0, 0.04),
+                          end: Offset.zero,
+                        ).animate(animation);
+                        return FadeTransition(
+                          opacity: animation,
+                          child: SlideTransition(
+                            position: slide,
+                            child: child,
+                          ),
+                        );
+                      },
+                      child: _tabContent(context),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
+  }
+
+  Future<void> _confirmCancel(BuildContext context, String bookingId) async {
+    final shouldCancel = await AppConfirmDialog.show(
+      context,
+      title: 'الغاء الحصة',
+      message: 'هل أنت متأكد أنك تريد الغاء هذه الحصة؟',
+      confirmLabel: 'الغاء الحصة',
+    );
+
+    if (shouldCancel != true || !context.mounted) return;
+
+    final success =
+        await context.read<BookingsListCubit>().cancelBooking(bookingId);
+
+    if (!context.mounted) return;
+
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('تم الغاء الحصة بنجاح')),
+      );
+      return;
+    }
+
+    final error = context.read<BookingsListCubit>().state.errorMessage;
+    if (error != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error)),
+      );
+    }
   }
 }

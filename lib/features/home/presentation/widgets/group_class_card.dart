@@ -15,6 +15,8 @@ final class GroupClassItem {
     required this.classType,
     required this.time,
     this.startDate,
+    this.issuedBy,
+    this.thumbnailUrl,
     this.status = GroupClassStatus.upcoming,
   });
 
@@ -23,6 +25,8 @@ final class GroupClassItem {
   final String classType;
   final String time;
   final String? startDate;
+  final String? issuedBy;
+  final String? thumbnailUrl;
   final GroupClassStatus status;
 }
 
@@ -53,6 +57,7 @@ final class GroupClassCard extends StatelessWidget {
         children: [
           _ClassImageHeader(
             imageAsset: item.imageAsset,
+            thumbnailUrl: item.thumbnailUrl,
             showPlayButton: showPlayButton,
           ),
           Padding(
@@ -67,6 +72,7 @@ final class GroupClassCard extends StatelessWidget {
                   time: item.time,
                   classType: item.classType,
                   startDate: item.startDate,
+                  issuedBy: item.issuedBy,
                 ),
                 if (onEvaluate != null) ...[
                   const SizedBox(height: 12),
@@ -90,10 +96,12 @@ final class GroupClassCard extends StatelessWidget {
 final class _ClassImageHeader extends StatelessWidget {
   const _ClassImageHeader({
     required this.imageAsset,
+    this.thumbnailUrl,
     this.showPlayButton = true,
   });
 
   final String imageAsset;
+  final String? thumbnailUrl;
   final bool showPlayButton;
 
   @override
@@ -104,7 +112,15 @@ final class _ClassImageHeader extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          Image.asset(imageAsset, fit: BoxFit.cover),
+          if (thumbnailUrl != null && thumbnailUrl!.isNotEmpty)
+            Image.network(
+              thumbnailUrl!,
+              fit: BoxFit.cover,
+              errorBuilder: (_, _, _) =>
+                  Image.asset(imageAsset, fit: BoxFit.cover),
+            )
+          else
+            Image.asset(imageAsset, fit: BoxFit.cover),
           if (showPlayButton) const Center(child: _PlayButton()),
         ],
       ),
@@ -182,24 +198,30 @@ final class _DetailsRow extends StatelessWidget {
     required this.time,
     required this.classType,
     this.startDate,
+    this.issuedBy,
   });
 
   final String time;
   final String classType;
   final String? startDate;
+  final String? issuedBy;
 
   @override
   Widget build(BuildContext context) {
+    final thirdLabel =
+        issuedBy != null ? 'اصدرت بواسطة' : 'تاريخ البداية';
+    final thirdValue = issuedBy ?? startDate;
+
     return IntrinsicHeight(
       child: Row(
         children: [
           Expanded(child: _DetailColumn(label: 'الوقت', value: time)),
           const VerticalDivider(width: 1, color: AppColors.neutral200),
           Expanded(child: _DetailColumn(label: 'نوع التمرين', value: classType)),
-          if (startDate != null) ...[
+          if (thirdValue != null) ...[
             const VerticalDivider(width: 1, color: AppColors.neutral200),
             Expanded(
-              child: _DetailColumn(label: 'تاريخ البداية', value: startDate!),
+              child: _DetailColumn(label: thirdLabel, value: thirdValue),
             ),
           ],
         ],

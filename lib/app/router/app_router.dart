@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/models/content_args.dart';
 import '../../core/models/otp_args.dart';
 import '../../core/router/app_routes.dart';
 import '../../features/about/presentation/screens/about_screen.dart';
@@ -15,16 +16,16 @@ import '../../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/otp_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
+import '../../features/subscription_questionnaire/presentation/screens/questionnaire_screen.dart';
 import '../../features/body_composition/presentation/screens/body_composition_screen.dart';
 import '../../features/body_composition/presentation/screens/size_measurements_screen.dart';
 import '../../features/bookings/presentation/screens/bookings_screen.dart';
+import '../../features/family/domain/entities/family_member_entity.dart';
 import '../../features/family/presentation/screens/add_family_member_screen.dart';
 import '../../features/family/presentation/screens/family_screen.dart';
 import '../../features/glory_ai/presentation/screens/glory_ai_screen.dart';
 import '../../features/home/presentation/screens/main_layout.dart';
 import '../../features/notifications/presentation/screens/notifications_screen.dart';
-import '../../features/profile/presentation/screens/edit_email_screen.dart';
-import '../../features/profile/presentation/screens/edit_profile_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../../features/splash/presentation/screens/splash_screen.dart';
@@ -49,7 +50,7 @@ final class AppRouter {
     GoRoute(
       path: AppRoutes.splash,
       name: 'splash',
-      builder: (_, _) => const SplashScreen(),
+      builder: (_, _) => const SplashScreenProvider(),
     ),
 
     // ── Auth ─────────────────────────────────────────────
@@ -72,14 +73,18 @@ final class AppRouter {
       path: AppRoutes.createPassword,
       name: 'createPassword',
       builder: (_, state) => CreatePasswordScreen(
-        mode: state.extra as CreatePasswordMode? ??
-            CreatePasswordMode.forgotPassword,
+        args: state.extra as CreatePasswordArgs?,
       ),
     ),
     GoRoute(
       path: AppRoutes.forgotPassword,
       name: 'forgotPassword',
       builder: (_, _) => const ForgotPasswordScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.subscriptionQuestionnaire,
+      name: 'subscriptionQuestionnaire',
+      builder: (_, _) => const QuestionnaireScreen(),
     ),
 
     // ── Main tabs ────────────────────────────────────────
@@ -117,22 +122,19 @@ final class AppRouter {
         id: state.pathParameters['id']!,
       ),
     ),
+    GoRoute(
+      path: AppRoutes.addWeight,
+      name: 'addWeight',
+      builder: (_, state) => AddWeightScreen(
+        assignmentId: state.pathParameters['id']!,
+      ),
+    ),
 
     // ── Profile ───────────────────────────────────────────
     GoRoute(
       path: AppRoutes.profile,
       name: 'profile',
       builder: (_, _) => const ProfileScreen(),
-    ),
-    GoRoute(
-      path: AppRoutes.editProfile,
-      name: 'editProfile',
-      builder: (_, _) => const EditProfileScreen(),
-    ),
-    GoRoute(
-      path: AppRoutes.editEmail,
-      name: 'editEmail',
-      builder: (_, _) => const EditEmailScreen(),
     ),
 
     // ── Body Composition ──────────────────────────────────
@@ -163,7 +165,9 @@ final class AppRouter {
     GoRoute(
       path: AppRoutes.addFamilyMember,
       name: 'addFamilyMember',
-      builder: (_, _) => const AddFamilyMemberScreen(),
+      builder: (_, state) => AddFamilyMemberScreen(
+        member: state.extra as FamilyMemberEntity?,
+      ),
     ),
 
     // ── Notifications ─────────────────────────────────────
@@ -182,7 +186,9 @@ final class AppRouter {
     GoRoute(
       path: AppRoutes.whoWeAre,
       name: 'whoWeAre',
-      builder: (_, _) => const WhoWeAreScreen(),
+      builder: (_, state) => WhoWeAreScreen(
+        args: state.extra as WhoWeAreArgs?,
+      ),
     ),
     GoRoute(
       path: AppRoutes.simpleContent,
@@ -206,14 +212,10 @@ final class AppRouter {
     GoRoute(
       path: AppRoutes.classEvaluation,
       name: 'classEvaluation',
-      builder: (_, _) => const ClassEvaluationScreen(),
+      builder: (_, state) => ClassEvaluationScreen(
+        bookingId: state.extra as String? ?? '',
+      ),
     ),
 
-    // ── Add Weight ────────────────────────────────────────
-    GoRoute(
-      path: AppRoutes.addWeight,
-      name: 'addWeight',
-      builder: (_, _) => const AddWeightScreen(),
-    ),
   ];
 }

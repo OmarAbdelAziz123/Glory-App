@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 
+import '../../network/endpoints.dart';
 import '../../storage/secure_storage.dart';
 import '../../storage/storage_keys.dart';
 
@@ -14,7 +15,7 @@ final class AuthInterceptor extends Interceptor {
     RequestInterceptorHandler handler,
   ) async {
     final token = await _secureStorage.read(StorageKeys.accessToken);
-    if (token != null) {
+    if (token != null && token.isNotEmpty) {
       options.headers['Authorization'] = 'Bearer $token';
     }
     handler.next(options);
@@ -35,29 +36,46 @@ final class AuthInterceptor extends Interceptor {
     handler.next(err);
   }
 
-  // Returns a resolved response if refresh succeeds, null otherwise.
   Future<Response<dynamic>?> _tryRefreshToken(RequestOptions original) async {
     final refreshToken = await _secureStorage.read(StorageKeys.refreshToken);
-    if (refreshToken == null) return null;
+    if (refreshToken == null || refreshToken.isEmpty) return null;
 
     try {
-      final dio = Dio();
-      // TODO: replace with Endpoints.refreshToken when wiring features
-      final response = await dio.post<dynamic>(
-        '/auth/refresh',
-        data: {'refresh_token': refreshToken},
+      final dio = Dio(
+        BaseOptions(
+          baseUrl: Endpoints.baseUrl,
+          headers: const {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+        ),
       );
 
-      final newToken = response.data['access_token'] as String?;
-      if (newToken == null) return null;
+      final response = await dio.post<Map<String, dynamic>>(
+        Endpoints.refreshToken,
+        data: {'refreshToken': refreshToken},
+      );
 
-      await _secureStorage.write(StorageKeys.accessToken, newToken);
+      final body = response.data;
+      if (body == null || body['success'] != true) return null;
 
-      // Retry the original request with the new token.
-      original.headers['Authorization'] = 'Bearer $newToken';
+      final data = body['data'] as Map<String, dynamic>?;
+      final newAccessToken = data?['accessToken'] as String?;
+      final newRefreshToken = data?['refreshToken'] as String?;
+
+      if (newAccessToken == null || newAccessToken.isEmpty) return null;
+
+      await _secureStorage.write(StorageKeys.accessToken, newAccessToken);
+      if (newRefreshToken != null && newRefreshToken.isNotEmpty) {
+        await _secureStorage.write(StorageKeys.refreshToken, newRefreshToken);
+      }
+
+      original.headers['Authorization'] = 'Bearer $newAccessToken';
       return dio.fetch<dynamic>(original);
     } catch (_) {
-      await _secureStorage.deleteAll();
+      await _secureStorage.delete(StorageKeys.accessToken);
+      await _secureStorage.delete(StorageKeys.refreshToken);
+      await _secureStorage.delete(StorageKeys.userId);
       return null;
     }
   }

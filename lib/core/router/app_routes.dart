@@ -7,6 +7,7 @@ abstract final class AppRoutes {
   static const String otp = '/otp';
   static const String createPassword = '/create-password';
   static const String forgotPassword = '/forgot-password';
+  static const String subscriptionQuestionnaire = '/subscription-questionnaire';
 
   // ── Main (Shell) ──────────────────────────────────────
   static const String home = '/home';
@@ -17,11 +18,10 @@ abstract final class AppRoutes {
 
   // ── Workouts ─────────────────────────────────────────
   static const String workoutDetail = '/workouts/:id';
+  static const String addWeight = '/workouts/:id/add-weight';
 
   // ── Profile ───────────────────────────────────────────
   static const String profile = '/profile';
-  static const String editProfile = '/profile/edit';
-  static const String editEmail = '/profile/edit-email';
 
   // ── Body Composition ──────────────────────────────────
   static const String bodyComposition = '/body-composition';
@@ -46,7 +46,4 @@ abstract final class AppRoutes {
 
   // ── Class Evaluation ──────────────────────────────────
   static const String classEvaluation = '/class-evaluation';
-
-  // ── Add Weight ────────────────────────────────────────
-  static const String addWeight = '/add-weight';
 }

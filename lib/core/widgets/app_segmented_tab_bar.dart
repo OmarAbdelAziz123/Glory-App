@@ -69,27 +69,30 @@ final class _SegmentedTabButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final radius = BorderRadius.circular(_radius);
-    final labelStyle = context.subtitleMedium.copyWith(
-      color: selected ? AppColors.white : AppColors.neutral600,
-    );
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
         borderRadius: radius,
-        child: Ink(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
+          padding: _padding,
           decoration: BoxDecoration(
             color: selected ? AppColors.primary : AppColors.white,
             borderRadius: radius,
             border: selected ? null : Border.all(color: AppColors.neutral200),
           ),
-          child: Padding(
-            padding: _padding,
-            child: Center(
+          child: Center(
+            child: AnimatedDefaultTextStyle(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeOut,
+              style: context.subtitleMedium.copyWith(
+                color: selected ? AppColors.white : AppColors.neutral600,
+              ),
               child: Text(
                 label,
-                style: labelStyle,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,

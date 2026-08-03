@@ -30,7 +30,7 @@ final class AppBottomNavBar extends StatelessWidget {
     (
       tab: AppNavTab.gloryAi,
       icon: 'assets/images/svgs/ai_icon.svg',
-      label: 'جلوري AI',
+      label: 'ساندي AI',
     ),
     (
       tab: AppNavTab.workouts,
@@ -69,21 +69,32 @@ final class AppBottomNavBar extends StatelessWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      SvgPicture.asset(
-                        t.icon,
-                        width: 24,
-                        height: 24,
-                        colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+                      AnimatedScale(
+                        scale: active ? 1.12 : 1.0,
+                        duration: const Duration(milliseconds: 220),
+                        curve: Curves.easeOutBack,
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 180),
+                          child: SvgPicture.asset(
+                            t.icon,
+                            key: ValueKey('${t.tab}-$active'),
+                            width: 24,
+                            height: 24,
+                            colorFilter:
+                                ColorFilter.mode(color, BlendMode.srcIn),
+                          ),
+                        ),
                       ),
                       const SizedBox(height: 4),
-                      Text(
-                        t.label,
+                      AnimatedDefaultTextStyle(
+                        duration: const Duration(milliseconds: 200),
+                        curve: Curves.easeOut,
                         style: Styles.footnoteRegular(context).copyWith(
                           color: color,
-                          fontWeight: active
-                              ? FontWeight.w600
-                              : FontWeight.w400,
+                          fontWeight:
+                              active ? FontWeight.w600 : FontWeight.w400,
                         ),
+                        child: Text(t.label),
                       ),
                     ],
                   ),
