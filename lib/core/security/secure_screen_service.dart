@@ -8,7 +8,7 @@ import 'package:screen_protector/screen_protector.dart';
 final class SecureScreenService {
   SecureScreenService._();
 
-  static const _channel = MethodChannel('com.app.glory_gym/secure_screen');
+  static const _channel = MethodChannel('com.app.glorygym/secure_screen');
 
   static int _activeScopes = 0;
 

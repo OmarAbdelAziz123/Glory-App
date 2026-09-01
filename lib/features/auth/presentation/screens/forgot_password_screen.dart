@@ -12,6 +12,7 @@ import '../../../../core/utils/app_validators.dart';
 import '../../../../core/widgets/widgets.dart';
 import '../cubits/forgot_password/forgot_password_cubit.dart';
 import '../widgets/forgot_password_header.dart';
+import 'package:glory_gym/core/l10n/l10n.dart';
 
 final class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -27,7 +28,8 @@ final class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   bool get _canSubmit => _emailOrPhoneCtrl.text.isNotEmpty;
 
   void _onOtpPressed(BuildContext context) {
-    final error = AppValidators.emailOrPhone(_emailOrPhoneCtrl.text);
+    final error =
+        AppValidators.emailOrPhone(context.l10n, _emailOrPhoneCtrl.text);
     setState(() => _emailError = error);
     if (error != null) return;
 
@@ -88,10 +90,10 @@ final class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         const ForgotPasswordHeader(),
                         32.vertical,
                         AppTextField(
-                          label: 'البريد الإلكتروني او رقم الهاتف',
+                          label: context.l10n.emailOrPhone,
                           controller: _emailOrPhoneCtrl,
                           hint:
-                              'قم بإدخال بريدك الإلكتروني او رقم الهاتف الخاصة بك',
+                              context.l10n.enterYourEmailOrPhone,
                           keyboardType: TextInputType.emailAddress,
                           textInputAction: TextInputAction.done,
                           errorMessage: _emailError,
@@ -145,7 +147,7 @@ final class _BottomSection extends StatelessWidget {
           _CreateAccountRow(onTap: onCreateAccount),
           16.vertical,
           AppButton(
-            label: 'طلب OTP',
+            label: context.l10n.requestOtp,
             isLoading: isLoading,
             onPressed: canSubmit && !isLoading ? onOtp : null,
           ),
@@ -166,14 +168,14 @@ final class _CreateAccountRow extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
-          'ليس لديك حساب ؟',
+          context.l10n.dontHaveAccountPrefix,
           style: context.captionRegular.copyWith(color: AppColors.neutral400),
         ),
         4.horizontal,
         GestureDetector(
           onTap: onTap,
           child: Text(
-            'إنشاء حساب',
+            context.l10n.register,
             style: context.subtitleMedium.copyWith(
               color: AppColors.primary,
               decoration: TextDecoration.underline,

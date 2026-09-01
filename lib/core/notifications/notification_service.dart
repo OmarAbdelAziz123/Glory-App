@@ -1,6 +1,8 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 
+import '../l10n/fallback_messages.dart';
+
 abstract interface class INotificationService {
   Future<void> initialize();
   Future<bool> requestPermission();
@@ -27,24 +29,24 @@ abstract interface class INotificationService {
 final class NotificationService implements INotificationService {
   NotificationService(this._plugin);
 
+  static const channelId = 'glory_gym_channel';
+
   final FlutterLocalNotificationsPlugin _plugin;
 
-  static const _androidDetails = AndroidNotificationDetails(
-    'glory_gym_channel',
-    'Glory Gym',
-    channelDescription: 'Glory Gym notifications',
-    importance: Importance.high,
-    priority: Priority.high,
-  );
-
-  static const _details = NotificationDetails(
-    android: _androidDetails,
-    iOS: DarwinNotificationDetails(
-      presentAlert: true,
-      presentBadge: true,
-      presentSound: true,
-    ),
-  );
+  NotificationDetails get _details => NotificationDetails(
+        android: AndroidNotificationDetails(
+          channelId,
+          FallbackMessages.appName,
+          channelDescription: FallbackMessages.notificationsChannelDescription,
+          importance: Importance.high,
+          priority: Priority.high,
+        ),
+        iOS: const DarwinNotificationDetails(
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+        ),
+      );
 
   @override
   Future<void> initialize() async {
@@ -52,6 +54,18 @@ final class NotificationService implements INotificationService {
     const iosInit = DarwinInitializationSettings();
     await _plugin.initialize(
       settings: const InitializationSettings(android: androidInit, iOS: iosInit),
+    );
+
+    final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
+
+    await androidPlugin?.createNotificationChannel(
+      AndroidNotificationChannel(
+        channelId,
+        FallbackMessages.appName,
+        description: FallbackMessages.notificationsChannelDescription,
+        importance: Importance.high,
+      ),
     );
   }
 

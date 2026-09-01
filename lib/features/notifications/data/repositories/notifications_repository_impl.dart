@@ -1,4 +1,5 @@
 import '../../../../core/error/app_failure.dart';
+import '../../../../core/l10n/fallback_messages.dart';
 import '../../../../core/result/result.dart';
 import '../../domain/entities/notification_entity.dart';
 import '../../domain/repositories/notifications_repository.dart';
@@ -47,7 +48,7 @@ final class NotificationsRepositoryImpl implements NotificationsRepository {
   Result<NotificationsPageEntity> _mapPage(NotificationsApiResponse data) {
     final pageEntity = data.toPageEntity();
     if (pageEntity == null) {
-      return const Failure(ServerFailure('حدث خطأ، حاول مرة أخرى'));
+      return Failure(ServerFailure(FallbackMessages.errorTryAgain));
     }
     return Success(pageEntity);
   }

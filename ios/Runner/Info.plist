@@ -71,7 +71,7 @@
 		<string>remote-notification</string>
 	</array>
 	<key>NSCameraUsageDescription</key>
-	<string>We need camera access to take photos for your profile and gym records.</string>
+	<string>We need camera access to scan QR codes for gym check-in and to take photos for your profile.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>We need microphone access when you record video.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

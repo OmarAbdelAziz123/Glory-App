@@ -37,6 +37,11 @@ final class _FakeCheckinRepository implements CheckinRepository {
     statusCallCount++;
     return statusResults[index];
   }
+
+  @override
+  Future<Result<QrStatusEntity>> scanQr(String token) async {
+    return Success(QrStatusModel.fromJson(qrStatusConsumedJson).toEntity());
+  }
 }
 
 void main() {

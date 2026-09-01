@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 
+import '../../network/auth_token_events.dart';
 import '../../network/endpoints.dart';
 import '../../storage/secure_storage.dart';
 import '../../storage/storage_keys.dart';
@@ -69,6 +70,8 @@ final class AuthInterceptor extends Interceptor {
       if (newRefreshToken != null && newRefreshToken.isNotEmpty) {
         await _secureStorage.write(StorageKeys.refreshToken, newRefreshToken);
       }
+
+      AuthTokenEvents.notifyRefreshed();
 
       original.headers['Authorization'] = 'Bearer $newAccessToken';
       return dio.fetch<dynamic>(original);

@@ -1,6 +1,10 @@
+import 'dart:async';
+
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:glory_gym/l10n/app_localizations.dart';
 
+import '../../../../../core/l10n/locale_service.dart';
 import '../../../../../core/utils/profile_utils.dart';
 import '../../../domain/entities/member_entity.dart';
 import '../../../domain/repositories/auth_repository.dart';
@@ -18,12 +22,15 @@ final class UserProfileCubit extends Cubit<UserProfileState> {
     final result = await _repository.getProfile();
 
     result.fold(
-      onSuccess: (member) => emit(
-        state.copyWith(
-          status: UserProfileStatus.loaded,
-          member: member,
-        ),
-      ),
+      onSuccess: (member) {
+        unawaited(LocaleService.syncFromMember(member));
+        emit(
+          state.copyWith(
+            status: UserProfileStatus.loaded,
+            member: member,
+          ),
+        );
+      },
       onFailure: (failure) => emit(
         state.copyWith(
           status: UserProfileStatus.failure,

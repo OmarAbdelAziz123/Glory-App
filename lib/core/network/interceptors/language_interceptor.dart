@@ -13,7 +13,7 @@ final class LanguageInterceptor extends Interceptor {
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
-    final language = await _localStorage.getString(StorageKeys.language) ?? 'en';
+    final language = await _localStorage.getString(StorageKeys.language) ?? 'ar';
     options.headers['Accept-Language'] = language;
     handler.next(options);
   }

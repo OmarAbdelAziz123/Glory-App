@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/di/service_locator.dart';
+import '../../../../core/models/questionnaire_args.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/widgets.dart';
+import '../../../onboarding/domain/repositories/onboarding_repository.dart';
 import '../cubits/questionnaire/questionnaire_cubit.dart';
 import '../widgets/questionnaire_header.dart';
 import '../widgets/steps/activity_step.dart';
@@ -15,21 +18,27 @@ import '../widgets/steps/medical_history_step.dart';
 import '../widgets/steps/nutrition_step.dart';
 import '../widgets/steps/personal_data_step.dart';
 import '../widgets/steps/training_step.dart';
+import '../../../../core/l10n/l10n_extension.dart';
+import '../../../../core/utils/onboarding_navigation.dart';
 
 final class QuestionnaireScreen extends StatelessWidget {
-  const QuestionnaireScreen({super.key});
+  const QuestionnaireScreen({super.key, this.args});
+
+  final QuestionnaireScreenArgs? args;
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => QuestionnaireCubit(),
-      child: const _QuestionnaireView(),
+      create: (_) => QuestionnaireCubit()..applyPrefill(args?.prefill),
+      child: _QuestionnaireView(completeToHome: args?.completeToHome ?? false),
     );
   }
 }
 
 final class _QuestionnaireView extends StatefulWidget {
-  const _QuestionnaireView();
+  const _QuestionnaireView({required this.completeToHome});
+
+  final bool completeToHome;
 
   @override
   State<_QuestionnaireView> createState() => _QuestionnaireViewState();
@@ -37,14 +46,13 @@ final class _QuestionnaireView extends StatefulWidget {
 
 final class _QuestionnaireViewState extends State<_QuestionnaireView> {
   final _pageController = PageController();
+  final _phoneFieldKey = GlobalKey<AppPhoneFieldState>();
 
   final _fullNameCtrl = TextEditingController();
   final _ageCtrl = TextEditingController();
   final _professionCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
   final _otherGoalCtrl = TextEditingController();
-  final _chronicCtrl = TextEditingController();
-  final _medicationsCtrl = TextEditingController();
   final _injuriesCtrl = TextEditingController();
   final _surgeryCtrl = TextEditingController();
   final _exerciseDaysCtrl = TextEditingController();
@@ -52,7 +60,6 @@ final class _QuestionnaireViewState extends State<_QuestionnaireView> {
   final _exerciseDurationCtrl = TextEditingController();
   final _mealsCtrl = TextEditingController();
   final _waterCtrl = TextEditingController();
-  final _supplementsCtrl = TextEditingController();
   final _sleepCtrl = TextEditingController();
   final _bodyFatCtrl = TextEditingController();
   final _waistCtrl = TextEditingController();
@@ -63,6 +70,19 @@ final class _QuestionnaireViewState extends State<_QuestionnaireView> {
   final _trainerCtrl = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _syncPrefillToControllers());
+  }
+
+  void _syncPrefillToControllers() {
+    final state = context.read<QuestionnaireCubit>().state;
+    _fullNameCtrl.text = state.fullName;
+    _phoneCtrl.text = state.phone;
+    _phoneFieldKey.currentState?.setDialCode(state.phoneCountryCode);
+  }
+
+  @override
   void dispose() {
     _pageController.dispose();
     _fullNameCtrl.dispose();
@@ -70,8 +90,6 @@ final class _QuestionnaireViewState extends State<_QuestionnaireView> {
     _professionCtrl.dispose();
     _phoneCtrl.dispose();
     _otherGoalCtrl.dispose();
-    _chronicCtrl.dispose();
-    _medicationsCtrl.dispose();
     _injuriesCtrl.dispose();
     _surgeryCtrl.dispose();
     _exerciseDaysCtrl.dispose();
@@ -79,7 +97,6 @@ final class _QuestionnaireViewState extends State<_QuestionnaireView> {
     _exerciseDurationCtrl.dispose();
     _mealsCtrl.dispose();
     _waterCtrl.dispose();
-    _supplementsCtrl.dispose();
     _sleepCtrl.dispose();
     _bodyFatCtrl.dispose();
     _waistCtrl.dispose();
@@ -91,7 +108,16 @@ final class _QuestionnaireViewState extends State<_QuestionnaireView> {
     super.dispose();
   }
 
+  void _syncPhoneCountryCode(QuestionnaireCubit cubit) {
+    final code = _phoneFieldKey.currentState?.countryCode.dialCode;
+    if (code != null) {
+      cubit.updatePhoneCountryCode(code);
+    }
+  }
+
   void _onBack(BuildContext context, QuestionnaireState state) {
+    if (state.isSubmitting) return;
+
     if (state.step > 0) {
       context.read<QuestionnaireCubit>().previousStep();
       _pageController.previousPage(
@@ -100,20 +126,45 @@ final class _QuestionnaireViewState extends State<_QuestionnaireView> {
       );
       return;
     }
-    Navigator.of(context).maybePop();
+
+    if (!widget.completeToHome) {
+      Navigator.of(context).maybePop();
+    }
   }
 
-  void _onNext(BuildContext context, QuestionnaireState state) {
+  Future<void> _onNext(BuildContext context, QuestionnaireState state) async {
     final cubit = context.read<QuestionnaireCubit>();
-    if (!state.canProceed) return;
+    if (!state.canProceed || state.isSubmitting) return;
+
+    _syncPhoneCountryCode(cubit);
 
     if (state.isLastStep) {
-      cubit.nextStep();
+      if (widget.completeToHome) {
+        final success = await cubit.submitOnboarding(sl<OnboardingRepository>());
+        if (!context.mounted) return;
+
+        if (success) {
+          await markOnboardingCompletedLocally();
+          if (!context.mounted) return;
+          _showSuccess(context);
+          return;
+        }
+
+        final error = cubit.state.errorMessage;
+        if (error != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(error)),
+          );
+        }
+        return;
+      }
+
+      cubit.markSubmittedLocally();
       return;
     }
 
     cubit.nextStep();
-    _pageController.nextPage(
+    await _pageController.nextPage(
       duration: const Duration(milliseconds: 280),
       curve: Curves.easeOutCubic,
     );
@@ -122,16 +173,19 @@ final class _QuestionnaireViewState extends State<_QuestionnaireView> {
   void _showSuccess(BuildContext context) {
     AppSuccessSheet.show(
       context,
-      title: 'استبيان الاشتراك',
-      headline: 'تم إرسال الاستبيان',
-      highlightWord: 'تم إرسال الاستبيان_none',
-      description:
-          'شكراً لك. سيقوم المدرب بمراجعة بياناتك وإعداد خطة التدريب والتغذية المناسبة لك.',
-      buttonLabel: 'الرئيسية',
+      title: widget.completeToHome ? context.l10n.personalData : context.l10n.subscriptionQuestionnaire,
+      headline: widget.completeToHome
+          ? context.l10n.dataSavedSuccess
+          : context.l10n.questionnaireSent,
+      highlightWord: widget.completeToHome ? context.l10n.successfully : context.l10n.questionnaireSent,
+      description: widget.completeToHome
+          ? context.l10n.onboardingTeamReviewMessage
+          : context.l10n.onboardingCoachReviewMessage,
+      buttonLabel: context.l10n.home,
       badgeAsset: 'assets/images/svgs/questionnaire_success_badge.svg',
       onButtonPressed: () {
         Navigator.of(context).pop();
-        context.go(AppRoutes.login);
+        context.go(AppRoutes.home);
       },
     );
   }
@@ -140,13 +194,14 @@ final class _QuestionnaireViewState extends State<_QuestionnaireView> {
   Widget build(BuildContext context) {
     return BlocListener<QuestionnaireCubit, QuestionnaireState>(
       listenWhen: (prev, curr) =>
+          !widget.completeToHome &&
           prev.status != curr.status &&
           curr.status == QuestionnaireStatus.submitted,
       listener: (context, state) => _showSuccess(context),
       child: BlocBuilder<QuestionnaireCubit, QuestionnaireState>(
         builder: (context, state) {
           return PopScope(
-            canPop: state.step == 0,
+            canPop: !widget.completeToHome && state.step == 0,
             onPopInvokedWithResult: (didPop, _) {
               if (!didPop) _onBack(context, state);
             },
@@ -156,7 +211,10 @@ final class _QuestionnaireViewState extends State<_QuestionnaireView> {
               appBar: QuestionnaireHeader(
                 currentStep: state.step,
                 totalSteps: QuestionnaireState.totalSteps,
-                onBack: () => _onBack(context, state),
+                title: widget.completeToHome ? context.l10n.personalData : context.l10n.subscriptionQuestionnaire,
+                onBack: widget.completeToHome && state.step == 0
+                    ? null
+                    : () => _onBack(context, state),
               ),
               body: Column(
                 children: [
@@ -171,15 +229,11 @@ final class _QuestionnaireViewState extends State<_QuestionnaireView> {
                             ageCtrl: _ageCtrl,
                             professionCtrl: _professionCtrl,
                             phoneCtrl: _phoneCtrl,
+                            phoneFieldKey: _phoneFieldKey,
                           ),
                         ),
                         _StepScroll(
-                          child: GoalsStep(otherGoalCtrl: _otherGoalCtrl),
-                        ),
-                        _StepScroll(
                           child: MedicalHistoryStep(
-                            chronicCtrl: _chronicCtrl,
-                            medicationsCtrl: _medicationsCtrl,
                             injuriesCtrl: _injuriesCtrl,
                             surgeryCtrl: _surgeryCtrl,
                           ),
@@ -195,12 +249,9 @@ final class _QuestionnaireViewState extends State<_QuestionnaireView> {
                           child: NutritionStep(
                             mealsCtrl: _mealsCtrl,
                             waterCtrl: _waterCtrl,
-                            supplementsCtrl: _supplementsCtrl,
                           ),
                         ),
-                        _StepScroll(
-                          child: LifestyleStep(sleepCtrl: _sleepCtrl),
-                        ),
+                        _StepScroll(child: LifestyleStep(sleepCtrl: _sleepCtrl)),
                         _StepScroll(
                           child: MeasurementsStep(
                             bodyFatCtrl: _bodyFatCtrl,
@@ -216,12 +267,18 @@ final class _QuestionnaireViewState extends State<_QuestionnaireView> {
                             trainerCtrl: _trainerCtrl,
                           ),
                         ),
+                        _StepScroll(
+                          child: GoalsStep(otherGoalCtrl: _otherGoalCtrl),
+                        ),
                       ],
                     ),
                   ),
                   _FooterButton(
-                    label: state.isLastStep ? 'إرسال الاستبيان' : 'التالي',
-                    enabled: state.canProceed,
+                    label: state.isLastStep
+                        ? (widget.completeToHome ? context.l10n.submitData : context.l10n.submitQuestionnaire)
+                        : context.l10n.next,
+                    enabled: state.canProceed && !state.isSubmitting,
+                    isLoading: state.isSubmitting,
                     onPressed: () => _onNext(context, state),
                   ),
                 ],
@@ -253,11 +310,13 @@ final class _FooterButton extends StatelessWidget {
     required this.label,
     required this.enabled,
     required this.onPressed,
+    this.isLoading = false,
   });
 
   final String label;
   final bool enabled;
   final VoidCallback onPressed;
+  final bool isLoading;
 
   @override
   Widget build(BuildContext context) {
@@ -272,6 +331,7 @@ final class _FooterButton extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(18, 12, 18, 12),
           child: AppButton(
             label: label,
+            isLoading: isLoading,
             onPressed: enabled ? onPressed : null,
           ),
         ),

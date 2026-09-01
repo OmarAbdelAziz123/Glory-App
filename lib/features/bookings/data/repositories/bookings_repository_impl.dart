@@ -1,4 +1,5 @@
 import '../../../../core/error/app_failure.dart';
+import '../../../../core/l10n/fallback_messages.dart';
 import '../../../../core/result/result.dart';
 import '../../domain/entities/booking_entity.dart';
 import '../../domain/repositories/bookings_repository.dart';
@@ -91,7 +92,7 @@ final class BookingsRepositoryImpl implements BookingsRepository {
   Result<BookingsPageEntity> _mapPage(BookingsApiResponse data) {
     final pageEntity = data.toPageEntity();
     if (pageEntity == null) {
-      return const Failure(ServerFailure('حدث خطأ، حاول مرة أخرى'));
+      return Failure(ServerFailure(FallbackMessages.errorTryAgain));
     }
     return Success(pageEntity);
   }

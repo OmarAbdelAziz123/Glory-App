@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:iconsax/iconsax.dart';
 
+import '../../../../../app/cubits/locale/app_locale_cubit.dart';
 import '../../../../../core/di/service_locator.dart';
+import '../../../../../core/l10n/l10n.dart';
 import '../../../../../core/router/app_routes.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_styles_extension.dart';
@@ -14,6 +17,8 @@ import '../../../../../core/widgets/app_primary_header.dart';
 import '../../../../../core/widgets/app_scaffold.dart';
 import '../../../auth/presentation/cubits/logout/logout_cubit.dart';
 import '../../../auth/presentation/cubits/user_profile/user_profile_cubit.dart';
+import '../../../coach_chat/data/datasources/coach_chat_socket_service.dart';
+import '../../../coach_chat/presentation/cubits/coach_chat_unread/coach_chat_unread_cubit.dart';
 
 final class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -30,26 +35,33 @@ final class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       backgroundColor: Colors.transparent,
       builder: (_) => _LanguageSheet(
-        selected: _selectedLanguageFromProfile(context),
-        onSelect: (lang) {
+        selected: _selectedLanguage(context),
+        onSelect: (lang) async {
           Navigator.of(context).pop();
+          if (!mounted) return;
+          final changed = await LocaleService.changeLanguage(
+            context,
+            languageCode: lang == _AppLanguage.arabic ? 'ar' : 'en',
+          );
+          if (!mounted || !changed) return;
+          context.go(AppRoutes.splash);
         },
       ),
     );
   }
 
-  _AppLanguage _selectedLanguageFromProfile(BuildContext context) {
-    final language =
-        context.read<UserProfileCubit>().state.member?.appLanguage ?? 'ar';
-    return language == 'en' ? _AppLanguage.english : _AppLanguage.arabic;
+  _AppLanguage _selectedLanguage(BuildContext context) {
+    final languageCode = context.read<AppLocaleCubit>().state.languageCode;
+    return languageCode == 'en' ? _AppLanguage.english : _AppLanguage.arabic;
   }
 
   Future<void> _confirmLogout(BuildContext context) async {
+    final l10n = context.l10n;
     final shouldLogout = await AppConfirmDialog.show(
       context,
-      title: 'تسجيل خروج',
-      message: 'هل أنت متأكد أنك تريد تسجيل الخروج؟',
-      confirmLabel: 'تسجيل خروج',
+      title: l10n.logout,
+      message: l10n.confirmLogout,
+      confirmLabel: l10n.logout,
     );
 
     if (shouldLogout == true && context.mounted) {
@@ -72,6 +84,8 @@ final class _SettingsScreenState extends State<SettingsScreen> {
 
           if (state.status == LogoutStatus.success) {
             context.read<UserProfileCubit>().clear();
+            sl<CoachChatSocketService>().disconnect();
+            context.read<CoachChatUnreadCubit>().resetCount();
             context.go(AppRoutes.login);
             context.read<LogoutCubit>().reset();
           }
@@ -93,8 +107,8 @@ final class _SettingsScreenState extends State<SettingsScreen> {
               final profile = context.watch<UserProfileCubit>().state;
 
             return AppScaffold(
-              appBar: const AppPrimaryHeader(
-                title: 'الإعدادات',
+              appBar: AppPrimaryHeader(
+                title: context.l10n.settings,
                 showBack: false,
                 centerTitle: true,
               ),
@@ -109,7 +123,7 @@ final class _SettingsScreenState extends State<SettingsScreen> {
                           delay: const Duration(milliseconds: 40),
                           offset: const Offset(0, 0.05),
                           child: _ProfileCard(
-                            fullName: profile.displayName,
+                            fullName: profile.displayName(context.l10n),
                             email: profile.displayEmail,
                             avatarUrl: profile.member?.avatarUrl,
                           ),
@@ -143,44 +157,58 @@ final class _SettingsScreenState extends State<SettingsScreen> {
     bool isLoggingOut,
     UserProfileState profile,
   ) {
-    final selectedLanguage = profile.member?.appLanguage == 'en'
+    final l10n = context.l10n;
+    final localeCode = context.watch<AppLocaleCubit>().state.languageCode;
+    final selectedLanguage = localeCode == 'en'
         ? _AppLanguage.english
         : _AppLanguage.arabic;
 
     final tiles = <Widget>[
       _SettingsTile(
         iconAsset: 'person_icon.svg',
-        label: 'الملف الشخصي',
+        label: l10n.profile,
         onTap: () => context.push(AppRoutes.profile),
       ),
       _SettingsTile(
         iconAsset: 'person_icon.svg',
-        label: 'فحص تكوين الجسم',
+        label: l10n.bodyCompositionScan,
         onTap: () => context.push(AppRoutes.bodyComposition),
       ),
       _SettingsTile(
         iconAsset: 'person_icon.svg',
-        label: 'قياسات الحجم',
+        label: l10n.sizeMeasurements,
         onTap: () => context.push(AppRoutes.sizeMeasurements),
       ),
       _SettingsTile(
         iconAsset: 'bookings_icon.svg',
-        label: 'اشتراكاتي',
+        label: l10n.subscriptions,
         onTap: () => context.push(AppRoutes.subscriptions),
       ),
       _SettingsTile(
         iconAsset: 'items_family_icon.svg',
-        label: 'أفراد العائلة',
+        label: l10n.familyMembers,
         onTap: () => context.push(AppRoutes.family),
+      ),
+      BlocBuilder<CoachChatUnreadCubit, CoachChatUnreadState>(
+        builder: (context, chatUnread) {
+          return _SettingsTile(
+            iconData: Iconsax.messages_2,
+            label: l10n.coachChat,
+            trailing: chatUnread.count > 0
+                ? _UnreadBadge(count: chatUnread.count)
+                : null,
+            onTap: () => context.push(AppRoutes.coachChat),
+          );
+        },
       ),
       _SettingsTile(
         iconAsset: 'about_us.svg',
-        label: 'معلومات عن جلوري جيم',
+        label: l10n.aboutGloryGymInfo,
         onTap: () => context.push(AppRoutes.about),
       ),
       _SettingsTile(
         iconAsset: 'notifications_icon.svg',
-        label: 'الاشعارات',
+        label: l10n.notifications,
         trailing: _NotificationsTrailing(
           enabled: profile.pushEnabled,
           isLoading: profile.isUpdatingNotifications,
@@ -191,22 +219,24 @@ final class _SettingsScreenState extends State<SettingsScreen> {
       ),
       _SettingsTile(
         iconAsset: 'language_icon.svg',
-        label: 'لغة التطبيق',
+        label: l10n.language,
         onTap: _showLanguageSheet,
         trailing: Text(
-          selectedLanguage == _AppLanguage.arabic ? 'العربية' : 'English',
+          selectedLanguage == _AppLanguage.arabic
+              ? l10n.arabic
+              : l10n.english,
           style: context.captionRegular.copyWith(color: AppColors.neutral500),
         ),
       ),
       _SettingsTile(
         iconAsset: 'logout_icon.svg',
-        label: 'تسجيل خروج',
+        label: l10n.logout,
         isDestructive: true,
         onTap: isLoggingOut ? null : () => _confirmLogout(context),
       ),
-      const _SettingsTile(
+      _SettingsTile(
         iconAsset: 'delete_icon.svg',
-        label: 'حذف الحساب',
+        label: l10n.deleteAccount,
         isDestructive: true,
       ),
     ];
@@ -276,14 +306,19 @@ final class _ProfileCard extends StatelessWidget {
 
 final class _SettingsTile extends StatelessWidget {
   const _SettingsTile({
-    required this.iconAsset,
+    this.iconAsset,
+    this.iconData,
     required this.label,
     this.trailing,
     this.onTap,
     this.isDestructive = false,
-  });
+  }) : assert(
+          iconAsset != null || iconData != null,
+          'Provide either iconAsset or iconData',
+        );
 
-  final String iconAsset;
+  final String? iconAsset;
+  final IconData? iconData;
   final String label;
   final Widget? trailing;
   final VoidCallback? onTap;
@@ -299,12 +334,15 @@ final class _SettingsTile extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 14),
         child: Row(
           children: [
-            SvgPicture.asset(
-              'assets/images/svgs/$iconAsset',
-              width: 22,
-              height: 22,
-              colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
-            ),
+            if (iconData != null)
+              Icon(iconData, size: 22, color: iconColor)
+            else
+              SvgPicture.asset(
+                'assets/images/svgs/$iconAsset',
+                width: 22,
+                height: 22,
+                colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
+              ),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
@@ -330,10 +368,11 @@ final class _LanguageSheet extends StatelessWidget {
   const _LanguageSheet({required this.selected, required this.onSelect});
 
   final _AppLanguage selected;
-  final ValueChanged<_AppLanguage> onSelect;
+  final Future<void> Function(_AppLanguage lang) onSelect;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Container(
       decoration: const BoxDecoration(
         color: AppColors.white,
@@ -355,22 +394,22 @@ final class _LanguageSheet extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Text(
-              'اختر اللغة',
+              l10n.chooseLanguage,
               style: context.highlightBold.copyWith(color: AppColors.neutral900),
             ),
           ),
           const SizedBox(height: 16),
           const Divider(height: 1, color: AppColors.neutral200),
           _LanguageOption(
-            label: 'العربية',
-            sublabel: 'Arabic',
+            label: l10n.arabic,
+            sublabel: l10n.english,
             isSelected: selected == _AppLanguage.arabic,
             onTap: () => onSelect(_AppLanguage.arabic),
           ),
           const Divider(height: 1, indent: 20, endIndent: 20, color: AppColors.neutral200),
           _LanguageOption(
-            label: 'English',
-            sublabel: 'الإنجليزية',
+            label: l10n.english,
+            sublabel: l10n.arabic,
             isSelected: selected == _AppLanguage.english,
             onTap: () => onSelect(_AppLanguage.english),
           ),
@@ -447,6 +486,30 @@ final class _LanguageOption extends StatelessWidget {
   }
 }
 
+final class _UnreadBadge extends StatelessWidget {
+  const _UnreadBadge({required this.count});
+
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppColors.primary,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        count > 99 ? '99+' : '$count',
+        style: context.footnoteRegular.copyWith(
+          color: AppColors.white,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+}
+
 final class _NotificationsTrailing extends StatelessWidget {
   const _NotificationsTrailing({
     required this.enabled,
@@ -464,7 +527,7 @@ final class _NotificationsTrailing extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          enabled ? 'مفعل' : 'غير مفعل',
+          enabled ? context.l10n.notificationsEnabled : context.l10n.notificationsDisabled,
           style: context.captionRegular.copyWith(color: AppColors.neutral500),
         ),
         const SizedBox(width: 4),

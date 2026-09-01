@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "1052948294806",
+    "project_id": "glory-55e65",
+    "storage_bucket": "glory-55e65.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1052948294806:android:f87e362046fb18f0d326b7",
+        "android_client_info": {
+          "package_name": "com.app.glory_gym"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD6kDX013dFgOwviDWPyA59bB2LHVQ-Vtg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1052948294806:android:58ec9cb4d61445ded326b7",
+        "android_client_info": {
+          "package_name": "com.app.glorygym"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD6kDX013dFgOwviDWPyA59bB2LHVQ-Vtg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

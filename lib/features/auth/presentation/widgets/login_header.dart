@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../../core/extensions/extensions.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_styles_extension.dart';
+import '../../../../core/l10n/l10n_extension.dart';
 
 final class LoginHeader extends StatelessWidget {
   const LoginHeader({super.key});
@@ -11,10 +12,10 @@ final class LoginHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text('اهلا بعودتك', style: context.heading1),
+        Text(context.l10n.welcomeBackAlt, style: context.heading1),
         8.vertical,
         Text(
-          'الرجاء إدخال بريدك الإلكتروني او رقم هاتفك ومع كلمة المرور للوصول إلى حسابك.',
+          context.l10n.loginEmailOrPhoneHint,
           style: context.captionRegular.copyWith(color: AppColors.neutral500),
           textAlign: TextAlign.center,
         ),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_styles_extension.dart';
+import '../../../../core/l10n/l10n_extension.dart';
 
 final class LoginTermsRow extends StatefulWidget {
   const LoginTermsRow({
@@ -60,9 +61,9 @@ final class _LoginTermsRowState extends State<LoginTermsRow> {
                 color: AppColors.neutral400,
               ),
               children: [
-                const TextSpan(text: 'أوافق على '),
+                TextSpan(text: context.l10n.agreeToPrefix),
                 TextSpan(
-                  text: 'سياسة الخصوصية',
+                  text: context.l10n.privacyPolicy,
                   style: const TextStyle(
                     color: AppColors.primary,
                     decoration: TextDecoration.underline,
@@ -70,9 +71,9 @@ final class _LoginTermsRowState extends State<LoginTermsRow> {
                   ),
                   recognizer: _privacyRecognizer,
                 ),
-                const TextSpan(text: ' و '),
+                TextSpan(text: context.l10n.conjunctionAnd),
                 TextSpan(
-                  text: 'شروط الخدمة',
+                  text: context.l10n.termsOfService,
                   style: const TextStyle(
                     color: AppColors.primary,
                     decoration: TextDecoration.underline,

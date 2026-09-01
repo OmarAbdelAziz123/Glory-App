@@ -3,6 +3,7 @@ import 'package:retrofit/retrofit.dart';
 
 import '../../../../core/network/endpoints.dart';
 import '../models/checkin_api_responses.dart';
+import '../models/scan_qr_request.dart';
 
 part 'checkin_api.g.dart';
 
@@ -15,4 +16,7 @@ abstract class CheckinApi {
 
   @GET(Endpoints.mobileCheckinQrStatus)
   Future<QrStatusApiResponse> getQrStatus(@Path('id') String id);
+
+  @POST(Endpoints.mobileCheckinQrScan)
+  Future<QrStatusApiResponse> scanQr(@Body() ScanQrRequest body);
 }

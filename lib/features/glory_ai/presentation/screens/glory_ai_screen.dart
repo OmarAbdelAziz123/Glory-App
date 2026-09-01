@@ -1,90 +1,49 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../core/l10n/l10n_extension.dart';
+import '../../../../core/router/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_styles_extension.dart';
 import '../../../../core/widgets/app_primary_header.dart';
 import '../../../../core/widgets/app_scaffold.dart';
+import '../../../coach_chat/presentation/utils/chat_time_formatter.dart';
+import '../../domain/entities/sandy_entities.dart';
+import '../cubits/sandy_chat/sandy_chat_cubit.dart';
 
-// ── Models ────────────────────────────────────────────────────────────────────
-
-final class _ChatMessage {
-  const _ChatMessage({
-    required this.id,
-    required this.text,
-    required this.time,
-    required this.isUser,
-    this.isRead = false,
-  });
-
-  final String id;
-  final String text;
-  final String time;
-  final bool isUser;
-  final bool isRead;
-}
-
-// ── Screen ────────────────────────────────────────────────────────────────────
-
-final class GloryAiScreen extends StatefulWidget {
+final class GloryAiScreen extends StatelessWidget {
   const GloryAiScreen({super.key});
 
   @override
-  State<GloryAiScreen> createState() => _GloryAiScreenState();
+  Widget build(BuildContext context) {
+    return const _GloryAiView();
+  }
 }
 
-final class _GloryAiScreenState extends State<GloryAiScreen>
-    with TickerProviderStateMixin {
+final class _GloryAiView extends StatefulWidget {
+  const _GloryAiView();
+
+  @override
+  State<_GloryAiView> createState() => _GloryAiViewState();
+}
+
+final class _GloryAiViewState extends State<_GloryAiView> {
   final _scrollController = ScrollController();
   final _inputController = TextEditingController();
   final _inputFocusNode = FocusNode();
-
-  final List<_ChatMessage> _messages = [];
-  int _messageCounter = 0;
-
-  bool _isTyping = false;
-  bool _showWelcome = true;
-  bool _canSend = false;
-
-  late final AnimationController _welcomeController;
-  late final Animation<double> _welcomeFade;
-  late final Animation<Offset> _welcomeSlide;
-
-  static const _suggestions = [
-    'اقترح لي برنامج تمرين',
-    'نصائح للتغذية الصحية',
-    'استفسار عن الاشتراك',
-  ];
+  var _canSend = false;
 
   @override
   void initState() {
     super.initState();
-
-    _welcomeController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 700),
-    );
-
-    _welcomeFade = CurvedAnimation(
-      parent: _welcomeController,
-      curve: Curves.easeOut,
-    );
-    _welcomeSlide = Tween<Offset>(
-      begin: const Offset(0, 0.08),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(parent: _welcomeController, curve: Curves.easeOutCubic),
-    );
-
     _inputController.addListener(_onInputChanged);
-    _welcomeController.forward();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _sendWelcomeMessage();
-    });
+    _scrollController.addListener(_onScroll);
   }
 
   void _onInputChanged() {
@@ -94,102 +53,22 @@ final class _GloryAiScreenState extends State<GloryAiScreen>
     }
   }
 
-  String _nextId() => 'msg_${++_messageCounter}';
-
-  String _formatTime(DateTime time) {
-    final hour = time.hour.toString().padLeft(2, '0');
-    final minute = time.minute.toString().padLeft(2, '0');
-    return '$hour:$minute';
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    final position = _scrollController.position;
+    if (position.pixels <= position.minScrollExtent + 48) {
+      context.read<SandyChatCubit>().loadOlderMessages();
+    }
   }
 
-  Future<void> _sendWelcomeMessage() async {
-    await Future<void>.delayed(const Duration(milliseconds: 600));
-    if (!mounted) return;
-
-    setState(() => _isTyping = true);
-    _scrollToBottom();
-
-    await Future<void>.delayed(const Duration(milliseconds: 1400));
-    if (!mounted) return;
-
-    _addAiMessage(
-      'مرحباً! أنا ساندي، مساعدك الذكي في جلوري جيم. '
-      'اسألني عن التمارين، التغذية، أو أي استفسار يخص اشتراكك.',
-    );
-    setState(() {
-      _isTyping = false;
-      _showWelcome = false;
-    });
-  }
-
-  void _addUserMessage(String text) {
-    final now = DateTime.now();
-    setState(() {
-      _messages.add(
-        _ChatMessage(
-          id: _nextId(),
-          text: text,
-          time: _formatTime(now),
-          isUser: true,
-          isRead: true,
-        ),
-      );
-      _showWelcome = false;
-    });
-    _scrollToBottom();
-  }
-
-  void _addAiMessage(String text) {
-    final now = DateTime.now();
-    setState(() {
-      _messages.add(
-        _ChatMessage(
-          id: _nextId(),
-          text: text,
-          time: _formatTime(now),
-          isUser: false,
-        ),
-      );
-    });
-    _scrollToBottom();
-  }
-
-  Future<void> _handleSend([String? presetText]) async {
+  void _handleSend([String? presetText]) {
     final text = (presetText ?? _inputController.text).trim();
-    if (text.isEmpty || _isTyping) return;
+    if (text.isEmpty) return;
 
     FocusManager.instance.primaryFocus?.unfocus();
     _inputController.clear();
-    _addUserMessage(text);
-
-    setState(() => _isTyping = true);
+    context.read<SandyChatCubit>().sendMessage(text);
     _scrollToBottom();
-
-    await Future<void>.delayed(const Duration(milliseconds: 1600));
-    if (!mounted) return;
-
-    _addAiMessage(_mockReply(text));
-    setState(() => _isTyping = false);
-  }
-
-  String _mockReply(String userText) {
-    final lower = userText.toLowerCase();
-    if (lower.contains('تمرين') || lower.contains('برنامج')) {
-      return 'رائع! أنصحك ببرنامج 3 أيام في الأسبوع: '
-          'يوم للصدر والترiceps، يوم للظهر والبiceps، ويوم للأرجل. '
-          'هل تفضل تمارين في الجيم أم في المنزل؟';
-    }
-    if (lower.contains('تغذ') || lower.contains('أكل') || lower.contains('غذ')) {
-      return 'لتحسين أدائك: ركّز على البروtein بعد التمرين، '
-          'اشرب 2–3 لتر ماء يومياً، وقلّل السكريات المكررة. '
-          'أقدر أجهز لك خطة بسيطة حسب هدفك.';
-    }
-    if (lower.contains('اشتراك') || lower.contains('باق')) {
-      return 'يمكنك الاطلاع على باقاتك من قسم "اشتراكاتي" في الإعدادات. '
-          'إذا احتجت مقارنة بين الباقات أو تجديد الاشتراك، أخبرني.';
-    }
-    return 'شكراً لسؤالك! سأراجع طلبك وأرد عليك بأفضل توصية مناسبة لك. '
-        'هل تريد مساعدة في التمارين، التغذية، أو الاشتراك؟';
   }
 
   void _scrollToBottom() {
@@ -205,7 +84,6 @@ final class _GloryAiScreenState extends State<GloryAiScreen>
 
   @override
   void dispose() {
-    _welcomeController.dispose();
     _scrollController.dispose();
     _inputController.dispose();
     _inputFocusNode.dispose();
@@ -214,75 +92,144 @@ final class _GloryAiScreenState extends State<GloryAiScreen>
 
   @override
   Widget build(BuildContext context) {
-    return AppScaffold(
-      appBar: const AppPrimaryHeader(
-        title: 'ساندي AI',
-        showBack: false,
-        centerTitle: true,
-      ),
-      body: DecoratedBox(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [AppColors.white, AppColors.neutral100],
+    return BlocConsumer<SandyChatCubit, SandyChatState>(
+      listenWhen: (previous, current) =>
+          previous.messages.length != current.messages.length ||
+          previous.isTyping != current.isTyping ||
+          previous.errorMessage != current.errorMessage,
+      listener: (context, state) {
+        _scrollToBottom();
+        final error = state.errorMessage;
+        if (error != null && error.isNotEmpty) {
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(SnackBar(content: Text(error)));
+        }
+      },
+      builder: (context, state) {
+        return AppScaffold(
+          appBar: AppPrimaryHeader(
+            title: context.l10n.sandyAi,
+            showBack: false,
+            centerTitle: true,
+            actions: [
+              IconButton(
+                tooltip: context.l10n.sandyNewChat,
+                onPressed: state.isTyping
+                    ? null
+                    : () => context.read<SandyChatCubit>().startNewConversation(),
+                icon: const Icon(Iconsax.add, color: AppColors.white),
+              ),
+              IconButton(
+                tooltip: context.l10n.sandyChatHistory,
+                onPressed: () => context.push(AppRoutes.sandyConversations),
+                icon: const Icon(Iconsax.message_text_1, color: AppColors.white),
+              ),
+              const SizedBox(width: 8),
+            ],
           ),
-        ),
-        child: Column(
-          children: [
-            Expanded(
-              child: ListView.builder(
-                controller: _scrollController,
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-                itemCount: _itemCount,
-                itemBuilder: (context, index) => _buildItem(context, index),
+          body: DecoratedBox(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [AppColors.white, AppColors.neutral100],
               ),
             ),
-            _ChatInputBar(
-              controller: _inputController,
-              focusNode: _inputFocusNode,
-              canSend: _canSend && !_isTyping,
-              onSend: () => _handleSend(),
+            child: Column(
+              children: [
+                if (state.isLoading && state.isEmpty)
+                  const Expanded(
+                    child: Center(
+                      child: CircularProgressIndicator(color: AppColors.primary),
+                    ),
+                  )
+                else
+                  Expanded(
+                    child: ListView.builder(
+                      controller: _scrollController,
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                      itemCount: _itemCount(state),
+                      itemBuilder: (context, index) =>
+                          _buildItem(context, state, index),
+                    ),
+                  ),
+                _ChatInputBar(
+                  controller: _inputController,
+                  focusNode: _inputFocusNode,
+                  canSend: _canSend && !state.isTyping,
+                  onSend: _handleSend,
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
-  int get _itemCount {
+  int _itemCount(SandyChatState state) {
     var count = 0;
-    if (_showWelcome) count++;
-    count += _messages.length;
-    if (_isTyping) count++;
+    if (state.isEmpty && !state.isLoading) count++;
+    if (state.showSuggestions && state.suggestions.isNotEmpty) count++;
+    count += state.messages.length;
+    if (state.isTyping) count++;
+    if (state.isLoadingMore) count++;
     return count;
   }
 
-  Widget _buildItem(BuildContext context, int index) {
+  Widget _buildItem(BuildContext context, SandyChatState state, int index) {
     var cursor = 0;
 
-    if (_showWelcome) {
+    if (state.isEmpty && !state.isLoading) {
       if (index == cursor) {
-        return FadeTransition(
-          opacity: _welcomeFade,
-          child: SlideTransition(
-            position: _welcomeSlide,
-            child: _WelcomeSection(
-              suggestions: _suggestions,
-              onSuggestionTap: _handleSend,
-            ),
-          ),
+        return _WelcomeBubble(
+          text:
+              '${context.l10n.sandyWelcomeMessage}${context.l10n.sandyAskMeHint}',
+        );
+      }
+      cursor++;
+    }
+
+    if (state.showSuggestions && state.suggestions.isNotEmpty) {
+      if (index == cursor) {
+        return _SuggestionChipsRow(
+          suggestions: state.suggestions,
+          onSuggestionTap: _handleSend,
         );
       }
       cursor++;
     }
 
     final messageIndex = index - cursor;
-    if (messageIndex < _messages.length) {
-      final message = _messages[messageIndex];
-      return _AnimatedMessageBubble(
+    if (messageIndex < state.messages.length) {
+      final message = state.messages[messageIndex];
+      return _SandyMessageBubble(
         key: ValueKey(message.id),
         message: message,
+        onRetry: message.refusalReason == SandyRefusalReason.providerError
+            ? () => context.read<SandyChatCubit>().retryLastMessage()
+            : null,
+        onContactCoach: message.refusalReason == SandyRefusalReason.medicalAdvice
+            ? () => context.push(AppRoutes.coachChat)
+            : null,
+      );
+    }
+
+    if (state.isLoadingMore &&
+        messageIndex == state.messages.length) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 12),
+        child: Center(
+          child: SizedBox(
+            width: 22,
+            height: 22,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: AppColors.primary,
+            ),
+          ),
+        ),
       );
     }
 
@@ -290,10 +237,25 @@ final class _GloryAiScreenState extends State<GloryAiScreen>
   }
 }
 
-// ── Welcome ───────────────────────────────────────────────────────────────────
+final class _WelcomeBubble extends StatelessWidget {
+  const _WelcomeBubble({required this.text});
 
-final class _WelcomeSection extends StatelessWidget {
-  const _WelcomeSection({
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: _AiBubbleContent(
+        body: text,
+        time: ChatTimeFormatter.formatTime(DateTime.now()),
+      ),
+    );
+  }
+}
+
+final class _SuggestionChipsRow extends StatelessWidget {
+  const _SuggestionChipsRow({
     required this.suggestions,
     required this.onSuggestionTap,
   });
@@ -304,81 +266,45 @@ final class _WelcomeSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 20),
-      child: Column(
-        children: [
-          const _PulsingAiAvatar(size: 72),
-          const SizedBox(height: 16),
-          Text(
-            'مساعدك الرياضي الذكي',
-            style: context.highlightBold.copyWith(color: AppColors.neutral900),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'اسأل ساندي عن التمارين، التغذية، أو اشتراكك',
-            style: context.captionRegular.copyWith(color: AppColors.neutral500),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 20),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            alignment: WrapAlignment.center,
-            children: suggestions
-                .map(
-                  (s) => _SuggestionChip(
-                    label: s,
-                    onTap: () => onSuggestionTap(s),
-                  ),
-                )
-                .toList(),
-          ),
-        ],
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: suggestions
+            .map(
+              (label) => _SuggestionChip(
+                label: label,
+                onTap: () => onSuggestionTap(label),
+              ),
+            )
+            .toList(),
       ),
     );
   }
 }
 
-final class _SuggestionChip extends StatefulWidget {
+final class _SuggestionChip extends StatelessWidget {
   const _SuggestionChip({required this.label, required this.onTap});
 
   final String label;
   final VoidCallback onTap;
 
   @override
-  State<_SuggestionChip> createState() => _SuggestionChipState();
-}
-
-final class _SuggestionChipState extends State<_SuggestionChip> {
-  bool _pressed = false;
-
-  @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTapDown: (_) => setState(() => _pressed = true),
-      onTapUp: (_) => setState(() => _pressed = false),
-      onTapCancel: () => setState(() => _pressed = false),
-      onTap: widget.onTap,
-      child: AnimatedScale(
-        scale: _pressed ? 0.96 : 1,
-        duration: const Duration(milliseconds: 120),
+    return Material(
+      color: AppColors.white,
+      borderRadius: BorderRadius.circular(20),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
-            color: AppColors.white,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(color: AppColors.primary200),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.08),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
           ),
           child: Text(
-            widget.label,
+            label,
             style: context.captionRegular.copyWith(color: AppColors.primary800),
           ),
         ),
@@ -387,145 +313,165 @@ final class _SuggestionChipState extends State<_SuggestionChip> {
   }
 }
 
-// ── Messages ──────────────────────────────────────────────────────────────────
+final class _SandyMessageBubble extends StatelessWidget {
+  const _SandyMessageBubble({
+    super.key,
+    required this.message,
+    this.onRetry,
+    this.onContactCoach,
+  });
 
-final class _AnimatedMessageBubble extends StatefulWidget {
-  const _AnimatedMessageBubble({super.key, required this.message});
-
-  final _ChatMessage message;
-
-  @override
-  State<_AnimatedMessageBubble> createState() => _AnimatedMessageBubbleState();
-}
-
-final class _AnimatedMessageBubbleState extends State<_AnimatedMessageBubble>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-  late final Animation<double> _fade;
-  late final Animation<Offset> _slide;
-  late final Animation<double> _scale;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 380),
-    );
-    _fade = CurvedAnimation(parent: _controller, curve: Curves.easeOut);
-    _slide = Tween<Offset>(
-      begin: Offset(widget.message.isUser ? -0.08 : 0.08, 0.12),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
-    _scale = Tween<double>(begin: 0.92, end: 1).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOutBack),
-    );
-    _controller.forward();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
+  final SandyMessageEntity message;
+  final VoidCallback? onRetry;
+  final VoidCallback? onContactCoach;
 
   @override
   Widget build(BuildContext context) {
-    return FadeTransition(
-      opacity: _fade,
-      child: SlideTransition(
-        position: _slide,
-        child: ScaleTransition(
-          scale: _scale,
-          alignment: widget.message.isUser
-              ? Alignment.centerLeft
-              : Alignment.centerRight,
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: widget.message.isUser
-                ? _UserBubble(message: widget.message)
-                : _AiBubble(message: widget.message),
-          ),
-        ),
-      ),
+    final time = ChatTimeFormatter.formatTime(message.createdAt);
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: message.isUser
+          ? _UserBubbleContent(body: message.body, time: time)
+          : _AiBubbleContent(
+              body: message.body,
+              time: time,
+              citations: message.citations,
+              onRetry: onRetry,
+              onContactCoach: onContactCoach,
+            ),
     );
   }
 }
 
-final class _AiBubble extends StatelessWidget {
-  const _AiBubble({required this.message});
+final class _AiBubbleContent extends StatelessWidget {
+  const _AiBubbleContent({
+    required this.body,
+    required this.time,
+    this.citations = const [],
+    this.onRetry,
+    this.onContactCoach,
+  });
 
-  final _ChatMessage message;
+  final String body;
+  final String time;
+  final List<SandyCitationEntity> citations;
+  final VoidCallback? onRetry;
+  final VoidCallback? onContactCoach;
+
+  Future<void> _openCitation(String url) async {
+    final uri = Uri.tryParse(url);
+    if (uri == null) return;
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Align(
-      alignment: Alignment.centerRight,
+      alignment: Alignment.centerLeft,
       child: Row(
-        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
+          const _AiAvatar(size: 34),
+          const SizedBox(width: 8),
           Flexible(
-            child: Container(
-              constraints: BoxConstraints(
-                maxWidth: MediaQuery.sizeOf(context).width * 0.72,
-              ),
-              padding: const EdgeInsets.fromLTRB(14, 12, 14, 10),
-              decoration: BoxDecoration(
-                color: AppColors.white,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(18),
-                  topRight: Radius.circular(18),
-                  bottomLeft: Radius.circular(18),
-                  bottomRight: Radius.circular(4),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  constraints: BoxConstraints(
+                    maxWidth: MediaQuery.sizeOf(context).width * 0.72,
+                  ),
+                  padding: const EdgeInsets.fromLTRB(14, 12, 14, 10),
+                  decoration: BoxDecoration(
+                    color: AppColors.white,
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(18),
+                      topRight: Radius.circular(18),
+                      bottomLeft: Radius.circular(4),
+                      bottomRight: Radius.circular(18),
+                    ),
+                    border: Border.all(color: AppColors.neutral200),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.black.withValues(alpha: 0.04),
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        body,
+                        style: context.captionRegular.copyWith(
+                          color: AppColors.neutral900,
+                          height: 1.55,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Align(
+                        alignment: AlignmentDirectional.centerEnd,
+                        child: Text(
+                          time,
+                          style: context.footnoteRegular.copyWith(
+                            color: AppColors.neutral400,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                border: Border.all(color: AppColors.neutral200),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.black.withValues(alpha: 0.04),
-                    blurRadius: 10,
-                    offset: const Offset(0, 3),
+                if (citations.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: citations
+                        .map(
+                          (citation) => _CitationChip(
+                            label: citation.title,
+                            onTap: () => _openCitation(citation.sourceUrl),
+                          ),
+                        )
+                        .toList(),
                   ),
                 ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    message.text,
-                    style: context.captionRegular.copyWith(
-                      color: AppColors.neutral900,
-                      height: 1.55,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    message.time,
-                    style: context.footnoteRegular.copyWith(
-                      color: AppColors.neutral400,
-                    ),
+                if (onContactCoach != null) ...[
+                  const SizedBox(height: 8),
+                  _ActionChip(
+                    label: context.l10n.contactYourCoach,
+                    onTap: onContactCoach!,
                   ),
                 ],
-              ),
+                if (onRetry != null) ...[
+                  const SizedBox(height: 8),
+                  _ActionChip(
+                    label: context.l10n.retry,
+                    onTap: onRetry!,
+                    outlined: true,
+                  ),
+                ],
+              ],
             ),
           ),
-          const SizedBox(width: 8),
-          const _AiAvatar(size: 34),
         ],
       ),
     );
   }
 }
 
-final class _UserBubble extends StatelessWidget {
-  const _UserBubble({required this.message});
+final class _UserBubbleContent extends StatelessWidget {
+  const _UserBubbleContent({required this.body, required this.time});
 
-  final _ChatMessage message;
+  final String body;
+  final String time;
 
   @override
   Widget build(BuildContext context) {
     return Align(
-      alignment: Alignment.centerLeft,
+      alignment: Alignment.centerRight,
       child: Container(
         constraints: BoxConstraints(
           maxWidth: MediaQuery.sizeOf(context).width * 0.72,
@@ -540,8 +486,8 @@ final class _UserBubble extends StatelessWidget {
           borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(18),
             topRight: Radius.circular(18),
-            bottomLeft: Radius.circular(4),
-            bottomRight: Radius.circular(18),
+            bottomLeft: Radius.circular(18),
+            bottomRight: Radius.circular(4),
           ),
           boxShadow: [
             BoxShadow(
@@ -555,32 +501,102 @@ final class _UserBubble extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              message.text,
+              body,
               style: context.captionRegular.copyWith(
                 color: AppColors.white,
                 height: 1.55,
               ),
             ),
             const SizedBox(height: 6),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Text(
-                  message.time,
-                  style: context.footnoteRegular.copyWith(
-                    color: AppColors.white.withValues(alpha: 0.85),
-                  ),
+            Align(
+              alignment: AlignmentDirectional.centerEnd,
+              child: Text(
+                time,
+                style: context.footnoteRegular.copyWith(
+                  color: AppColors.white.withValues(alpha: 0.85),
                 ),
-                const SizedBox(width: 4),
-                Icon(
-                  message.isRead ? Iconsax.tick_circle5 : Iconsax.tick_circle,
-                  size: 14,
-                  color: AppColors.white.withValues(alpha: 0.9),
-                ),
-              ],
+              ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+final class _CitationChip extends StatelessWidget {
+  const _CitationChip({required this.label, required this.onTap});
+
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: AppColors.primary100,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Iconsax.link_1, size: 14, color: AppColors.primary700),
+              const SizedBox(width: 4),
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: context.footnoteRegular.copyWith(
+                    color: AppColors.primary800,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+final class _ActionChip extends StatelessWidget {
+  const _ActionChip({
+    required this.label,
+    required this.onTap,
+    this.outlined = false,
+  });
+
+  final String label;
+  final VoidCallback onTap;
+  final bool outlined;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: outlined ? AppColors.white : AppColors.primary,
+      borderRadius: BorderRadius.circular(20),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            border: outlined
+                ? Border.all(color: AppColors.primary300)
+                : null,
+          ),
+          child: Text(
+            label,
+            style: context.captionRegular.copyWith(
+              color: outlined ? AppColors.primary800 : AppColors.white,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ),
       ),
     );
@@ -595,11 +611,13 @@ final class _TypingIndicatorBubble extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Align(
-        alignment: Alignment.centerRight,
+        alignment: Alignment.centerLeft,
         child: Row(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
+            const _AiAvatar(size: 34),
+            const SizedBox(width: 8),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               decoration: BoxDecoration(
@@ -607,15 +625,13 @@ final class _TypingIndicatorBubble extends StatelessWidget {
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(18),
                   topRight: Radius.circular(18),
-                  bottomLeft: Radius.circular(18),
-                  bottomRight: Radius.circular(4),
+                  bottomLeft: Radius.circular(4),
+                  bottomRight: Radius.circular(18),
                 ),
                 border: Border.all(color: AppColors.neutral200),
               ),
               child: const _TypingDots(),
             ),
-            const SizedBox(width: 8),
-            const _AiAvatar(size: 34),
           ],
         ),
       ),
@@ -658,8 +674,10 @@ final class _TypingDotsState extends State<_TypingDots>
           mainAxisSize: MainAxisSize.min,
           children: List.generate(3, (index) {
             final delay = index * 0.2;
-            final value = math.sin((_controller.value * math.pi * 2) + delay);
-            final offset = (value + 1) * 3;
+            final value =
+                math.sin((_controller.value * math.pi * 2) + delay);
+            final wave = (value + 1) / 2;
+            final offset = wave * 3;
 
             return Padding(
               padding: EdgeInsetsDirectional.only(start: index == 0 ? 0 : 6),
@@ -670,7 +688,7 @@ final class _TypingDotsState extends State<_TypingDots>
                   height: 7,
                   decoration: BoxDecoration(
                     color: AppColors.primary.withValues(
-                      alpha: 0.35 + (value + 1) * 0.25,
+                      alpha: 0.35 + wave * 0.5,
                     ),
                     shape: BoxShape.circle,
                   ),
@@ -684,66 +702,10 @@ final class _TypingDotsState extends State<_TypingDots>
   }
 }
 
-final class _PulsingAiAvatar extends StatefulWidget {
-  const _PulsingAiAvatar({required this.size});
-
-  final double size;
-
-  @override
-  State<_PulsingAiAvatar> createState() => _PulsingAiAvatarState();
-}
-
-final class _PulsingAiAvatarState extends State<_PulsingAiAvatar>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 2200),
-    )..repeat(reverse: true);
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        final pulse = 1 + (_controller.value * 0.06);
-        return Transform.scale(
-          scale: pulse,
-          child: Container(
-            width: widget.size + 16,
-            height: widget.size + 16,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: AppColors.primary.withValues(
-                alpha: 0.08 + (_controller.value * 0.06),
-              ),
-            ),
-            alignment: Alignment.center,
-            child: child,
-          ),
-        );
-      },
-      child: _AiAvatar(size: widget.size, showGlow: true),
-    );
-  }
-}
-
 final class _AiAvatar extends StatelessWidget {
-  const _AiAvatar({required this.size, this.showGlow = false});
+  const _AiAvatar({required this.size});
 
   final double size;
-  final bool showGlow;
 
   @override
   Widget build(BuildContext context) {
@@ -758,15 +720,6 @@ final class _AiAvatar extends StatelessWidget {
           end: Alignment.bottomRight,
         ),
         border: Border.all(color: AppColors.primary, width: 1.2),
-        boxShadow: showGlow
-            ? [
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.25),
-                  blurRadius: 16,
-                  spreadRadius: 1,
-                ),
-              ]
-            : null,
       ),
       child: Center(
         child: SvgPicture.asset(
@@ -783,8 +736,6 @@ final class _AiAvatar extends StatelessWidget {
   }
 }
 
-// ── Input bar ─────────────────────────────────────────────────────────────────
-
 final class _ChatInputBar extends StatefulWidget {
   const _ChatInputBar({
     required this.controller,
@@ -796,7 +747,7 @@ final class _ChatInputBar extends StatefulWidget {
   final TextEditingController controller;
   final FocusNode focusNode;
   final bool canSend;
-  final VoidCallback onSend;
+  final ValueChanged<String> onSend;
 
   @override
   State<_ChatInputBar> createState() => _ChatInputBarState();
@@ -821,14 +772,12 @@ final class _ChatInputBarState extends State<_ChatInputBar> {
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.paddingOf(context).bottom;
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 220),
-      curve: Curves.easeOut,
+    return Container(
       margin: EdgeInsets.fromLTRB(16, 8, 16, bottomInset > 0 ? 8 : 16),
-      padding: const EdgeInsets.fromLTRB(14, 10, 10, 10),
+      padding: const EdgeInsets.fromLTRB(14, 6, 6, 6),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(28),
         border: Border.all(
           color: widget.focusNode.hasFocus
               ? AppColors.primary300
@@ -845,33 +794,33 @@ final class _ChatInputBarState extends State<_ChatInputBar> {
       ),
       child: Row(
         children: [
-          _SendButton(enabled: widget.canSend, onTap: widget.onSend),
-          const SizedBox(width: 10),
           Expanded(
             child: TextField(
               controller: widget.controller,
               focusNode: widget.focusNode,
               textAlign: TextAlign.right,
               textInputAction: TextInputAction.send,
-              onSubmitted: (_) {
-                if (widget.canSend) widget.onSend();
+              onSubmitted: (value) {
+                if (widget.canSend) widget.onSend(value);
               },
               style: context.captionRegular.copyWith(color: AppColors.neutral900),
               decoration: InputDecoration(
-                hintText: 'اكتب رسالتك لساندي AI',
+                hintText: context.l10n.writeMessageToSandy,
                 hintStyle: context.captionRegular.copyWith(
                   color: AppColors.neutral400,
                 ),
                 border: InputBorder.none,
                 isDense: true,
-                contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 10,
+                ),
               ),
             ),
           ),
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Iconsax.microphone_2, color: AppColors.neutral400),
-            splashRadius: 22,
+          _SendButton(
+            enabled: widget.canSend,
+            onTap: () => widget.onSend(widget.controller.text),
           ),
         ],
       ),
@@ -879,56 +828,27 @@ final class _ChatInputBarState extends State<_ChatInputBar> {
   }
 }
 
-final class _SendButton extends StatefulWidget {
+final class _SendButton extends StatelessWidget {
   const _SendButton({required this.enabled, required this.onTap});
 
   final bool enabled;
   final VoidCallback onTap;
 
   @override
-  State<_SendButton> createState() => _SendButtonState();
-}
-
-final class _SendButtonState extends State<_SendButton> {
-  bool _pressed = false;
-
-  @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTapDown: widget.enabled ? (_) => setState(() => _pressed = true) : null,
-      onTapUp: widget.enabled ? (_) => setState(() => _pressed = false) : null,
-      onTapCancel: () => setState(() => _pressed = false),
-      onTap: widget.enabled ? widget.onTap : null,
-      child: AnimatedScale(
-        scale: _pressed ? 0.9 : 1,
-        duration: const Duration(milliseconds: 120),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 220),
-          curve: Curves.easeOut,
+    return Material(
+      color: enabled ? AppColors.primary : AppColors.neutral200,
+      shape: const CircleBorder(),
+      child: InkWell(
+        onTap: enabled ? onTap : null,
+        customBorder: const CircleBorder(),
+        child: SizedBox(
           width: 44,
           height: 44,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: widget.enabled
-                ? const LinearGradient(
-                    colors: [AppColors.primary500, AppColors.primary700],
-                  )
-                : null,
-            color: widget.enabled ? null : AppColors.neutral200,
-            boxShadow: widget.enabled
-                ? [
-                    BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.35),
-                      blurRadius: 10,
-                      offset: const Offset(0, 3),
-                    ),
-                  ]
-                : null,
-          ),
           child: Icon(
             Iconsax.send_2,
             size: 20,
-            color: widget.enabled ? AppColors.white : AppColors.neutral400,
+            color: enabled ? AppColors.white : AppColors.neutral400,
           ),
         ),
       ),

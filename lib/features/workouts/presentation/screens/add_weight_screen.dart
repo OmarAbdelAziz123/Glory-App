@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:glory_gym/core/core.dart';
 import 'package:glory_gym/features/workouts/domain/repositories/workouts_repository.dart';
+import '../../../../core/l10n/l10n_extension.dart';
 
 final class AddWeightScreen extends StatefulWidget {
   const AddWeightScreen({super.key, required this.assignmentId});
@@ -53,8 +54,8 @@ final class _AddWeightScreenState extends State<AddWeightScreen> {
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
-      appBar: const AppPrimaryHeader(
-        title: 'اضافة وزن ( للتمرين )',
+      appBar: AppPrimaryHeader(
+        title: context.l10n.addWorkoutWeight,
         showBack: true,
         centerTitle: false,
       ),
@@ -64,9 +65,9 @@ final class _AddWeightScreenState extends State<AddWeightScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             AppTextField(
-              label: 'الوزن',
+              label: context.l10n.weight,
               controller: _controller,
-              hint: 'قم بإدخال الوزن المقترح الخاص بك لهذه التمرين',
+              hint: context.l10n.enterSuggestedWeightForWorkout,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
@@ -75,7 +76,7 @@ final class _AddWeightScreenState extends State<AddWeightScreen> {
             ),
             const Spacer(),
             AppButton(
-              label: 'اضافة وزن',
+              label: context.l10n.addWeight,
               isLoading: _isSubmitting,
               onPressed: _canSubmit ? _submit : null,
             ),

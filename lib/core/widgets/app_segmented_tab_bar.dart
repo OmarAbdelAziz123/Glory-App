@@ -16,23 +16,30 @@ final class AppSegmentedTabBar extends StatelessWidget {
     required this.selectedIndex,
     required this.onSelected,
     this.gap = AppSpacing.sm,
+    this.compactStyle = false,
   }) : assert(tabs.isNotEmpty, 'tabs must not be empty');
 
   final List<String> tabs;
   final int selectedIndex;
   final ValueChanged<int> onSelected;
   final double gap;
+  final bool compactStyle;
 
   @override
   Widget build(BuildContext context) {
     final safeIndex = selectedIndex.clamp(0, tabs.length - 1);
+    final outerRadius = compactStyle ? 6.0 : AppSpacing.md;
+    final innerRadius = compactStyle ? 4.0 : AppSpacing.sm;
+    final outerBorder = compactStyle ? AppColors.primary10 : AppColors.primary100;
+    final unselectedBorder =
+        compactStyle ? AppColors.neutral400 : AppColors.neutral200;
 
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.sm),
+      padding: EdgeInsets.all(compactStyle ? 8 : AppSpacing.sm),
       decoration: BoxDecoration(
         color: AppColors.white,
-        border: Border.all(color: AppColors.primary100),
-        borderRadius: BorderRadius.circular(AppSpacing.md),
+        border: Border.all(color: outerBorder),
+        borderRadius: BorderRadius.circular(outerRadius),
       ),
       child: Row(
         children: [
@@ -43,6 +50,9 @@ final class AppSegmentedTabBar extends StatelessWidget {
                 label: tabs[i],
                 selected: i == safeIndex,
                 onTap: () => onSelected(i),
+                borderRadius: innerRadius,
+                unselectedBorderColor: unselectedBorder,
+                compact: compactStyle,
               ),
             ),
           ],
@@ -57,18 +67,24 @@ final class _SegmentedTabButton extends StatelessWidget {
     required this.label,
     required this.selected,
     required this.onTap,
+    required this.borderRadius,
+    required this.unselectedBorderColor,
+    required this.compact,
   });
 
   final String label;
   final bool selected;
   final VoidCallback onTap;
-
-  static const _radius = AppSpacing.sm;
-  static const _padding = EdgeInsets.symmetric(vertical: 10, horizontal: 8);
+  final double borderRadius;
+  final Color unselectedBorderColor;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
-    final radius = BorderRadius.circular(_radius);
+    final radius = BorderRadius.circular(borderRadius);
+    final padding = compact
+        ? const EdgeInsets.symmetric(vertical: 8, horizontal: 12)
+        : const EdgeInsets.symmetric(vertical: 10, horizontal: 8);
 
     return Material(
       color: Colors.transparent,
@@ -78,18 +94,21 @@ final class _SegmentedTabButton extends StatelessWidget {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 240),
           curve: Curves.easeOutCubic,
-          padding: _padding,
+          padding: padding,
           decoration: BoxDecoration(
             color: selected ? AppColors.primary : AppColors.white,
             borderRadius: radius,
-            border: selected ? null : Border.all(color: AppColors.neutral200),
+            border: selected ? null : Border.all(color: unselectedBorderColor),
           ),
           child: Center(
             child: AnimatedDefaultTextStyle(
               duration: const Duration(milliseconds: 200),
               curve: Curves.easeOut,
               style: context.subtitleMedium.copyWith(
-                color: selected ? AppColors.white : AppColors.neutral600,
+                fontSize: compact ? 14 : null,
+                color: selected
+                    ? AppColors.white
+                    : (compact ? AppColors.neutral400 : AppColors.neutral600),
               ),
               child: Text(
                 label,

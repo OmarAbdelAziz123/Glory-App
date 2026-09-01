@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_styles_extension.dart';
-import '../../../../../core/widgets/app_button.dart';
+import '../../../../core/l10n/l10n_extension.dart';
 
 // ── Model ─────────────────────────────────────────────────────────────────────
 
@@ -134,7 +134,7 @@ final class _CardHeader extends StatelessWidget {
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
               child: Text(
-                'تقييم التدريب',
+                context.l10n.trainingEvaluation,
                 style: context.captionBold.copyWith(
                   color: AppColors.primary,
                   decoration: TextDecoration.underline,
@@ -186,15 +186,15 @@ final class _DetailsRow extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-            child: _DetailColumn(label: 'اسم المدرب', value: trainerName),
+            child: _DetailColumn(label: context.l10n.instructorName, value: trainerName),
           ),
           const VerticalDivider(width: 1, color: AppColors.neutral200),
           Expanded(
-            child: _DetailColumn(label: 'التاريخ', value: date),
+            child: _DetailColumn(label: context.l10n.date, value: date),
           ),
           const VerticalDivider(width: 1, color: AppColors.neutral200),
           Expanded(
-            child: _DetailColumn(label: 'الوقت', value: time),
+            child: _DetailColumn(label: context.l10n.time, value: time),
           ),
         ],
       ),
@@ -244,31 +244,31 @@ final class _ActionRow extends StatelessWidget {
         Expanded(
           child: _CheckInButton(canCheckIn: canCheckIn, onTap: onCheckIn),
         ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: _CancelButton(canCancel: canCancel, onTap: onCancel),
-        ),
+        // const SizedBox(width: 10),
+        // Expanded(
+        //   child: _CancelButton(canCancel: canCancel, onTap: onCancel),
+        // ),
       ],
     );
   }
 }
 
-final class _CancelButton extends StatelessWidget {
-  const _CancelButton({required this.canCancel, this.onTap});
-
-  final bool canCancel;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return AppButton(
-      label: 'الغاء الحصة',
-      variant: AppButtonVariant.outlined,
-      height: 48,
-      onPressed: canCancel ? onTap : null,
-    );
-  }
-}
+// final class _CancelButton extends StatelessWidget {
+//   const _CancelButton({required this.canCancel, this.onTap});
+//
+//   final bool canCancel;
+//   final VoidCallback? onTap;
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return AppButton(
+//       label: context.l10n.cancelClass,
+//       variant: AppButtonVariant.outlined,
+//       height: 48,
+//       onPressed: canCancel ? onTap : null,
+//     );
+//   }
+// }
 
 final class _CheckInButton extends StatelessWidget {
   const _CheckInButton({required this.canCheckIn, this.onTap});
@@ -292,7 +292,7 @@ final class _CheckInButton extends StatelessWidget {
           ),
         ),
         child: Text(
-          'تسجيل دخول التدريب',
+          context.l10n.trainingCheckIn,
           style: context.captionRegular.copyWith(color: AppColors.white),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,

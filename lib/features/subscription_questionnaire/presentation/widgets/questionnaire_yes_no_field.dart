@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/extensions/num_spacing_extension.dart';
 import 'questionnaire_choice_chip.dart';
 import 'questionnaire_required_label.dart';
+import '../../../../core/l10n/l10n_extension.dart';
 
 final class QuestionnaireYesNoField extends StatelessWidget {
   const QuestionnaireYesNoField({
@@ -28,14 +29,14 @@ final class QuestionnaireYesNoField extends StatelessWidget {
         Row(
           children: [
             QuestionnaireChoiceChip(
-              label: 'نعم',
+              label: context.l10n.yes,
               selected: value == true,
               onTap: () => onChanged(true),
               expanded: true,
             ),
             const SizedBox(width: 12),
             QuestionnaireChoiceChip(
-              label: 'لا',
+              label: context.l10n.no,
               selected: value == false,
               onTap: () => onChanged(false),
               expanded: true,

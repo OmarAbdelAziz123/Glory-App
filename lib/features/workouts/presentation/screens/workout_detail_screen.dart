@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:glory_gym/core/core.dart';
-import 'package:glory_gym/features/auth/presentation/cubits/user_profile/user_profile_cubit.dart';
 import 'package:glory_gym/features/home/presentation/widgets/group_class_card.dart';
 import 'package:glory_gym/features/workouts/presentation/cubits/workout_detail/workout_detail_cubit.dart';
 import 'package:go_router/go_router.dart';
@@ -45,9 +44,7 @@ final class _WorkoutDetailView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final profile = context.watch<UserProfileCubit>().state;
-    final locale =
-        WorkoutUtils.localeFromAppLanguage(profile.member?.appLanguage);
+    final locale = context.l10n.localeName;
 
     return BlocListener<WorkoutDetailCubit, WorkoutDetailState>(
       listenWhen: (previous, current) =>
@@ -61,8 +58,9 @@ final class _WorkoutDetailView extends StatelessWidget {
         );
       },
       child: AppScaffold(
-        appBar: const AppPrimaryHeader(
-          title: 'تفاصيل التمرين',
+        backgroundColor: AppColors.neutral100,
+        appBar: AppPrimaryHeader(
+          title: context.l10n.workoutDetails,
           showBack: true,
           centerTitle: true,
         ),
@@ -76,89 +74,96 @@ final class _WorkoutDetailView extends StatelessWidget {
             if (detail == null) {
               return Center(
                 child: Text(
-                  state.errorMessage ?? 'حدث خطأ، حاول مرة أخرى',
+                  state.errorMessage ?? context.l10n.errorTryAgain,
                   style: context.captionRegular,
                 ),
               );
             }
 
             final cardStatus = WorkoutUtils.cardStatus(detail.status);
-            final workoutType = WorkoutUtils.typeLabel(detail.workoutType);
+            final workoutType =
+                WorkoutUtils.typeLabel(context.l10n, detail.workoutType);
+            final fallback = context.l10n.notAvailable;
+            final suggestedWeight = WorkoutUtils.displayOrFallback(
+              WorkoutUtils.weightLabel(context.l10n, detail.suggestedWeight),
+              fallback,
+            );
+            final isSubmittingWeight =
+                state.status == WorkoutDetailStatus.submittingWeight;
 
             return SingleChildScrollView(
-              padding: const EdgeInsets.all(18),
+              padding: const EdgeInsets.fromLTRB(18, 18, 18, 24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   AppEntrance(
                     delay: const Duration(milliseconds: 40),
                     offset: const Offset(0, 0.05),
-                    child: _HeaderCard(
+                    child: _SummaryCard(
                       name: WorkoutUtils.workoutNameFromDetail(
                         detail,
                         locale: locale,
                       ),
                       status: cardStatus,
-                      time: WorkoutUtils.durationLabel(detail.durationDays),
-                      type: workoutType,
-                      startDate: WorkoutUtils.formatDate(detail.startDate),
-                      endDate: WorkoutUtils.formatDate(detail.endDate),
-                      remainingDays:
-                          WorkoutUtils.remainingDaysLabel(detail.remainingDays),
-                      issuedBy: detail.status == 'UPCOMING'
-                          ? detail.instructorName
-                          : null,
-                      suggestedWeight:
-                          WorkoutUtils.weightLabel(detail.suggestedWeight),
-                      userWeight: WorkoutUtils.weightLabel(detail.userWeight),
-                      userWeightLast:
-                          WorkoutUtils.weightLabel(detail.userWeightLast),
-                    ),
-                  ),
-                  if (detail.canAddWeight) ...[
-                    const SizedBox(height: 12),
-                    AppEntrance(
-                      delay: const Duration(milliseconds: 100),
-                      child: AppButton(
-                        label: 'اضافة وزن',
-                        height: 48,
-                        onPressed: state.status ==
-                                WorkoutDetailStatus.submittingWeight
-                            ? null
-                            : () => _openAddWeight(context),
-                        isLoading: state.status ==
-                            WorkoutDetailStatus.submittingWeight,
+                      setLabel: WorkoutUtils.displayOrFallback(
+                        WorkoutUtils.durationLabel(
+                          context.l10n,
+                          detail.durationDays,
+                        ),
+                        fallback,
+                      ),
+                      repetitionLabel: WorkoutUtils.displayOrFallback(
+                        workoutType,
+                        fallback,
+                      ),
+                      startDate: WorkoutUtils.displayOrFallback(
+                        WorkoutUtils.formatDate(context.l10n, detail.startDate),
+                        fallback,
+                      ),
+                      endDate: WorkoutUtils.displayOrFallback(
+                        WorkoutUtils.formatDate(context.l10n, detail.endDate),
+                        fallback,
+                      ),
+                      remainingDays: WorkoutUtils.displayOrFallback(
+                        WorkoutUtils.remainingDaysLabel(
+                          context.l10n,
+                          detail.remainingDays,
+                        ),
+                        fallback,
                       ),
                     ),
-                  ],
-                  const SizedBox(height: 16),
+                  ),
+                  const SizedBox(height: 20),
                   AppEntrance(
-                    delay: const Duration(milliseconds: 140),
-                    child: Text(
-                      'تعليمات التمرين العامة',
-                      textAlign: TextAlign.end,
-                      style: context.highlightBold.copyWith(
-                        color: AppColors.neutral900,
-                      ),
+                    delay: const Duration(milliseconds: 120),
+                    child: AppDividerLabel(
+                      label: context.l10n.generalWorkoutInstructions,
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 16),
                   ...detail.instructions.asMap().entries.map(
                     (entry) {
                       final instruction = entry.value;
+                      final instructionText = WorkoutUtils.instructionLabel(
+                        instruction,
+                        locale: locale,
+                      );
+
                       return AppEntrance(
                         key: ValueKey('phase-${instruction.stepNumber}'),
                         delay: Duration(
-                          milliseconds: 180 + (entry.key.clamp(0, 5) * 80),
+                          milliseconds: 160 + (entry.key.clamp(0, 5) * 80),
                         ),
                         offset: const Offset(0, 0.06),
                         child: Padding(
                           padding: const EdgeInsets.only(bottom: 16),
-                          child: _PhaseCard(
+                          child: _InstructionCard(
                             phaseLabel: WorkoutUtils.phaseLabel(
+                              context.l10n,
                               instruction.stepNumber,
                             ),
-                            workoutType: workoutType,
+                            instructionText: instructionText,
+                            suggestedWeight: suggestedWeight,
                             thumbnailUrl: instruction.videos.isNotEmpty
                                 ? instruction.videos.first.thumbnailUrl
                                 : null,
@@ -167,6 +172,9 @@ final class _WorkoutDetailView extends StatelessWidget {
                                       instruction.videos.first.videoUrl,
                                     )
                                 : null,
+                            showAddWeight: detail.canAddWeight,
+                            isAddWeightLoading: isSubmittingWeight,
+                            onAddWeight: () => _openAddWeight(context),
                           ),
                         ),
                       );
@@ -182,32 +190,24 @@ final class _WorkoutDetailView extends StatelessWidget {
   }
 }
 
-final class _HeaderCard extends StatelessWidget {
-  const _HeaderCard({
+final class _SummaryCard extends StatelessWidget {
+  const _SummaryCard({
     required this.name,
     required this.status,
-    required this.time,
-    required this.type,
+    required this.setLabel,
+    required this.repetitionLabel,
     required this.startDate,
-    this.endDate,
-    this.remainingDays,
-    this.issuedBy,
-    this.suggestedWeight,
-    this.userWeight,
-    this.userWeightLast,
+    required this.endDate,
+    required this.remainingDays,
   });
 
   final String name;
   final GroupClassStatus status;
-  final String time;
-  final String type;
+  final String setLabel;
+  final String repetitionLabel;
   final String startDate;
-  final String? endDate;
-  final String? remainingDays;
-  final String? issuedBy;
-  final String? suggestedWeight;
-  final String? userWeight;
-  final String? userWeightLast;
+  final String endDate;
+  final String remainingDays;
 
   @override
   Widget build(BuildContext context) {
@@ -224,94 +224,48 @@ final class _HeaderCard extends StatelessWidget {
           const SizedBox(height: 12),
           const Divider(height: 1, color: AppColors.neutral200),
           const SizedBox(height: 12),
-          _ThreeColumnRow(
-            col1: (label: 'الوقت', value: time),
-            col2: (label: 'نوع التمرين', value: type),
-            col3: issuedBy != null
-                ? (label: 'اصدرت بواسطة', value: issuedBy!)
-                : startDate.isNotEmpty
-                    ? (label: 'تاريخ البداية', value: startDate)
-                    : null,
+          _InfoGridRow(
+            columns: [
+              (label: context.l10n.workoutSet, value: setLabel),
+              (label: context.l10n.workoutRepetition, value: repetitionLabel),
+              (label: context.l10n.startDate, value: startDate),
+            ],
           ),
-          if (status == GroupClassStatus.ongoing &&
-              remainingDays != null &&
-              remainingDays!.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            const Divider(height: 1, color: AppColors.neutral200),
-            const SizedBox(height: 12),
-            _DetailColumn(
-              label: 'عدد الايام المتبقية',
-              value: remainingDays!,
-            ),
-          ],
-          if (status == GroupClassStatus.completed &&
-              endDate != null &&
-              endDate!.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            const Divider(height: 1, color: AppColors.neutral200),
-            const SizedBox(height: 12),
-            _DetailColumn(label: 'تاريخ الانتهاء', value: endDate!),
-          ],
-          if ((suggestedWeight?.isNotEmpty ?? false) ||
-              (userWeight?.isNotEmpty ?? false) ||
-              (userWeightLast?.isNotEmpty ?? false)) ...[
-            const SizedBox(height: 12),
-            const Divider(height: 1, color: AppColors.neutral200),
-            const SizedBox(height: 12),
-            IntrinsicHeight(
-              child: Row(
-                children: [
-                  if (suggestedWeight?.isNotEmpty ?? false)
-                    Expanded(
-                      child: _DetailColumn(
-                        label: 'الوزن المقترح',
-                        value: suggestedWeight!,
-                      ),
-                    ),
-                  if (userWeight?.isNotEmpty ?? false) ...[
-                    if (suggestedWeight?.isNotEmpty ?? false)
-                      const VerticalDivider(
-                        width: 1,
-                        color: AppColors.neutral200,
-                      ),
-                    Expanded(
-                      child: _DetailColumn(
-                        label: 'وزنك',
-                        value: userWeight!,
-                      ),
-                    ),
-                  ],
-                  if (userWeightLast?.isNotEmpty ?? false) ...[
-                    const VerticalDivider(width: 1, color: AppColors.neutral200),
-                    Expanded(
-                      child: _DetailColumn(
-                        label: 'الوزن السابق',
-                        value: userWeightLast!,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ],
+          const SizedBox(height: 12),
+          const Divider(height: 1, color: AppColors.neutral200),
+          const SizedBox(height: 12),
+          _InfoGridRow(
+            columns: [
+              (label: context.l10n.endDate, value: endDate),
+              (label: context.l10n.remainingDaysCount, value: remainingDays),
+            ],
+          ),
         ],
       ),
     );
   }
 }
 
-final class _PhaseCard extends StatelessWidget {
-  const _PhaseCard({
+final class _InstructionCard extends StatelessWidget {
+  const _InstructionCard({
     required this.phaseLabel,
-    required this.workoutType,
+    required this.instructionText,
+    required this.suggestedWeight,
     this.thumbnailUrl,
     this.onPlay,
+    required this.showAddWeight,
+    required this.isAddWeightLoading,
+    required this.onAddWeight,
   });
 
   final String phaseLabel;
-  final String workoutType;
+  final String instructionText;
+  final String suggestedWeight;
   final String? thumbnailUrl;
   final VoidCallback? onPlay;
+  final bool showAddWeight;
+  final bool isAddWeightLoading;
+  final VoidCallback onAddWeight;
 
   @override
   Widget build(BuildContext context) {
@@ -328,7 +282,17 @@ final class _PhaseCard extends StatelessWidget {
             child: Row(
               children: [
                 Expanded(
-                  child: _DetailColumn(label: phaseLabel, value: workoutType),
+                  child: _InfoValueColumn(
+                    label: phaseLabel,
+                    value: instructionText,
+                  ),
+                ),
+                const VerticalDivider(width: 1, color: AppColors.neutral200),
+                Expanded(
+                  child: _InfoValueColumn(
+                    label: context.l10n.suggestedWeight,
+                    value: suggestedWeight,
+                  ),
                 ),
               ],
             ),
@@ -379,6 +343,16 @@ final class _PhaseCard extends StatelessWidget {
               ),
             ),
           ),
+          if (showAddWeight) ...[
+            const SizedBox(height: 12),
+            AppButton(
+              label: context.l10n.addWeight,
+              height: 48,
+              variant: AppButtonVariant.outlined,
+              onPressed: isAddWeightLoading ? null : onAddWeight,
+              isLoading: isAddWeightLoading,
+            ),
+          ],
         ],
       ),
     );
@@ -394,22 +368,37 @@ final class _TitleRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (label, color) = switch (status) {
-      GroupClassStatus.ongoing => ('تمرين جاري', AppColors.primary),
-      GroupClassStatus.upcoming => ('تمرين قادم', AppColors.red100),
-      GroupClassStatus.completed => ('تمرين مكتمل', AppColors.green200),
+      GroupClassStatus.ongoing => (
+          context.l10n.workoutInProgress,
+          AppColors.primary,
+        ),
+      GroupClassStatus.upcoming => (
+          context.l10n.upcomingWorkout,
+          AppColors.red100,
+        ),
+      GroupClassStatus.completed => (
+          context.l10n.completedWorkout,
+          AppColors.green200,
+        ),
     };
+
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Expanded(child: Text(name, style: context.highlightBold)),
-        _Chip(label: label, color: color),
+        Expanded(
+          child: Text(
+            name,
+            style: context.highlightBold.copyWith(color: AppColors.neutral900),
+          ),
+        ),
+        const SizedBox(width: 12),
+        _StatusChip(label: label, color: color),
       ],
     );
   }
 }
 
-final class _Chip extends StatelessWidget {
-  const _Chip({required this.label, required this.color});
+final class _StatusChip extends StatelessWidget {
+  const _StatusChip({required this.label, required this.color});
 
   final String label;
   final Color color;
@@ -422,38 +411,32 @@ final class _Chip extends StatelessWidget {
         border: Border.all(color: color),
         borderRadius: BorderRadius.circular(20),
       ),
-      child: Text(label, style: context.footnoteRegular.copyWith(color: color)),
+      child: Text(
+        label,
+        style: context.footnoteRegular.copyWith(color: color),
+      ),
     );
   }
 }
 
-final class _ThreeColumnRow extends StatelessWidget {
-  const _ThreeColumnRow({
-    required this.col1,
-    required this.col2,
-    this.col3,
-  });
+final class _InfoGridRow extends StatelessWidget {
+  const _InfoGridRow({required this.columns});
 
-  final ({String label, String value}) col1;
-  final ({String label, String value}) col2;
-  final ({String label, String value})? col3;
+  final List<({String label, String value})> columns;
 
   @override
   Widget build(BuildContext context) {
     return IntrinsicHeight(
       child: Row(
         children: [
-          Expanded(
-            child: _DetailColumn(label: col1.label, value: col1.value),
-          ),
-          const VerticalDivider(width: 1, color: AppColors.neutral200),
-          Expanded(
-            child: _DetailColumn(label: col2.label, value: col2.value),
-          ),
-          if (col3 != null) ...[
-            const VerticalDivider(width: 1, color: AppColors.neutral200),
+          for (int i = 0; i < columns.length; i++) ...[
+            if (i > 0)
+              const VerticalDivider(width: 1, color: AppColors.neutral200),
             Expanded(
-              child: _DetailColumn(label: col3!.label, value: col3!.value),
+              child: _InfoValueColumn(
+                label: columns[i].label,
+                value: columns[i].value,
+              ),
             ),
           ],
         ],
@@ -462,8 +445,8 @@ final class _ThreeColumnRow extends StatelessWidget {
   }
 }
 
-final class _DetailColumn extends StatelessWidget {
-  const _DetailColumn({required this.label, required this.value});
+final class _InfoValueColumn extends StatelessWidget {
+  const _InfoValueColumn({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -476,9 +459,17 @@ final class _DetailColumn extends StatelessWidget {
           label,
           style: context.footnoteRegular.copyWith(color: AppColors.neutral400),
           textAlign: TextAlign.center,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
         ),
         const SizedBox(height: 6),
-        Text(value, style: context.subtitleMedium, textAlign: TextAlign.center),
+        Text(
+          value,
+          style: context.subtitleMedium.copyWith(color: AppColors.neutral900),
+          textAlign: TextAlign.center,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
       ],
     );
   }

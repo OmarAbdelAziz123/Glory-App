@@ -1,44 +1,47 @@
 import 'package:flutter/material.dart';
 import 'package:glory_gym/core/core.dart';
+import 'package:glory_gym/l10n/app_localizations.dart';
 
 final class SubscriptionsScreen extends StatelessWidget {
   const SubscriptionsScreen({super.key});
 
-  static const _subscriptions = [
-    _SubscriptionData(
-      packageName: 'اسم الباقة',
-      packageType: 'حصص',
-      startDate: '١٠ يونيو ٢٠٢٦',
-      endDate: '١ مايو ٢٠٢٦',
-    ),
-    _SubscriptionData(
-      packageName: 'اسم الباقة',
-      packageType: 'حصص',
-      startDate: '١٠ يونيو ٢٠٢٦',
-      endDate: '١ مايو ٢٠٢٦',
-    ),
-    _SubscriptionData(
-      packageName: 'اسم الباقة',
-      packageType: 'حصص',
-      startDate: '١٠ يونيو ٢٠٢٦',
-      endDate: '١ مايو ٢٠٢٦',
-    ),
-  ];
+  List<_SubscriptionData> _subscriptions(AppLocalizations l10n) => [
+        _SubscriptionData(
+          packageName: l10n.packageName,
+          packageType: l10n.sessions,
+          startDate: l10n.sampleDateJune2026,
+          endDate: l10n.sampleDateMay2026,
+        ),
+        _SubscriptionData(
+          packageName: l10n.packageName,
+          packageType: l10n.sessions,
+          startDate: l10n.sampleDateJune2026,
+          endDate: l10n.sampleDateMay2026,
+        ),
+        _SubscriptionData(
+          packageName: l10n.packageName,
+          packageType: l10n.sessions,
+          startDate: l10n.sampleDateJune2026,
+          endDate: l10n.sampleDateMay2026,
+        ),
+      ];
 
   @override
   Widget build(BuildContext context) {
+    final subscriptions = _subscriptions(context.l10n);
+
     return AppScaffold(
-      appBar: const AppPrimaryHeader(
-        title: 'اشتراكاتي',
+      appBar: AppPrimaryHeader(
+        title: context.l10n.mySubscriptions,
         showBack: true,
         centerTitle: false,
       ),
       body: ListView.separated(
         padding: const EdgeInsets.all(18),
-        itemCount: _subscriptions.length,
+        itemCount: subscriptions.length,
         separatorBuilder: (_, _) => const SizedBox(height: 16),
         itemBuilder: (_, index) =>
-            _SubscriptionCard(data: _subscriptions[index]),
+            _SubscriptionCard(data: subscriptions[index]),
       ),
     );
   }
@@ -130,15 +133,15 @@ final class _PackageDetails extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-            child: _DetailCell(label: 'تاريخ البداية', value: data.startDate),
+            child: _DetailCell(label: context.l10n.startDate, value: data.startDate),
           ),
           const VerticalDivider(width: 1, color: AppColors.neutral200),
           Expanded(
-            child: _DetailCell(label: 'تاريخ الانتهاء', value: data.endDate),
+            child: _DetailCell(label: context.l10n.endDate, value: data.endDate),
           ),
           const VerticalDivider(width: 1, color: AppColors.neutral200),
           Expanded(
-            child: _DetailCell(label: 'نوع الباقة', value: data.packageType),
+            child: _DetailCell(label: context.l10n.packageType, value: data.packageType),
           ),
         ],
       ),

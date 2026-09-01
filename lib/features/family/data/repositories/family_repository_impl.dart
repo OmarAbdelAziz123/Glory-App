@@ -1,4 +1,5 @@
 import '../../../../core/error/app_failure.dart';
+import '../../../../core/l10n/fallback_messages.dart';
 import '../../../../core/result/result.dart';
 import '../../../../core/utils/family_utils.dart';
 import '../../domain/entities/family_member_entity.dart';
@@ -30,7 +31,7 @@ final class FamilyRepositoryImpl implements FamilyRepository {
   Result<FamilyMembersPageEntity> _mapPage(FamilyMembersApiResponse data) {
     final pageEntity = data.toPageEntity();
     if (pageEntity == null) {
-      return const Failure(ServerFailure('حدث خطأ، حاول مرة أخرى'));
+      return Failure(ServerFailure(FallbackMessages.errorTryAgain));
     }
     return Success(pageEntity);
   }

@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import '../../../../core/l10n/fallback_messages.dart';
 
 import '../../../../core/error/app_exception.dart';
 import '../../../../core/error/app_failure.dart';
@@ -26,7 +27,7 @@ final class FamilyRemoteApiService extends ApiService {
         );
         if (!response.success) {
           return Failure(
-            ServerFailure(response.message ?? 'حدث خطأ، حاول مرة أخرى'),
+            ServerFailure(response.message ?? FallbackMessages.errorTryAgain),
           );
         }
         return Success(response);
@@ -51,7 +52,7 @@ final class FamilyRemoteApiService extends ApiService {
         final response = await _familyApi.deleteFamilyMember(id);
         if (!response.success) {
           return Failure(
-            ServerFailure(response.message ?? 'حدث خطأ، حاول مرة أخرى'),
+            ServerFailure(response.message ?? FallbackMessages.errorTryAgain),
           );
         }
         return const Success(null);
@@ -60,7 +61,7 @@ final class FamilyRemoteApiService extends ApiService {
   Result<FamilyMemberModel> _mapMemberResponse(FamilyMemberApiResponse response) {
     if (!response.success || response.data == null) {
       return Failure(
-        ServerFailure(response.message ?? 'حدث خطأ، حاول مرة أخرى'),
+        ServerFailure(response.message ?? FallbackMessages.errorTryAgain),
       );
     }
     return Success(response.data!);
@@ -80,8 +81,8 @@ final class FamilyRemoteApiService extends ApiService {
           DioExceptionType.receiveTimeout ||
           DioExceptionType.sendTimeout ||
           DioExceptionType.connectionError =>
-            const NetworkFailure(),
-          _ => ServerFailure(e.message ?? 'Unexpected error'),
+            NetworkFailure(FallbackMessages.noInternet),
+          _ => ServerFailure(e.message ?? FallbackMessages.errorGeneral),
         },
       );
     } on AppException catch (e) {

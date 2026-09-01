@@ -6,18 +6,15 @@ import '../../cubits/questionnaire/questionnaire_cubit.dart';
 import '../questionnaire_step_title.dart';
 import '../questionnaire_text_area.dart';
 import '../questionnaire_yes_no_field.dart';
+import '../../../../../core/l10n/l10n_extension.dart';
 
 final class MedicalHistoryStep extends StatelessWidget {
   const MedicalHistoryStep({
     super.key,
-    required this.chronicCtrl,
-    required this.medicationsCtrl,
     required this.injuriesCtrl,
     required this.surgeryCtrl,
   });
 
-  final TextEditingController chronicCtrl;
-  final TextEditingController medicationsCtrl;
   final TextEditingController injuriesCtrl;
   final TextEditingController surgeryCtrl;
 
@@ -29,53 +26,33 @@ final class MedicalHistoryStep extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const QuestionnaireStepTitle(
-          title: 'التاريخ الصحي',
-          subtitle: 'استبيان الجاهزية البدنية (PAR-Q). يُرجى الإجابة بدقة.',
+        QuestionnaireStepTitle(
+          title: context.l10n.healthHistory,
+          subtitle: context.l10n.parqQuestionnaireIntro,
         ),
         16.vertical,
         QuestionnaireYesNoField(
-          label: 'هل لديك أي مرض مزمن؟ (سكري، ضغط، قلب…)',
+          label: context.l10n.haveChronicDiseaseQuestion,
           value: state.hasChronicDisease,
           onChanged: cubit.updateHasChronicDisease,
         ),
-        if (state.hasChronicDisease == true) ...[
-          8.vertical,
-          QuestionnaireTextArea(
-            label: 'التفاصيل',
-            hint: 'اذكر المرض المزمن',
-            controller: chronicCtrl,
-            onChanged: cubit.updateChronicDiseaseDetails,
-            required: true,
-          ),
-        ],
         16.vertical,
         QuestionnaireYesNoField(
-          label: 'هل تتناول أي أدوية بشكل دائم؟',
+          label: context.l10n.takeMedicationsQuestion,
           value: state.hasMedications,
           onChanged: cubit.updateHasMedications,
         ),
-        if (state.hasMedications == true) ...[
-          8.vertical,
-          QuestionnaireTextArea(
-            label: 'التفاصيل',
-            hint: 'اذكر الأدوية التي تتناولها',
-            controller: medicationsCtrl,
-            onChanged: cubit.updateMedicationsDetails,
-            required: true,
-          ),
-        ],
         16.vertical,
         QuestionnaireYesNoField(
-          label: 'هل لديك أي إصابات حالية أو سابقة؟',
+          label: context.l10n.haveInjuriesQuestion,
           value: state.hasInjuries,
           onChanged: cubit.updateHasInjuries,
         ),
         if (state.hasInjuries == true) ...[
           8.vertical,
           QuestionnaireTextArea(
-            label: 'التفاصيل',
-            hint: 'اذكر موضع الإصابة وتاريخها',
+            label: context.l10n.details,
+            hint: context.l10n.mentionInjuryLocationAndDate,
             controller: injuriesCtrl,
             onChanged: cubit.updateInjuriesDetails,
             required: true,
@@ -83,15 +60,15 @@ final class MedicalHistoryStep extends StatelessWidget {
         ],
         16.vertical,
         QuestionnaireYesNoField(
-          label: 'هل أجريت أي عملية جراحية؟',
+          label: context.l10n.hadSurgeryQuestion,
           value: state.hasSurgery,
           onChanged: cubit.updateHasSurgery,
         ),
         if (state.hasSurgery == true) ...[
           8.vertical,
           QuestionnaireTextArea(
-            label: 'التفاصيل',
-            hint: 'اذكر العملية الجراحية وتاريخها',
+            label: context.l10n.details,
+            hint: context.l10n.surgeryDetails,
             controller: surgeryCtrl,
             onChanged: cubit.updateSurgeryDetails,
             required: true,

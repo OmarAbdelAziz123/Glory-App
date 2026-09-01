@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 
 import '../../error/app_exception.dart';
+import '../../l10n/fallback_messages.dart';
 
 final class ErrorInterceptor extends Interceptor {
   @override
@@ -14,21 +15,26 @@ final class ErrorInterceptor extends Interceptor {
       DioExceptionType.receiveTimeout ||
       DioExceptionType.sendTimeout ||
       DioExceptionType.connectionError =>
-        const NetworkException(),
+        NetworkException(FallbackMessages.noInternet),
       DioExceptionType.badResponse =>
         _mapStatusCode(e.response?.statusCode, e.response),
-      DioExceptionType.cancel => const ServerException('Request cancelled'),
-      _ => ServerException(e.message ?? 'Unexpected error'),
+      DioExceptionType.cancel =>
+        ServerException(FallbackMessages.requestCancelled),
+      _ => ServerException(e.message ?? FallbackMessages.errorGeneral),
     };
   }
 
   AppException _mapStatusCode(int? statusCode, Response<dynamic>? response) {
     final message = _extractMessage(response?.data);
     return switch (statusCode) {
-      401 => UnauthorizedException(message ?? 'Unauthorized access'),
-      int s when s >= 500 => ServerException(message ?? 'Server error'),
-      int s when s >= 400 => ServerException(message ?? 'Client error'),
-      _ => ServerException(message ?? 'Unexpected error'),
+      401 => UnauthorizedException(
+        message ?? FallbackMessages.errorUnauthorized,
+      ),
+      int s when s >= 500 =>
+        ServerException(message ?? FallbackMessages.errorServer),
+      int s when s >= 400 =>
+        ServerException(message ?? FallbackMessages.clientError),
+      _ => ServerException(message ?? FallbackMessages.errorGeneral),
     };
   }
 

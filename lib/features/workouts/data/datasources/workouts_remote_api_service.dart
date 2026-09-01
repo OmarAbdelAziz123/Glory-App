@@ -1,4 +1,5 @@
 import 'dart:convert';
+import '../../../../core/l10n/fallback_messages.dart';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
@@ -38,7 +39,7 @@ final class WorkoutsRemoteApiService extends ApiService {
         );
         if (!response.success) {
           return Failure(
-            ServerFailure(response.message ?? 'حدث خطأ، حاول مرة أخرى'),
+            ServerFailure(response.message ?? FallbackMessages.errorTryAgain),
           );
         }
         return Success(response);
@@ -55,7 +56,7 @@ final class WorkoutsRemoteApiService extends ApiService {
         final response = await _workoutsApi.getWorkoutVideos(id);
         if (!response.success || response.data == null) {
           return Failure(
-            ServerFailure(response.message ?? 'حدث خطأ، حاول مرة أخرى'),
+            ServerFailure(response.message ?? FallbackMessages.errorTryAgain),
           );
         }
         return Success(response.data!);
@@ -78,7 +79,7 @@ final class WorkoutsRemoteApiService extends ApiService {
   ) {
     if (!response.success || response.data == null) {
       return Failure(
-        ServerFailure(response.message ?? 'حدث خطأ، حاول مرة أخرى'),
+        ServerFailure(response.message ?? FallbackMessages.errorTryAgain),
       );
     }
     return Success(response.data!);
@@ -98,8 +99,8 @@ final class WorkoutsRemoteApiService extends ApiService {
           DioExceptionType.receiveTimeout ||
           DioExceptionType.sendTimeout ||
           DioExceptionType.connectionError =>
-            const NetworkFailure(),
-          _ => ServerFailure(e.message ?? 'Unexpected error'),
+            NetworkFailure(FallbackMessages.noInternet),
+          _ => ServerFailure(e.message ?? FallbackMessages.errorGeneral),
         },
       );
     } on AppException catch (e) {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../core/extensions/num_spacing_extension.dart';
+import '../../../../../core/utils/onboarding_utils.dart';
 import '../../cubits/questionnaire/questionnaire_cubit.dart';
 import '../questionnaire_choice_chip.dart';
 import '../questionnaire_required_label.dart';
@@ -9,6 +10,7 @@ import '../questionnaire_step_title.dart';
 import '../questionnaire_text_area.dart';
 import '../questionnaire_unit_field.dart';
 import '../questionnaire_yes_no_field.dart';
+import 'package:glory_gym/core/l10n/l10n.dart';
 
 final class TrainingStep extends StatelessWidget {
   const TrainingStep({
@@ -33,54 +35,50 @@ final class TrainingStep extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const QuestionnaireStepTitle(
-          title: 'معلومات التدريب',
-          subtitle: 'لتحديد جدول التدريب المناسب لك.',
+        QuestionnaireStepTitle(
+          title: context.l10n.trainingInfo,
+          subtitle: context.l10n.toDetermineTrainingSchedule,
         ),
         16.vertical,
         QuestionnaireUnitField(
-          label: 'عدد الأيام التي تستطيع الالتزام بها أسبوعياً',
-          unit: 'يوم',
-          hint: 'قم بإدخال عدد الأيام',
+          label: context.l10n.daysYouCanCommitWeekly,
+          unit: context.l10n.day,
+          hint: context.l10n.enterNumberOfDays,
           controller: daysCtrl,
           onChanged: cubit.updateCommitmentDays,
         ),
         16.vertical,
-        const QuestionnaireRequiredLabel(label: 'الوقت المفضل للتمرين'),
+        QuestionnaireRequiredLabel(label: context.l10n.preferredWorkoutTime),
         8.vertical,
-        Row(
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
           children: [
-            for (var i = 0;
-                i < QuestionnaireCubit.timeOptions.length;
-                i++) ...[
-              if (i > 0) const SizedBox(width: 12),
+            for (final entry in OnboardingUtils.timeOptions(context.l10n).entries)
               QuestionnaireChoiceChip(
-                label: QuestionnaireCubit.timeOptions[i],
-                selected: preferredTime == QuestionnaireCubit.timeOptions[i],
-                onTap: () => cubit.updatePreferredTime(
-                  QuestionnaireCubit.timeOptions[i],
-                ),
-                expanded: true,
+                label: entry.value,
+                selected: preferredTime == entry.key,
+                onTap: () => cubit.updatePreferredTime(entry.key),
               ),
-            ],
           ],
         ),
         16.vertical,
-        const QuestionnaireRequiredLabel(label: 'التمارين المفضلة'),
+        QuestionnaireRequiredLabel(label: context.l10n.favoriteWorkouts),
         8.vertical,
         Row(
           children: [
-            for (var i = 0;
-                i < QuestionnaireCubit.preferredExerciseOptions.length;
-                i++) ...[
-              if (i > 0) const SizedBox(width: 12),
+            for (final entry
+                in OnboardingUtils.preferredExerciseOptions(context.l10n)
+                    .entries) ...[
+              if (entry.key !=
+                  OnboardingUtils.preferredExerciseOptions(context.l10n)
+                      .keys
+                      .first)
+                const SizedBox(width: 12),
               QuestionnaireChoiceChip(
-                label: QuestionnaireCubit.preferredExerciseOptions[i],
-                selected: preferredExercises ==
-                    QuestionnaireCubit.preferredExerciseOptions[i],
-                onTap: () => cubit.updatePreferredExercises(
-                  QuestionnaireCubit.preferredExerciseOptions[i],
-                ),
+                label: entry.value,
+                selected: preferredExercises == entry.key,
+                onTap: () => cubit.updatePreferredExercises(entry.key),
                 expanded: true,
               ),
             ],
@@ -88,15 +86,15 @@ final class TrainingStep extends StatelessWidget {
         ),
         16.vertical,
         QuestionnaireYesNoField(
-          label: 'هل سبق أن تدربت مع مدرب شخصي؟',
+          label: context.l10n.trainedWithPersonalCoachQuestion,
           value: trained,
           onChanged: cubit.updateTrainedWithPersonalTrainer,
         ),
         if (trained == true) ...[
           8.vertical,
           QuestionnaireTextArea(
-            label: 'التفاصيل',
-            hint: 'اذكر مدة التدريب مع المدرب الشخصي',
+            label: context.l10n.details,
+            hint: context.l10n.mentionDurationAndPreviousProgram,
             controller: trainerCtrl,
             onChanged: cubit.updatePersonalTrainerDetails,
             required: true,

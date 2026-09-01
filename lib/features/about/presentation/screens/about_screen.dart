@@ -13,6 +13,7 @@ import '../../../../core/widgets/app_nav_tile.dart';
 import '../../../../core/widgets/app_primary_header.dart';
 import '../../../../core/widgets/app_scaffold.dart';
 import '../cubits/contact/contact_cubit.dart';
+import '../../../../core/l10n/l10n_extension.dart';
 
 final class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
@@ -30,8 +31,8 @@ final class AboutScreen extends StatelessWidget {
     return BlocProvider(
       create: (_) => sl<ContactCubit>()..loadContactLinks(),
       child: AppScaffold(
-        appBar: const AppPrimaryHeader(
-          title: 'معلومات عن جلوري جيم',
+        appBar: AppPrimaryHeader(
+          title: context.l10n.aboutGloryGymInfo,
           showBack: true,
           centerTitle: false,
         ),
@@ -41,17 +42,17 @@ final class AboutScreen extends StatelessWidget {
             tiles: [
               _AboutTileData(
                 iconAsset: 'about_us2.svg',
-                label: 'من نحن',
+                label: context.l10n.aboutUs,
                 onTap: () => context.push(AppRoutes.whoWeAre),
               ),
               _AboutTileData(
                 iconAsset: 'app_ratings_icon.svg',
-                label: 'تقييمات التطبيق',
+                label: context.l10n.appReviews,
                 onTap: () => _openAppRating(context),
               ),
               _AboutTileData(
                 iconAsset: 'contact_us_icon.svg',
-                label: 'تواصل معنا',
+                label: context.l10n.contactUs,
                 onTap: () => context.push(
                   AppRoutes.whoWeAre,
                   extra: const WhoWeAreArgs(initialTab: 1),
@@ -59,32 +60,32 @@ final class AboutScreen extends StatelessWidget {
               ),
               _AboutTileData(
                 iconAsset: 'ourـvalue_icon.svg',
-                label: 'قيمنا',
+                label: context.l10n.ourValues,
                 onTap: () => _openPage(context, _pageKeys['VALUES']!),
               ),
               _AboutTileData(
                 iconAsset: 'our_vision_icon.svg',
-                label: 'رؤيتنا',
+                label: context.l10n.ourVision,
                 onTap: () => _openPage(context, _pageKeys['VISION']!),
               ),
               _AboutTileData(
                 iconAsset: 'our_goals_icon.svg',
-                label: 'أهدافنا',
+                label: context.l10n.ourGoals,
                 onTap: () => _openPage(context, _pageKeys['GOALS']!),
               ),
               _AboutTileData(
                 iconAsset: 'terms_and_conditions_icon.svg',
-                label: 'الشروط والأحكام',
+                label: context.l10n.termsAndConditions,
                 onTap: () => _openPage(context, _pageKeys['TERMS']!),
               ),
               _AboutTileData(
                 iconAsset: 'faq_icon.svg',
-                label: 'الأسئلة الشائعة',
+                label: context.l10n.faq,
                 onTap: () => context.push(AppRoutes.faq),
               ),
               _AboutTileData(
                 iconAsset: 'privacy_policy_icon.svg',
-                label: 'سياسة الخصوصية',
+                label: context.l10n.privacyPolicy,
                 onTap: () => _openPage(context, _pageKeys['PRIVACY']!),
               ),
             ],
@@ -107,7 +108,7 @@ final class AboutScreen extends StatelessWidget {
 
     if (url == null || url.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('رابط التقييم غير متاح حالياً')),
+        SnackBar(content: Text(context.l10n.evaluationLinkUnavailable)),
       );
       return;
     }
@@ -116,7 +117,7 @@ final class AboutScreen extends StatelessWidget {
     if (uri == null || !await launchUrl(uri, mode: LaunchMode.externalApplication)) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('تعذر فتح رابط التقييم')),
+        SnackBar(content: Text(context.l10n.couldNotOpenEvaluationLink)),
       );
     }
   }

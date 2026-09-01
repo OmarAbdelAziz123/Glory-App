@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/l10n_extension.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_styles_extension.dart';
 
@@ -9,14 +10,14 @@ final class AppConfirmDialog extends StatelessWidget {
     required this.title,
     required this.message,
     required this.confirmLabel,
-    this.cancelLabel = 'إلغاء',
+    this.cancelLabel,
     this.isDestructive = true,
   });
 
   final String title;
   final String message;
   final String confirmLabel;
-  final String cancelLabel;
+  final String? cancelLabel;
   final bool isDestructive;
 
   static Future<bool?> show(
@@ -24,12 +25,12 @@ final class AppConfirmDialog extends StatelessWidget {
     required String title,
     required String message,
     required String confirmLabel,
-    String cancelLabel = 'إلغاء',
+    String? cancelLabel,
     bool isDestructive = true,
   }) {
     return showDialog<bool>(
       context: context,
-      builder: (_) => AppConfirmDialog(
+      builder: (dialogContext) => AppConfirmDialog(
         title: title,
         message: message,
         confirmLabel: confirmLabel,
@@ -41,6 +42,7 @@ final class AppConfirmDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final resolvedCancelLabel = cancelLabel ?? context.l10n.cancel;
     final confirmColor = isDestructive ? AppColors.red : AppColors.primary800;
 
     return Dialog(
@@ -71,7 +73,7 @@ final class AppConfirmDialog extends StatelessWidget {
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(false),
                   child: Text(
-                    cancelLabel,
+                    resolvedCancelLabel,
                     style: context.contentSemibold.copyWith(
                       color: AppColors.neutral700,
                     ),

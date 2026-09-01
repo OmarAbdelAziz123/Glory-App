@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import '../../../../core/l10n/fallback_messages.dart';
 
 import '../../../../core/error/app_exception.dart';
 import '../../../../core/error/app_failure.dart';
@@ -26,7 +27,7 @@ final class NotificationsRemoteApiService extends ApiService {
         );
         if (!response.success) {
           return Failure(
-            ServerFailure(response.message ?? 'حدث خطأ، حاول مرة أخرى'),
+            ServerFailure(response.message ?? FallbackMessages.errorTryAgain),
           );
         }
         return Success(response);
@@ -36,7 +37,7 @@ final class NotificationsRemoteApiService extends ApiService {
         final response = await _notificationsApi.getUnreadCount();
         if (!response.success || response.data == null) {
           return Failure(
-            ServerFailure(response.message ?? 'حدث خطأ، حاول مرة أخرى'),
+            ServerFailure(response.message ?? FallbackMessages.errorTryAgain),
           );
         }
         return Success(response.data!.count);
@@ -47,7 +48,7 @@ final class NotificationsRemoteApiService extends ApiService {
         final response = await _notificationsApi.getNotificationById(id);
         if (!response.success || response.data == null) {
           return Failure(
-            ServerFailure(response.message ?? 'حدث خطأ، حاول مرة أخرى'),
+            ServerFailure(response.message ?? FallbackMessages.errorTryAgain),
           );
         }
         return Success(response.data!);
@@ -57,7 +58,7 @@ final class NotificationsRemoteApiService extends ApiService {
         final response = await _notificationsApi.markAllAsRead();
         if (!response.success || response.data == null) {
           return Failure(
-            ServerFailure(response.message ?? 'حدث خطأ، حاول مرة أخرى'),
+            ServerFailure(response.message ?? FallbackMessages.errorTryAgain),
           );
         }
         return Success(response.data!.updated);
@@ -77,8 +78,8 @@ final class NotificationsRemoteApiService extends ApiService {
           DioExceptionType.receiveTimeout ||
           DioExceptionType.sendTimeout ||
           DioExceptionType.connectionError =>
-            const NetworkFailure(),
-          _ => ServerFailure(e.message ?? 'Unexpected error'),
+            NetworkFailure(FallbackMessages.noInternet),
+          _ => ServerFailure(e.message ?? FallbackMessages.errorGeneral),
         },
       );
     } on AppException catch (e) {

@@ -10,6 +10,7 @@ import '../../../../core/models/content_args.dart';
 import '../../domain/entities/content_entities.dart';
 import '../cubits/contact/contact_cubit.dart';
 import '../cubits/info_page/info_page_cubit.dart';
+import '../../../../core/l10n/l10n_extension.dart';
 
 final class WhoWeAreScreen extends StatefulWidget {
   const WhoWeAreScreen({super.key, this.args});
@@ -53,8 +54,8 @@ final class _WhoWeAreScreenState extends State<WhoWeAreScreen>
         ),
       ],
       child: AppScaffold(
-        appBar: const AppPrimaryHeader(
-          title: 'من نحن',
+        appBar: AppPrimaryHeader(
+          title: context.l10n.aboutUs,
           showBack: true,
           centerTitle: false,
         ),
@@ -74,7 +75,10 @@ final class _WhoWeAreScreenState extends State<WhoWeAreScreen>
               padding: const EdgeInsets.symmetric(horizontal: 18),
               child: _UnderlineTabBar(
                 tabController: _tabController,
-                tabs: const ['تعرف علي جلوري جيم', 'منصات التواصل'],
+                tabs: [
+                  context.l10n.getToKnowGloryGym,
+                  context.l10n.socialMediaPlatforms,
+                ],
               ),
             ),
             const SizedBox(height: 16),
@@ -131,13 +135,13 @@ final class _AboutTabContent extends StatelessWidget {
       builder: (context, state) {
         if (state.status == InfoPageStatus.failure) {
           return _ErrorView(
-            message: state.errorMessage ?? 'حدث خطأ، حاول مرة أخرى',
+            message: state.errorMessage ?? context.l10n.errorTryAgain,
             onRetry: () => context.read<InfoPageCubit>().loadPage('ABOUT'),
           );
         }
 
         final content = state.page?.contentFor(isArabic: isArabic) ??
-            'محتوى غير متاح حالياً';
+            context.l10n.contentUnavailable;
 
         return Skeletonizer(
           enabled: state.isLoading,
@@ -166,13 +170,13 @@ final class _SocialTabContent extends StatelessWidget {
       builder: (context, state) {
         if (state.status == ContactStatus.failure) {
           return _ErrorView(
-            message: state.errorMessage ?? 'حدث خطأ، حاول مرة أخرى',
+            message: state.errorMessage ?? context.l10n.errorTryAgain,
             onRetry: () => context.read<ContactCubit>().loadContactLinks(),
           );
         }
 
         final links = state.links;
-        final platforms = _buildPlatforms(links);
+        final platforms = _buildPlatforms(context, links);
 
         return Skeletonizer(
           enabled: state.isLoading,
@@ -183,11 +187,11 @@ final class _SocialTabContent extends StatelessWidget {
                 const Divider(height: 1, color: AppColors.neutral200),
             itemBuilder: (context, index) {
               if (state.isLoading) {
-                return const _SocialTile(
+                return _SocialTile(
                   platform: _SocialPlatform(
                     iconAsset: 'facebook_icon.svg',
-                    name: 'فيسبوك',
-                    handle: 'Glory Gym',
+                    name: context.l10n.facebook,
+                    handle: context.l10n.appName,
                   ),
                 );
               }
@@ -204,42 +208,46 @@ final class _SocialTabContent extends StatelessWidget {
     );
   }
 
-  List<_SocialPlatform> _buildPlatforms(ContactLinksEntity? links) {
+  List<_SocialPlatform> _buildPlatforms(
+    BuildContext context,
+    ContactLinksEntity? links,
+  ) {
     if (links == null) return const [];
 
+    final l10n = context.l10n;
     return [
       if (links.facebook?.isNotEmpty == true)
         _SocialPlatform(
           iconAsset: 'facebook_icon.svg',
-          name: 'فيسبوك',
-          handle: 'Glory Gym',
+          name: l10n.facebook,
+          handle: l10n.appName,
           url: links.facebook!,
         ),
       if (links.instagram?.isNotEmpty == true)
         _SocialPlatform(
           iconAsset: 'instgram_icon.svg',
-          name: 'انستجرام',
+          name: l10n.instagram,
           handle: '@glorygym',
           url: links.instagram!,
         ),
       if (links.twitter?.isNotEmpty == true)
         _SocialPlatform(
           iconAsset: 'twitter_icon.svg',
-          name: 'تويتر',
+          name: l10n.twitter,
           handle: '@glorygym',
           url: links.twitter!,
         ),
       if (links.whatsapp?.isNotEmpty == true)
         _SocialPlatform(
           iconAsset: 'whatsapp_icon.svg',
-          name: 'واتساب',
-          handle: links.phone ?? 'WhatsApp',
+          name: l10n.whatsapp,
+          handle: links.phone ?? l10n.whatsapp,
           url: links.whatsapp!,
         ),
       if (links.phone?.isNotEmpty == true)
         _SocialPlatform(
           iconAsset: 'contact_us_icon.svg',
-          name: 'الهاتف',
+          name: l10n.telephone,
           handle: links.phone!,
           url: 'tel:${links.phone}',
         ),
@@ -253,7 +261,7 @@ final class _SocialTabContent extends StatelessWidget {
     if (uri == null || !await launchUrl(uri, mode: LaunchMode.externalApplication)) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('تعذر فتح الرابط')),
+        SnackBar(content: Text(context.l10n.couldNotOpenLink)),
       );
     }
   }
@@ -354,7 +362,7 @@ final class _ErrorView extends StatelessWidget {
           children: [
             Text(message, textAlign: TextAlign.center),
             const SizedBox(height: 16),
-            AppButton(label: 'إعادة المحاولة', onPressed: onRetry),
+            AppButton(label: context.l10n.retry, onPressed: onRetry),
           ],
         ),
       ),

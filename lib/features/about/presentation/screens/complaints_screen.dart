@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:glory_gym/core/core.dart';
 import '../../../../core/di/service_locator.dart';
 import '../cubits/feedback/feedback_cubit.dart';
+import '../../../../core/l10n/l10n_extension.dart';
 
 final class ComplaintsScreen extends StatefulWidget {
   const ComplaintsScreen({super.key});
@@ -42,11 +43,11 @@ final class _ComplaintsScreenState extends State<ComplaintsScreen> {
 
     AppSuccessSheet.show(
       providerContext,
-      title: 'تم الإرسال',
-      headline: 'شكراً لتواصلك معنا',
-      highlightWord: 'شكراً',
-      description: 'سنقوم بمراجعة شكواك أو اقتراحك والرد عليك في أقرب وقت.',
-      buttonLabel: 'حسناً',
+      title: context.l10n.sent,
+      headline: context.l10n.thanksForContactingUs,
+      highlightWord: context.l10n.thankYou,
+      description: context.l10n.complaintReviewMessage,
+      buttonLabel: context.l10n.okAlt,
       onButtonPressed: () {
         providerContext.read<FeedbackCubit>().reset();
         providerContext.pop();
@@ -62,8 +63,8 @@ final class _ComplaintsScreenState extends State<ComplaintsScreen> {
       child: Builder(
         builder: (providerContext) {
           return AppScaffold(
-            appBar: const AppPrimaryHeader(
-              title: 'شكاوي و اقتراحات',
+            appBar: AppPrimaryHeader(
+              title: context.l10n.complaintsAndSuggestions,
               showBack: true,
               centerTitle: false,
             ),
@@ -73,9 +74,9 @@ final class _ComplaintsScreenState extends State<ComplaintsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   AppTextField(
-                    label: 'الشكوى أو الاقتراح',
+                    label: context.l10n.complaintOrSuggestion,
                     controller: _controller,
-                    hint: 'اكتب شكواك أو اقتراحك هنا...',
+                    hint: context.l10n.writeComplaintOrSuggestion,
                     keyboardType: TextInputType.multiline,
                     maxLines: 6,
                     minLines: 4,
@@ -84,7 +85,7 @@ final class _ComplaintsScreenState extends State<ComplaintsScreen> {
                   const Spacer(),
                   BlocBuilder<FeedbackCubit, FeedbackState>(
                     builder: (context, state) => AppButton(
-                      label: 'إرسال',
+                      label: context.l10n.submit,
                       isLoading: state.isSubmitting,
                       onPressed: _canSubmit && !state.isSubmitting
                           ? () => _onSend(providerContext)

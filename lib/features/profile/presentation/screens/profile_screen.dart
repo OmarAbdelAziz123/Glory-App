@@ -6,6 +6,7 @@ import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_styles_extension.dart';
 import '../../../../../core/widgets/widgets.dart';
 import '../../../auth/presentation/cubits/user_profile/user_profile_cubit.dart';
+import 'package:glory_gym/core/l10n/l10n.dart';
 
 final class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -15,8 +16,8 @@ final class ProfileScreen extends StatelessWidget {
     final profile = context.watch<UserProfileCubit>().state;
 
     return AppScaffold(
-      appBar: const AppPrimaryHeader(
-        title: 'الملف الشخصي',
+      appBar: AppPrimaryHeader(
+        title: context.l10n.profile,
         showBack: true,
         centerTitle: true,
       ),
@@ -28,7 +29,7 @@ final class ProfileScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   _ProfileHeader(
-                    fullName: profile.displayName,
+                    fullName: profile.displayName(context.l10n),
                     email: profile.displayEmail,
                     avatarUrl: profile.member?.avatarUrl,
                   ),
@@ -37,34 +38,34 @@ final class ProfileScreen extends StatelessWidget {
                     items: [
                       _ProfileInfoItem(
                         icon: Iconsax.user,
-                        label: 'الاسم',
-                        value: profile.displayName,
+                        label: context.l10n.name,
+                        value: profile.displayName(context.l10n),
                       ),
                       _ProfileInfoItem(
                         icon: Iconsax.sms,
-                        label: 'البريد الإلكتروني',
+                        label: context.l10n.email,
                         value: profile.displayEmail,
                       ),
                       _ProfileInfoItem(
                         icon: Iconsax.call,
-                        label: 'رقم الجوال',
+                        label: context.l10n.mobileNumber,
                         value: profile.displayPhone,
                       ),
-                      if (profile.displayBirthDate.isNotEmpty)
+                      if (profile.displayBirthDate(context.l10n).isNotEmpty)
                         _ProfileInfoItem(
                           icon: Iconsax.calendar,
-                          label: 'تاريخ الميلاد',
-                          value: profile.displayBirthDate,
+                          label: context.l10n.dateOfBirth,
+                          value: profile.displayBirthDate(context.l10n),
                         ),
                       _ProfileInfoItem(
                         icon: Iconsax.heart,
-                        label: 'الحالة الاجتماعية',
-                        value: profile.displayMaritalStatus,
+                        label: context.l10n.maritalStatus,
+                        value: profile.displayMaritalStatus(context.l10n),
                       ),
                       _ProfileInfoItem(
                         icon: Iconsax.health,
-                        label: 'الحالة الصحية',
-                        value: profile.displayHealthNotes,
+                        label: context.l10n.healthStatus,
+                        value: profile.displayHealthNotes(context.l10n),
                       ),
                     ],
                   ),

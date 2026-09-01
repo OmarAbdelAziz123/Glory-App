@@ -1,25 +1,32 @@
+import '../l10n/fallback_messages.dart';
+
 sealed class AppFailure {
-  const AppFailure(this.message);
+  AppFailure(this.message);
 
   final String message;
 }
 
 final class ServerFailure extends AppFailure {
-  const ServerFailure([super.message = 'Server failure']);
+  ServerFailure([String? message])
+      : super(message ?? FallbackMessages.errorServer);
 }
 
 final class NetworkFailure extends AppFailure {
-  const NetworkFailure([super.message = 'Network failure']);
+  NetworkFailure([String? message])
+      : super(message ?? FallbackMessages.noInternet);
 }
 
 final class CacheFailure extends AppFailure {
-  const CacheFailure([super.message = 'Cache failure']);
+  CacheFailure([String? message])
+      : super(message ?? FallbackMessages.cacheError);
 }
 
 final class UnauthorizedFailure extends AppFailure {
-  const UnauthorizedFailure([super.message = 'Unauthorized']);
+  UnauthorizedFailure([String? message])
+      : super(message ?? FallbackMessages.errorUnauthorized);
 }
 
 final class ValidationFailure extends AppFailure {
-  const ValidationFailure([super.message = 'Validation failed']);
+  ValidationFailure([String? message])
+      : super(message ?? FallbackMessages.validationFailed);
 }

@@ -15,6 +15,11 @@ abstract final class Endpoints {
   static const String logout = '/mobile/auth/logout';
   static const String refreshToken = '/mobile/auth/refresh';
 
+  // ── Mobile Onboarding ─────────────────────────────────
+  static const String onboardingStatus = '/mobile/onboarding/status';
+  static const String onboarding = '/mobile/onboarding';
+  static const String mobileUploads = '/mobile/uploads';
+
   // ── Mobile Family ─────────────────────────────────────
   static const String mobileFamily = '/mobile/family';
   static const String mobileFamilyMember = '/mobile/family/{id}';
@@ -29,6 +34,7 @@ abstract final class Endpoints {
   // ── Mobile Check-in ───────────────────────────────────
   static const String mobileCheckinQr = '/mobile/checkin/qr';
   static const String mobileCheckinQrStatus = '/mobile/checkin/qr/{id}';
+  static const String mobileCheckinQrScan = '/mobile/checkin/qr/scan';
 
   // ── Mobile Bookings ───────────────────────────────────
   static const String mobileBookings = '/mobile/bookings';
@@ -50,11 +56,28 @@ abstract final class Endpoints {
   static const String mobileNotificationsReadAll =
       '/mobile/notifications/read-all';
 
+  // ── Mobile Coach Chat ─────────────────────────────────
+  static const String mobileChatConversations = '/mobile/chat/conversations';
+  static const String mobileChatConversationMessages =
+      '/mobile/chat/conversations/{id}/messages';
+  static const String mobileChatConversationRead =
+      '/mobile/chat/conversations/{id}/read';
+  static const String mobileChatUnreadCount = '/mobile/chat/unread-count';
+
   // ── Mobile Workouts ───────────────────────────────────
   static const String mobileWorkouts = '/mobile/workouts';
   static const String mobileWorkoutById = '/mobile/workouts/{id}';
   static const String mobileWorkoutVideos = '/mobile/workouts/{id}/videos';
   static const String mobileWorkoutWeight = '/mobile/workouts/{id}/weight';
+
+  // ── Mobile Sandy AI ───────────────────────────────────
+  static const String mobileSandyChat = '/mobile/sandy/chat';
+  static const String mobileSandySuggestions = '/mobile/sandy/suggestions';
+  static const String mobileSandyConversations = '/mobile/sandy/conversations';
+  static const String mobileSandyConversationMessages =
+      '/mobile/sandy/conversations/{id}/messages';
+  static const String mobileSandyConversationById =
+      '/mobile/sandy/conversations/{id}';
 
   // ── Members ──────────────────────────────────────────
   static const String members = '/members';

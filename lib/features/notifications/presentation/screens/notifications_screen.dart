@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:glory_gym/core/core.dart';
-import 'package:glory_gym/features/auth/presentation/cubits/user_profile/user_profile_cubit.dart';
 import 'package:glory_gym/features/notifications/domain/entities/notification_entity.dart';
 import 'package:glory_gym/features/notifications/presentation/cubits/notifications_list/notifications_list_cubit.dart';
 import 'package:glory_gym/features/notifications/presentation/cubits/notifications_unread/notifications_unread_cubit.dart';
+import 'package:glory_gym/core/l10n/l10n.dart';
 
 final class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -78,9 +78,7 @@ final class _NotificationsView extends StatelessWidget {
 
     context.read<NotificationsUnreadCubit>().fetchUnreadCount();
 
-    final profile = context.read<UserProfileCubit>().state;
-    final locale =
-        NotificationUtils.localeFromAppLanguage(profile.member?.appLanguage);
+    final locale = context.l10n.localeName;
 
     await showModalBottomSheet<void>(
       context: context,
@@ -100,9 +98,7 @@ final class _NotificationsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final profile = context.watch<UserProfileCubit>().state;
-    final locale =
-        NotificationUtils.localeFromAppLanguage(profile.member?.appLanguage);
+    final locale = context.l10n.localeName;
 
     return BlocListener<NotificationsListCubit, NotificationsListState>(
       listenWhen: (previous, current) =>
@@ -116,7 +112,7 @@ final class _NotificationsView extends StatelessWidget {
         );
       },
       child: AppScaffold(
-        appBar: const AppPrimaryHeader(title: 'الاشعارات', centerTitle: false),
+        appBar: AppPrimaryHeader(title: context.l10n.notificationsAlt, centerTitle: false),
         body: BlocBuilder<NotificationsListCubit, NotificationsListState>(
           builder: (context, state) {
             if (state.isLoading) {
@@ -127,7 +123,7 @@ final class _NotificationsView extends StatelessWidget {
                 state.notifications.isEmpty) {
               return Center(
                 child: Text(
-                  state.errorMessage ?? 'حدث خطأ، حاول مرة أخرى',
+                  state.errorMessage ?? context.l10n.errorTryAgain,
                   style: context.captionRegular,
                 ),
               );
@@ -136,7 +132,7 @@ final class _NotificationsView extends StatelessWidget {
             if (state.notifications.isEmpty) {
               return Center(
                 child: Text(
-                  'لا توجد اشعارات',
+                  context.l10n.noNotifications,
                   style: context.captionRegular.copyWith(
                     color: AppColors.neutral500,
                   ),
@@ -144,8 +140,10 @@ final class _NotificationsView extends StatelessWidget {
               );
             }
 
-            final groups =
-                NotificationUtils.groupByDate(state.notifications);
+            final groups = NotificationUtils.groupByDate(
+              context.l10n,
+              state.notifications,
+            );
 
             return ListView.builder(
               controller: scrollController,
@@ -354,7 +352,7 @@ final class _NotifDetailSheet extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'الاشعارات',
+                context.l10n.notificationsAlt,
                 style: context.highlightBold,
                 textAlign: TextAlign.center,
               ),
@@ -378,7 +376,7 @@ final class _NotifDetailSheet extends StatelessWidget {
               ),
               const SizedBox(height: 28),
               AppButton(
-                label: 'السابق',
+                label: context.l10n.previous,
                 onPressed: () => Navigator.of(context).pop(),
               ),
             ],

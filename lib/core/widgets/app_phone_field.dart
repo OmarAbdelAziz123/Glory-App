@@ -5,6 +5,7 @@ import 'package:glory_gym/core/extensions/num_spacing_extension.dart';
 import 'package:iconsax/iconsax.dart';
 
 import '../constants/arab_countries.dart';
+import '../l10n/l10n_extension.dart';
 import '../models/country_code.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_styles_extension.dart';
@@ -19,6 +20,7 @@ final class AppPhoneField extends StatefulWidget {
     this.textInputAction,
     this.onChanged,
     this.errorMessage,
+    this.initialDialCode,
   });
 
   final String label;
@@ -28,15 +30,44 @@ final class AppPhoneField extends StatefulWidget {
   final TextInputAction? textInputAction;
   final ValueChanged<String>? onChanged;
   final String? errorMessage;
+  final String? initialDialCode;
 
   @override
   State<AppPhoneField> createState() => AppPhoneFieldState();
 }
 
 final class AppPhoneFieldState extends State<AppPhoneField> {
-  CountryCode _selected = arabCountries.first;
+  CountryCode? _selected;
+  bool _initialized = false;
 
-  CountryCode get countryCode => _selected;
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      _selected = _resolveCountry(widget.initialDialCode) ??
+          arabCountries(context.l10n).first;
+      _initialized = true;
+    }
+  }
+
+  CountryCode? _resolveCountry(String? dialCode) {
+    if (dialCode == null || dialCode.isEmpty) return null;
+    final normalized = dialCode.startsWith('+') ? dialCode : '+$dialCode';
+    for (final country in arabCountries(context.l10n)) {
+      if (country.dialCode == normalized) return country;
+    }
+    return null;
+  }
+
+  void setDialCode(String dialCode) {
+    if (!mounted) return;
+    final country = _resolveCountry(dialCode);
+    if (country != null && country.dialCode != _selected?.dialCode) {
+      setState(() => _selected = country);
+    }
+  }
+
+  CountryCode get countryCode => _selected ?? arabCountries(context.l10n).first;
 
   void _openPicker() {
     showModalBottomSheet<CountryCode>(
@@ -46,7 +77,7 @@ final class AppPhoneFieldState extends State<AppPhoneField> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (_) => _CountryPickerSheet(selected: _selected),
+      builder: (_) => _CountryPickerSheet(selected: countryCode),
     ).then((picked) {
       if (picked != null) setState(() => _selected = picked);
     });
@@ -70,7 +101,7 @@ final class AppPhoneFieldState extends State<AppPhoneField> {
         Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            _CountryCodeBox(country: _selected, onTap: _openPicker),
+            _CountryCodeBox(country: countryCode, onTap: _openPicker),
             8.horizontal,
             Expanded(
               child: TextFormField(
@@ -123,6 +154,7 @@ final class _CountryPickerSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final countries = arabCountries(context.l10n);
     return DraggableScrollableSheet(
       initialChildSize: 0.6,
       minChildSize: 0.4,
@@ -143,18 +175,18 @@ final class _CountryPickerSheet extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             // Title
-            Text('اختر الدولة', style: context.highlightBold),
+            Text(context.l10n.chooseCountry, style: context.highlightBold),
             const SizedBox(height: 12),
             const Divider(height: 1, color: AppColors.neutral200),
             // List
             Expanded(
               child: ListView.separated(
                 controller: scrollCtrl,
-                itemCount: arabCountries.length,
+                itemCount: countries.length,
                 separatorBuilder: (_, _) =>
                     const Divider(height: 1, color: AppColors.neutral100),
                 itemBuilder: (_, index) {
-                  final country = arabCountries[index];
+                  final country = countries[index];
                   final isSelected = country.dialCode == selected.dialCode;
                   return ListTile(
                     onTap: () => Navigator.of(context).pop(country),

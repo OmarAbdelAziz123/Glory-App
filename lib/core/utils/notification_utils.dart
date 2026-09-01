@@ -1,3 +1,4 @@
+import 'package:glory_gym/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 
 import '../../features/notifications/domain/entities/notification_entity.dart';
@@ -17,26 +18,27 @@ abstract final class NotificationUtils {
     return '${text.substring(0, 60)}...';
   }
 
-  static String groupLabel(DateTime createdAt) {
+  static String groupLabel(AppLocalizations l10n, DateTime createdAt) {
     final now = DateTime.now();
     final local = createdAt.toLocal();
     final today = DateTime(now.year, now.month, now.day);
     final createdDay = DateTime(local.year, local.month, local.day);
 
-    if (createdDay == today) return 'اليوم';
+    if (createdDay == today) return l10n.today;
 
     final yesterday = today.subtract(const Duration(days: 1));
-    if (createdDay == yesterday) return 'الامس';
+    if (createdDay == yesterday) return l10n.yesterday;
 
-    return DateFormat('d MMMM y', 'ar').format(local);
+    return DateFormat('d MMMM y', l10n.localeName).format(local);
   }
 
   static List<NotificationGroupEntity> groupByDate(
+    AppLocalizations l10n,
     List<NotificationEntity> notifications,
   ) {
     final grouped = <String, List<NotificationEntity>>{};
     for (final notification in notifications) {
-      final label = groupLabel(notification.createdAt);
+      final label = groupLabel(l10n, notification.createdAt);
       grouped.putIfAbsent(label, () => []).add(notification);
     }
 

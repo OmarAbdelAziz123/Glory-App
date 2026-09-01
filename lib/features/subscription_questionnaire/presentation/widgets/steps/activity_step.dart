@@ -7,6 +7,7 @@ import '../questionnaire_step_title.dart';
 import '../questionnaire_text_field.dart';
 import '../questionnaire_unit_field.dart';
 import '../questionnaire_yes_no_field.dart';
+import '../../../../../core/l10n/l10n_extension.dart';
 
 final class ActivityStep extends StatelessWidget {
   const ActivityStep({
@@ -29,37 +30,37 @@ final class ActivityStep extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const QuestionnaireStepTitle(
-          title: 'النشاط البدني الحالي',
-          subtitle: 'مستوى نشاطك في الوقت الراهن.',
+        QuestionnaireStepTitle(
+          title: context.l10n.currentPhysicalActivity,
+          subtitle: context.l10n.currentActivityLevelSubtitle,
         ),
         16.vertical,
         QuestionnaireYesNoField(
-          label: 'هل تمارس الرياضة حالياً؟',
+          label: context.l10n.currentlyExercisingQuestion,
           value: exercises,
           onChanged: cubit.updateExercisesCurrently,
         ),
         if (exercises == true) ...[
           16.vertical,
           QuestionnaireUnitField(
-            label: 'عدد أيام التمرين في الأسبوع',
-            unit: 'يوم',
-            hint: 'قم بإدخال عدد الأيام',
+            label: context.l10n.workoutDaysPerWeek,
+            unit: context.l10n.day,
+            hint: context.l10n.enterNumberOfDays,
             controller: daysCtrl,
             onChanged: cubit.updateExerciseDaysPerWeek,
           ),
           16.vertical,
           QuestionnaireTextField(
-            label: 'نوع التمارين',
-            hint: 'مثال: أوزان، كارديو، سباحة',
+            label: context.l10n.workoutTypes,
+            hint: context.l10n.exampleWeightsCardioSwimming,
             controller: typesCtrl,
             onChanged: cubit.updateExerciseTypes,
             required: false,
           ),
           16.vertical,
           QuestionnaireTextField(
-            label: 'منذ متى تتمرن؟',
-            hint: 'مثال: سنة وثلاثة أشهر',
+            label: context.l10n.howLongHaveYouBeenTraining,
+            hint: context.l10n.exampleOneYearThreeMonths,
             controller: durationCtrl,
             onChanged: cubit.updateExerciseDuration,
             required: false,

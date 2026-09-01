@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../core/extensions/num_spacing_extension.dart';
+import '../../../../../core/utils/onboarding_utils.dart';
 import '../../cubits/questionnaire/questionnaire_cubit.dart';
 import '../questionnaire_choice_chip.dart';
 import '../questionnaire_required_label.dart';
 import '../questionnaire_step_title.dart';
 import '../questionnaire_unit_field.dart';
+import 'package:glory_gym/core/l10n/l10n.dart';
 
 final class LifestyleStep extends StatelessWidget {
   const LifestyleStep({super.key, required this.sleepCtrl});
@@ -24,54 +26,51 @@ final class LifestyleStep extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const QuestionnaireStepTitle(
-          title: 'نمط الحياة',
-          subtitle: 'العوامل المؤثرة على الاستشفاء والنتائج.',
+        QuestionnaireStepTitle(
+          title: context.l10n.lifestyle,
+          subtitle: context.l10n.recoveryFactorsSubtitle,
         ),
         16.vertical,
         QuestionnaireUnitField(
-          label: 'عدد ساعات النوم',
-          unit: 'ساعة',
-          hint: 'قم بإدخال عدد الساعات',
+          label: context.l10n.sleepHoursCount,
+          unit: context.l10n.hour,
+          hint: context.l10n.enterNumberOfHours,
           controller: sleepCtrl,
           onChanged: cubit.updateSleepHours,
         ),
         16.vertical,
-        const QuestionnaireRequiredLabel(label: 'طبيعة العمل'),
+        QuestionnaireRequiredLabel(label: context.l10n.natureOfWork),
         8.vertical,
         Row(
           children: [
-            for (var i = 0;
-                i < QuestionnaireCubit.workNatureOptions.length;
-                i++) ...[
-              if (i > 0) const SizedBox(width: 12),
+            for (final entry
+                in OnboardingUtils.workNatureOptions(context.l10n).entries) ...[
+              if (entry.key !=
+                  OnboardingUtils.workNatureOptions(context.l10n).keys.first)
+                const SizedBox(width: 12),
               QuestionnaireChoiceChip(
-                label: QuestionnaireCubit.workNatureOptions[i],
-                selected:
-                    workNature == QuestionnaireCubit.workNatureOptions[i],
-                onTap: () => cubit.updateWorkNature(
-                  QuestionnaireCubit.workNatureOptions[i],
-                ),
+                label: entry.value,
+                selected: workNature == entry.key,
+                onTap: () => cubit.updateWorkNature(entry.key),
                 expanded: true,
               ),
             ],
           ],
         ),
         16.vertical,
-        const QuestionnaireRequiredLabel(label: 'مستوى التوتر'),
+        QuestionnaireRequiredLabel(label: context.l10n.stressLevel),
         8.vertical,
         Row(
           children: [
-            for (var i = 0;
-                i < QuestionnaireCubit.stressOptions.length;
-                i++) ...[
-              if (i > 0) const SizedBox(width: 12),
+            for (final entry
+                in OnboardingUtils.stressOptions(context.l10n).entries) ...[
+              if (entry.key !=
+                  OnboardingUtils.stressOptions(context.l10n).keys.first)
+                const SizedBox(width: 12),
               QuestionnaireChoiceChip(
-                label: QuestionnaireCubit.stressOptions[i],
-                selected: stressLevel == QuestionnaireCubit.stressOptions[i],
-                onTap: () => cubit.updateStressLevel(
-                  QuestionnaireCubit.stressOptions[i],
-                ),
+                label: entry.value,
+                selected: stressLevel == entry.key,
+                onTap: () => cubit.updateStressLevel(entry.key),
                 expanded: true,
               ),
             ],

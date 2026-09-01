@@ -1,4 +1,5 @@
 import '../../../../core/error/app_failure.dart';
+import '../../../../core/l10n/fallback_messages.dart';
 import '../../../../core/result/result.dart';
 import '../../domain/entities/workout_entity.dart';
 import '../../domain/repositories/workouts_repository.dart';
@@ -70,7 +71,7 @@ final class WorkoutsRepositoryImpl implements WorkoutsRepository {
   Result<WorkoutsPageEntity> _mapPage(WorkoutAssignmentsApiResponse data) {
     final pageEntity = data.toPageEntity();
     if (pageEntity == null) {
-      return const Failure(ServerFailure('حدث خطأ، حاول مرة أخرى'));
+      return Failure(ServerFailure(FallbackMessages.errorTryAgain));
     }
     return Success(pageEntity);
   }

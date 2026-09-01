@@ -7,6 +7,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 import '../../../../core/di/service_locator.dart';
 import '../../../../core/router/app_routes.dart';
 import '../cubits/faqs/faqs_cubit.dart';
+import '../../../../core/l10n/l10n_extension.dart';
 
 final class FaqScreen extends StatelessWidget {
   const FaqScreen({super.key});
@@ -16,8 +17,8 @@ final class FaqScreen extends StatelessWidget {
     return BlocProvider(
       create: (_) => sl<FaqsCubit>()..loadFaqs(),
       child: AppScaffold(
-        appBar: const AppPrimaryHeader(
-          title: 'الأسئلة الشائعة',
+        appBar: AppPrimaryHeader(
+          title: context.l10n.faq,
           showBack: true,
           centerTitle: false,
         ),
@@ -28,7 +29,7 @@ final class FaqScreen extends StatelessWidget {
                 builder: (context, state) {
                   if (state.status == FaqsStatus.failure && state.faqs.isEmpty) {
                     return _ErrorView(
-                      message: state.errorMessage ?? 'حدث خطأ، حاول مرة أخرى',
+                      message: state.errorMessage ?? context.l10n.errorTryAgain,
                       onRetry: () => context.read<FaqsCubit>().loadFaqs(),
                     );
                   }
@@ -44,9 +45,9 @@ final class FaqScreen extends StatelessWidget {
                       separatorBuilder: (_, _) => const SizedBox(height: 8),
                       itemBuilder: (context, index) {
                         if (state.isLoading) {
-                          return const _FaqAccordion(
-                            question: 'سؤال تحميل مؤقت',
-                            answer: 'إجابة تحميل مؤقتة',
+                          return _FaqAccordion(
+                            question: context.l10n.tempLoadingQuestion,
+                            answer: context.l10n.tempLoadingAnswer,
                           );
                         }
 
@@ -156,7 +157,7 @@ final class _BottomComplaintsButton extends StatelessWidget {
         border: Border(top: BorderSide(color: AppColors.neutral200)),
       ),
       child: AppButton(
-        label: 'شكاوي و اقتراحات',
+        label: context.l10n.complaintsAndSuggestions,
         onPressed: onTap,
       ),
     );
@@ -179,7 +180,7 @@ final class _ErrorView extends StatelessWidget {
           children: [
             Text(message, textAlign: TextAlign.center),
             const SizedBox(height: 16),
-            AppButton(label: 'إعادة المحاولة', onPressed: onRetry),
+            AppButton(label: context.l10n.retry, onPressed: onRetry),
           ],
         ),
       ),

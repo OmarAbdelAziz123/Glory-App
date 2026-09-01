@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_styles_extension.dart';
+import '../../../../core/l10n/l10n_extension.dart';
 
 final class ForgotPasswordHeader extends StatelessWidget {
   const ForgotPasswordHeader({super.key});
@@ -10,10 +11,10 @@ final class ForgotPasswordHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text('نسيت كلمة المرور', style: context.heading1),
+        Text(context.l10n.forgotPassword, style: context.heading1),
         const SizedBox(height: 8),
         Text(
-          'الرجاء إدخال بريدك الإلكتروني او رقم هاتفك لإرسال رمز التأكيد إليه',
+          context.l10n.forgotPasswordEmailOrPhoneHint,
           style: context.captionRegular.copyWith(color: AppColors.neutral500),
           textAlign: TextAlign.center,
         ),

@@ -13,6 +13,7 @@ import '../../../../core/widgets/widgets.dart';
 import '../cubits/register/register_cubit.dart';
 import '../widgets/login_terms_row.dart';
 import '../widgets/register_header.dart';
+import 'package:glory_gym/core/l10n/l10n.dart';
 
 final class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -43,9 +44,10 @@ final class _RegisterScreenState extends State<RegisterScreen> {
       _termsAccepted;
 
   void _onOtpPressed(BuildContext context) {
-    final usernameErr = AppValidators.required(_usernameCtrl.text);
-    final phoneErr = AppValidators.phone(_phoneCtrl.text);
-    final emailErr = AppValidators.email(_emailCtrl.text);
+    final usernameErr =
+        AppValidators.required(context.l10n, _usernameCtrl.text);
+    final phoneErr = AppValidators.phone(context.l10n, _phoneCtrl.text);
+    final emailErr = AppValidators.email(context.l10n, _emailCtrl.text);
 
     setState(() {
       _usernameError = usernameErr;
@@ -120,10 +122,10 @@ final class _RegisterScreenState extends State<RegisterScreen> {
                         const RegisterHeader(),
                         24.vertical,
                         AppTextField(
-                          label: 'اسم المستخدم',
+                          label: context.l10n.username,
                           controller: _usernameCtrl,
                           focusNode: _usernameFocus,
-                          hint: 'قم بإدخال اسم المستخدم الخاصة بك',
+                          hint: context.l10n.enterYourUsername,
                           textInputAction: TextInputAction.next,
                           errorMessage: _usernameError,
                           onChanged: (_) =>
@@ -133,20 +135,20 @@ final class _RegisterScreenState extends State<RegisterScreen> {
                         16.vertical,
                         AppPhoneField(
                           key: _phoneFieldKey,
-                          label: 'رقم الهاتف',
+                          label: context.l10n.phone,
                           controller: _phoneCtrl,
                           focusNode: _phoneFocus,
-                          hint: 'قم بإدخال او رقم الهاتف الخاصة بك',
+                          hint: context.l10n.enterEmailOrPhone,
                           textInputAction: TextInputAction.next,
                           errorMessage: _phoneError,
                           onChanged: (_) => setState(() => _phoneError = null),
                         ),
                         16.vertical,
                         AppTextField(
-                          label: 'البريد الإلكتروني',
+                          label: context.l10n.email,
                           controller: _emailCtrl,
                           focusNode: _emailFocus,
-                          hint: 'قم بإدخال بريدك الإلكتروني الخاصة بك',
+                          hint: context.l10n.enterYourEmail,
                           keyboardType: TextInputType.emailAddress,
                           textInputAction: TextInputAction.done,
                           errorMessage: _emailError,
@@ -159,7 +161,7 @@ final class _RegisterScreenState extends State<RegisterScreen> {
                               setState(() => _termsAccepted = !_termsAccepted),
                         ),
                         16.vertical,
-                        const AppDividerLabel(label: 'تسجيل الدخول سريع مع'),
+                        AppDividerLabel(label: context.l10n.quickLoginWith),
                         16.vertical,
                         AppSocialLoginRow(onApple: () {}, onGoogle: () {}),
                         24.vertical,
@@ -209,7 +211,7 @@ final class _BottomSection extends StatelessWidget {
           _AlreadyHaveAccountRow(onLogin: onLogin),
           16.vertical,
           AppButton(
-            label: 'طلب OTP',
+            label: context.l10n.requestOtp,
             isLoading: isLoading,
             onPressed: canSubmit && !isLoading ? onOtp : null,
           ),
@@ -255,9 +257,9 @@ final class _AlreadyHaveAccountRowState extends State<_AlreadyHaveAccountRow> {
       TextSpan(
         style: context.captionRegular.copyWith(color: AppColors.neutral400),
         children: [
-          const TextSpan(text: 'لدي حساب بالفعل ؟ '),
+          TextSpan(text: context.l10n.alreadyHaveAccountPrefix),
           TextSpan(
-            text: 'تسجيل دخول',
+            text: context.l10n.signIn,
             recognizer: _loginRecognizer,
             style: context.subtitleMedium.copyWith(
               color: AppColors.primary,

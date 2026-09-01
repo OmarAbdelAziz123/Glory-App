@@ -5,4 +5,6 @@ abstract interface class CheckinRepository {
   Future<Result<QrSessionEntity>> generateQr();
 
   Future<Result<QrStatusEntity>> getQrStatus(String id);
+
+  Future<Result<QrStatusEntity>> scanQr(String token);
 }

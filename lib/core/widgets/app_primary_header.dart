@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_styles_extension.dart';
+import 'app_nav_back_icon.dart';
 
 final class AppPrimaryHeader extends StatelessWidget
     implements PreferredSizeWidget {
@@ -52,12 +52,7 @@ final class AppPrimaryHeader extends StatelessWidget
                 alignment: AlignmentDirectional.centerStart,
                 child: GestureDetector(
                   onTap: onBack ?? () => Navigator.of(context).maybePop(),
-                  child: SvgPicture.asset(
-                    Theme.of(context).platform == TargetPlatform.iOS
-                        ? 'assets/images/svgs/back_icon_for_ios.svg'
-                        : 'assets/images/svgs/back_icon_for_android.svg',
-                    fit: BoxFit.scaleDown,
-                  ),
+                  child: AppNavBackIcon(fit: BoxFit.scaleDown),
                 ),
               ),
             )

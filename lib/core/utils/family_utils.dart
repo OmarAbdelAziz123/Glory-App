@@ -1,3 +1,4 @@
+import 'package:glory_gym/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 
 abstract final class FamilyUtils {
@@ -14,63 +15,64 @@ abstract final class FamilyUtils {
     'WIFE',
   ];
 
-  static const relationLabels = <String>[
-    'ابن',
-    'ابنة',
-    'أب',
-    'أم',
-    'أخ',
-    'أخت',
-    'زوج',
-    'زوجة',
-  ];
+  static List<String> genderLabels(AppLocalizations l10n) => [
+        l10n.genderMale,
+        l10n.genderFemale,
+      ];
 
-  static const genderLabels = <String>['ذكر', 'أنثى'];
+  static List<String> relationLabels(AppLocalizations l10n) => [
+        l10n.relationSon,
+        l10n.relationDaughter,
+        l10n.relationFather,
+        l10n.relationMother,
+        l10n.relationBrother,
+        l10n.relationSister,
+        l10n.relationHusband,
+        l10n.relationWife,
+      ];
 
-  static String genderLabel(String? gender) => switch (gender) {
-        'MALE' => 'ذكر',
-        'FEMALE' => 'أنثى',
+  static String genderLabel(AppLocalizations l10n, String? gender) =>
+      switch (gender) {
+        'MALE' => l10n.genderMale,
+        'FEMALE' => l10n.genderFemale,
         _ => '',
       };
 
-  static String? genderValue(String label) => switch (label) {
-        'ذكر' => 'MALE',
-        'أنثى' => 'FEMALE',
-        _ => null,
-      };
-
-  static String relationLabel(String? relation) => switch (relation) {
-        'SON' => 'ابن',
-        'DAUGHTER' => 'ابنة',
-        'FATHER' => 'أب',
-        'MOTHER' => 'أم',
-        'BROTHER' => 'أخ',
-        'SISTER' => 'أخت',
-        'HUSBAND' => 'زوج',
-        'WIFE' => 'زوجة',
-        _ => '',
-      };
-
-  static String? relationValue(String label) => switch (label) {
-        'ابن' => 'SON',
-        'ابنة' => 'DAUGHTER',
-        'أب' => 'FATHER',
-        'أم' => 'MOTHER',
-        'أخ' => 'BROTHER',
-        'أخت' => 'SISTER',
-        'زوج' => 'HUSBAND',
-        'زوجة' => 'WIFE',
-        _ => null,
-      };
-
-  static String formatBirthDate(DateTime? date) {
-    if (date == null) return '';
-    return DateFormat('d MMMM y', 'ar').format(date);
+  static String? genderValue(AppLocalizations l10n, String label) {
+    for (final gender in genders) {
+      if (genderLabel(l10n, gender) == label) return gender;
+    }
+    return null;
   }
 
-  static String formatAddedDate(DateTime? date) {
+  static String relationLabel(AppLocalizations l10n, String? relation) =>
+      switch (relation) {
+        'SON' => l10n.relationSon,
+        'DAUGHTER' => l10n.relationDaughter,
+        'FATHER' => l10n.relationFather,
+        'MOTHER' => l10n.relationMother,
+        'BROTHER' => l10n.relationBrother,
+        'SISTER' => l10n.relationSister,
+        'HUSBAND' => l10n.relationHusband,
+        'WIFE' => l10n.relationWife,
+        _ => '',
+      };
+
+  static String? relationValue(AppLocalizations l10n, String label) {
+    for (final relation in relations) {
+      if (relationLabel(l10n, relation) == label) return relation;
+    }
+    return null;
+  }
+
+  static String formatBirthDate(AppLocalizations l10n, DateTime? date) {
     if (date == null) return '';
-    return DateFormat('d MMMM y', 'ar').format(date);
+    return DateFormat('d MMMM y', l10n.localeName).format(date);
+  }
+
+  static String formatAddedDate(AppLocalizations l10n, DateTime? date) {
+    if (date == null) return '';
+    return DateFormat('d MMMM y', l10n.localeName).format(date);
   }
 
   static String? toApiDate(DateTime? date) {

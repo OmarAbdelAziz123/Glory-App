@@ -27,4 +27,13 @@ final class CheckinRepositoryImpl implements CheckinRepository {
       Failure(:final failure) => Failure(failure),
     };
   }
+
+  @override
+  Future<Result<QrStatusEntity>> scanQr(String token) async {
+    final result = await _remote.scanQr(token);
+    return switch (result) {
+      Success(:final data) => Success(data.toEntity()),
+      Failure(:final failure) => Failure(failure),
+    };
+  }
 }

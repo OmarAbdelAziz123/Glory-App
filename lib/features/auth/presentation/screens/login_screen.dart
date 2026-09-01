@@ -5,17 +5,19 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/di/service_locator.dart';
-import '../../../../core/di/service_locator.dart';
-import '../../../../core/router/app_routes.dart';
 import '../../../../core/extensions/extensions.dart';
+import '../../../../core/l10n/locale_service.dart';
+import '../../../../core/router/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_styles_extension.dart';
 import '../../../../core/utils/app_validators.dart';
+import '../../../../core/utils/onboarding_navigation.dart';
 import '../../../../core/widgets/widgets.dart';
 import '../cubits/login/login_cubit.dart';
 import '../cubits/user_profile/user_profile_cubit.dart';
 import '../widgets/login_header.dart';
 import '../widgets/login_terms_row.dart';
+import 'package:glory_gym/core/l10n/l10n.dart';
 
 final class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -38,8 +40,9 @@ final class _LoginScreenState extends State<LoginScreen> {
 
   void _onLoginPressed(BuildContext context) {
     setState(() {
-      _emailError = AppValidators.emailOrPhone(_emailOrPhoneCtrl.text);
-      _passwordError = AppValidators.password(_passwordCtrl.text);
+      _emailError =
+          AppValidators.emailOrPhone(context.l10n, _emailOrPhoneCtrl.text);
+      _passwordError = AppValidators.password(context.l10n, _passwordCtrl.text);
     });
 
     if (_emailError != null || _passwordError != null) return;
@@ -74,9 +77,10 @@ final class _LoginScreenState extends State<LoginScreen> {
             final session = state.session;
             if (session != null) {
               context.read<UserProfileCubit>().setMember(session.member);
+              unawaited(LocaleService.syncFromMember(session.member));
             }
             unawaited(context.read<UserProfileCubit>().fetchProfile());
-            context.go(AppRoutes.home);
+            unawaited(navigateAfterAuthentication(context));
             context.read<LoginCubit>().reset();
           }
         },
@@ -95,10 +99,10 @@ final class _LoginScreenState extends State<LoginScreen> {
                         const LoginHeader(),
                         24.vertical,
                         AppTextField(
-                          label: 'البريد الإلكتروني او رقم الهاتف',
+                          label: context.l10n.emailOrPhone,
                           controller: _emailOrPhoneCtrl,
                           hint:
-                              'قم بإدخال بريدك الإلكتروني او رقم الهاتف الخاصة بك',
+                              context.l10n.enterYourEmailOrPhone,
                           keyboardType: TextInputType.emailAddress,
                           textInputAction: TextInputAction.next,
                           errorMessage: _emailError,
@@ -106,9 +110,9 @@ final class _LoginScreenState extends State<LoginScreen> {
                         ),
                         16.vertical,
                         AppPasswordField(
-                          label: 'كلمة المرور',
+                          label: context.l10n.password,
                           controller: _passwordCtrl,
-                          hint: 'قم بإدخال كلمة المرور الخاصة بك',
+                          hint: context.l10n.enterYourPassword,
                           textInputAction: TextInputAction.done,
                           errorMessage: _passwordError,
                           onChanged: (_) =>
@@ -122,14 +126,12 @@ final class _LoginScreenState extends State<LoginScreen> {
                         ),
                         10.vertical,
                         _ForgotPasswordLink(
-                          onTap: () {
-                            context.push(AppRoutes.forgotPassword);
-                          },
+                          onTap: () => context.push(AppRoutes.forgotPassword),
                         ),
                         16.vertical,
-                        const AppDividerLabel(label: 'تسجيل الدخول سريع مع'),
-                        16.vertical,
-                        AppSocialLoginRow(onApple: () {}, onGoogle: () {}),
+                        // AppDividerLabel(label: context.l10n.quickLoginWith),
+                        // 16.vertical,
+                        // AppSocialLoginRow(onApple: () {}, onGoogle: () {}),
                         24.vertical,
                       ],
                     ),
@@ -140,9 +142,7 @@ final class _LoginScreenState extends State<LoginScreen> {
                     canLogin: _canLogin,
                     isLoading: state.isLoading,
                     onLogin: () => _onLoginPressed(context),
-                    onCreateAccount: () {
-                      context.push(AppRoutes.register);
-                    },
+                    // onCreateAccount: () => context.push(AppRoutes.register),
                   ),
                 ),
               ],
@@ -157,9 +157,9 @@ final class _LoginScreenState extends State<LoginScreen> {
 // ─── Private widgets ─────────────────────────────────────────────────────────
 
 final class _ForgotPasswordLink extends StatelessWidget {
-  const _ForgotPasswordLink({this.onTap});
+  const _ForgotPasswordLink({required this.onTap});
 
-  final VoidCallback? onTap;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -168,7 +168,7 @@ final class _ForgotPasswordLink extends StatelessWidget {
       child: GestureDetector(
         onTap: onTap,
         child: Text(
-          'نسيت كلمة السر؟',
+          context.l10n.forgotPassword,
           style: context.captionRegular.copyWith(
             color: AppColors.primary,
             decoration: TextDecoration.underline,
@@ -185,13 +185,13 @@ final class _BottomSection extends StatelessWidget {
     required this.canLogin,
     required this.isLoading,
     required this.onLogin,
-    required this.onCreateAccount,
+    // required this.onCreateAccount,
   });
 
   final bool canLogin;
   final bool isLoading;
   final VoidCallback onLogin;
-  final VoidCallback onCreateAccount;
+  // final VoidCallback onCreateAccount;
 
   @override
   Widget build(BuildContext context) {
@@ -200,10 +200,10 @@ final class _BottomSection extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _CreateAccountRow(onTap: onCreateAccount),
-          16.vertical,
+          // _CreateAccountRow(onTap: onCreateAccount),
+          // 16.vertical,
           AppButton(
-            label: 'تسجيل الدخول',
+            label: context.l10n.login,
             isLoading: isLoading,
             onPressed: canLogin && !isLoading ? onLogin : null,
           ),
@@ -213,33 +213,33 @@ final class _BottomSection extends StatelessWidget {
   }
 }
 
-final class _CreateAccountRow extends StatelessWidget {
-  const _CreateAccountRow({this.onTap});
-
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text(
-          'ليس لديك حساب ؟',
-          style: context.captionRegular.copyWith(color: AppColors.neutral400),
-        ),
-        4.horizontal,
-        GestureDetector(
-          onTap: onTap,
-          child: Text(
-            'إنشاء حساب',
-            style: context.subtitleMedium.copyWith(
-              color: AppColors.primary,
-              decoration: TextDecoration.underline,
-              decorationColor: AppColors.primary,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
+// final class _CreateAccountRow extends StatelessWidget {
+//   const _CreateAccountRow({required this.onTap});
+//
+//   final VoidCallback onTap;
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return Row(
+//       mainAxisAlignment: MainAxisAlignment.center,
+//       children: [
+//         Text(
+//           context.l10n.dontHaveAccountPrefix,
+//           style: context.captionRegular.copyWith(color: AppColors.neutral400),
+//         ),
+//         4.horizontal,
+//         GestureDetector(
+//           onTap: onTap,
+//           child: Text(
+//             context.l10n.createAccount,
+//             style: context.subtitleMedium.copyWith(
+//               color: AppColors.primary,
+//               decoration: TextDecoration.underline,
+//               decorationColor: AppColors.primary,
+//             ),
+//           ),
+//         ),
+//       ],
+//     );
+//   }
+// }

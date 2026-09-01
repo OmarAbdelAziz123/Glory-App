@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:glory_gym/core/constants/app_spacing.dart';
 
+import '../l10n/l10n_extension.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_styles.dart';
 
@@ -72,26 +73,27 @@ final class AppPasswordRulesRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Wrap(
       spacing: 8,
       runSpacing: 8,
       alignment: WrapAlignment.center,
       children: [
         AppPasswordRuleChip(
-          label: '8 حروف علي الاقل',
+          label: l10n.passwordMinEightCharsHint,
           state: _state(hasMinLength),
         ),
         AppPasswordRuleChip(
-          label: 'تحتوي على رقم واحد على الأقل',
+          label: l10n.passwordHasDigit,
           state: _state(hasNumber),
         ),
         AppPasswordRuleChip(
-          label: 'تحتوي على حرف كبير أو صغير',
+          label: l10n.passwordHasLetter,
           state: _state(hasUpperOrLower),
         ),
         if (showMatch)
           AppPasswordRuleChip(
-            label: 'كلمتي المرور متطابقتين',
+            label: l10n.passwordsMatch,
             state: _state(passwordsMatch),
           ),
       ],

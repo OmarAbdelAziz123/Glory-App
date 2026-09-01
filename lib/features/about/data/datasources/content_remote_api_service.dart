@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import '../../../../core/l10n/fallback_messages.dart';
 
 import '../../../../core/error/app_exception.dart';
 import '../../../../core/error/app_failure.dart';
@@ -48,7 +49,7 @@ final class ContentRemoteApiService extends ApiService {
           final response = await _contentApi.submitFeedback(request);
           if (!response.success) {
             return Failure(
-              ServerFailure(response.message ?? 'حدث خطأ، حاول مرة أخرى'),
+              ServerFailure(response.message ?? FallbackMessages.errorTryAgain),
             );
           }
           return const Success(null);
@@ -61,14 +62,14 @@ final class ContentRemoteApiService extends ApiService {
     String? message,
   ) {
     if (!success || data == null) {
-      return Failure(ServerFailure(message ?? 'حدث خطأ، حاول مرة أخرى'));
+      return Failure(ServerFailure(message ?? FallbackMessages.errorTryAgain));
     }
     return Success(data);
   }
 
   Result<T> _mapSingle<T>(bool success, T? data, String? message) {
     if (!success || data == null) {
-      return Failure(ServerFailure(message ?? 'حدث خطأ، حاول مرة أخرى'));
+      return Failure(ServerFailure(message ?? FallbackMessages.errorTryAgain));
     }
     return Success(data);
   }
@@ -87,8 +88,8 @@ final class ContentRemoteApiService extends ApiService {
           DioExceptionType.receiveTimeout ||
           DioExceptionType.sendTimeout ||
           DioExceptionType.connectionError =>
-            const NetworkFailure(),
-          _ => ServerFailure(e.message ?? 'Unexpected error'),
+            NetworkFailure(FallbackMessages.noInternet),
+          _ => ServerFailure(e.message ?? FallbackMessages.errorGeneral),
         },
       );
     } on AppException catch (e) {

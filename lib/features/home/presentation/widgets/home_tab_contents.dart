@@ -8,6 +8,7 @@ import 'package:glory_gym/features/home/presentation/widgets/group_class_card.da
 import 'package:glory_gym/features/workouts/presentation/cubits/workouts_list/workouts_list_cubit.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:glory_gym/core/l10n/l10n.dart';
 
 /// Gym registration tab: QR flow and regenerate action.
 final class HomeGymRegistrationTabContent extends StatelessWidget {
@@ -53,7 +54,7 @@ final class HomeGymRegistrationTabContent extends StatelessWidget {
           AppEntrance(
             delay: const Duration(milliseconds: 140),
             child: Text(
-              'ستنتهي صلاحية الكود خلال ( $secondsLabel ثانية )',
+              context.l10n.codeExpiresInSeconds(secondsLabel),
               textAlign: TextAlign.center,
               style: context.captionRegular.copyWith(
                 color: AppColors.neutral1000,
@@ -66,7 +67,7 @@ final class HomeGymRegistrationTabContent extends StatelessWidget {
           delay: Duration(milliseconds: showQr ? 200 : 80),
           offset: const Offset(0, 0.1),
           child: AppButton(
-            label: 'توليد QR كود اخر',
+            label: context.l10n.generateNewQrCode,
             isLoading: isGenerating,
             onPressed: canRegenerate && !isGenerating ? onGenerateQr : null,
           ),
@@ -172,7 +173,7 @@ final class HomeAppointmentsTabContent extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'اخر الحجوزات',
+                context.l10n.recentBookings,
                 style: context.highlightBold.copyWith(
                   color: AppColors.neutral900,
                 ),
@@ -180,7 +181,7 @@ final class HomeAppointmentsTabContent extends StatelessWidget {
               GestureDetector(
                 onTap: onViewAll,
                 child: Text(
-                  'رؤية الكل',
+                  context.l10n.seeAll,
                   style: context.captionRegular.copyWith(
                     color: AppColors.primary,
                   ),
@@ -196,7 +197,7 @@ final class HomeAppointmentsTabContent extends StatelessWidget {
           AppEntrance(
             delay: const Duration(milliseconds: 80),
             child: Text(
-              'لا توجد حجوزات حالياً',
+              context.l10n.noBookingsCurrently,
               style:
                   context.captionRegular.copyWith(color: AppColors.neutral500),
               textAlign: TextAlign.center,
@@ -212,6 +213,7 @@ final class HomeAppointmentsTabContent extends StatelessWidget {
                 child: BookingCard(
                   item: BookingUtils.toBookingItem(
                     entry.value,
+                    l10n: context.l10n,
                     locale: locale,
                     onCheckIn: entry.value.canCheckIn
                         ? () => onCheckIn?.call(entry.value.id)
@@ -241,8 +243,7 @@ final class HomeGroupClassesTabContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final profile = context.watch<UserProfileCubit>().state;
-    final locale =
-        WorkoutUtils.localeFromAppLanguage(profile.member?.appLanguage);
+    final locale = context.l10n.localeName;
     final workoutsState = context.watch<WorkoutsListCubit>().state;
 
     return Column(
@@ -254,7 +255,7 @@ final class HomeGroupClassesTabContent extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'الحصص الجماعية',
+                context.l10n.groupClasses,
                 style: context.highlightBold.copyWith(
                   color: AppColors.neutral900,
                 ),
@@ -262,7 +263,7 @@ final class HomeGroupClassesTabContent extends StatelessWidget {
               GestureDetector(
                 onTap: onViewAll,
                 child: Text(
-                  'رؤية الكل',
+                  context.l10n.seeAll,
                   style: context.captionRegular.copyWith(
                     color: AppColors.primary,
                   ),
@@ -280,7 +281,7 @@ final class HomeGroupClassesTabContent extends StatelessWidget {
             delay: const Duration(milliseconds: 80),
             child: Center(
               child: Text(
-                workoutsState.errorMessage ?? 'حدث خطأ، حاول مرة أخرى',
+                workoutsState.errorMessage ?? context.l10n.errorTryAgain,
                 style: context.captionRegular,
               ),
             ),
@@ -290,7 +291,7 @@ final class HomeGroupClassesTabContent extends StatelessWidget {
             delay: const Duration(milliseconds: 80),
             child: Center(
               child: Text(
-                'لا توجد تمارين',
+                context.l10n.noWorkouts,
                 style: context.captionRegular.copyWith(
                   color: AppColors.neutral500,
                 ),
@@ -303,6 +304,7 @@ final class HomeGroupClassesTabContent extends StatelessWidget {
               final workout = entry.value;
               final item = WorkoutUtils.toGroupClassItem(
                 workout,
+                l10n: context.l10n,
                 locale: locale,
               );
 

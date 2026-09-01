@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:glory_gym/core/core.dart';
-import 'package:glory_gym/features/auth/presentation/cubits/user_profile/user_profile_cubit.dart';
-import 'package:glory_gym/features/bookings/presentation/widgets/booking_card.dart';
 import 'package:glory_gym/features/bookings/presentation/cubits/bookings_list/bookings_list_cubit.dart';
+import 'package:glory_gym/features/bookings/presentation/widgets/booking_card.dart';
+import 'package:glory_gym/core/l10n/l10n.dart';
 
 final class BookingsScreen extends StatelessWidget {
   const BookingsScreen({super.key});
@@ -52,9 +52,9 @@ final class _BookingsViewState extends State<_BookingsView> {
   Future<void> _confirmCancel(String bookingId) async {
     final shouldCancel = await AppConfirmDialog.show(
       context,
-      title: 'الغاء الحصة',
-      message: 'هل أنت متأكد أنك تريد الغاء هذه الحصة؟',
-      confirmLabel: 'الغاء الحصة',
+      title: context.l10n.cancelClass,
+      message: context.l10n.confirmCancelClass,
+      confirmLabel: context.l10n.cancelClass,
     );
 
     if (shouldCancel != true || !mounted) return;
@@ -66,7 +66,7 @@ final class _BookingsViewState extends State<_BookingsView> {
 
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('تم الغاء الحصة بنجاح')),
+        SnackBar(content: Text(context.l10n.classCancelledSuccess)),
       );
       return;
     }
@@ -81,9 +81,7 @@ final class _BookingsViewState extends State<_BookingsView> {
 
   @override
   Widget build(BuildContext context) {
-    final profile = context.watch<UserProfileCubit>().state;
-    final locale =
-        BookingUtils.localeFromAppLanguage(profile.member?.appLanguage);
+    final locale = context.l10n.localeName;
 
     return BlocListener<BookingsListCubit, BookingsListState>(
       listenWhen: (previous, current) =>
@@ -95,13 +93,13 @@ final class _BookingsViewState extends State<_BookingsView> {
 
         AppSuccessSheet.show(
           context,
-          title: 'تسجيل دخول التدريب',
-          headline: 'لقد تم دخولك للحصة بنجاح!',
-          highlightWord: 'بنجاح',
+          title: context.l10n.trainingCheckIn,
+          headline: context.l10n.classCheckInSuccess,
+          highlightWord: context.l10n.successfully,
           description:
-              'أهلاً بك في عائلة جلوري جيم! لقد تم تسجيل دخول لحصة (${result.packageNameAr}) '
-              'مع الكوتش (${result.instructorName}) متبقي معك ${result.remainingSessions} حصص',
-          buttonLabel: 'الرئيسية',
+              '${context.l10n.checkinClassWelcomePrefix(result.packageNameAr)}'
+              '${context.l10n.checkinClassWelcomeSuffix(result.instructorName, '${result.remainingSessions}')}',
+          buttonLabel: context.l10n.home,
           badgeAsset:
               'assets/images/svgs/success_when_create_anew_password_icon.svg',
           onButtonPressed: () {
@@ -111,8 +109,8 @@ final class _BookingsViewState extends State<_BookingsView> {
         );
       },
       child: AppScaffold(
-        appBar: const AppPrimaryHeader(
-          title: 'الحجوزات',
+        appBar: AppPrimaryHeader(
+          title: context.l10n.bookings,
           showBack: false,
           centerTitle: true,
         ),
@@ -126,7 +124,7 @@ final class _BookingsViewState extends State<_BookingsView> {
                 state.bookings.isEmpty) {
               return Center(
                 child: Text(
-                  state.errorMessage ?? 'حدث خطأ، حاول مرة أخرى',
+                  state.errorMessage ?? context.l10n.errorTryAgain,
                   style: context.captionRegular,
                 ),
               );
@@ -135,7 +133,7 @@ final class _BookingsViewState extends State<_BookingsView> {
             if (state.isEmpty) {
               return Center(
                 child: Text(
-                  'لا توجد حجوزات حالياً',
+                  context.l10n.noBookingsCurrently,
                   style: context.captionRegular.copyWith(
                     color: AppColors.neutral500,
                   ),
@@ -161,6 +159,7 @@ final class _BookingsViewState extends State<_BookingsView> {
                   child: BookingCard(
                     item: BookingUtils.toBookingItem(
                       booking,
+                      l10n: context.l10n,
                       locale: locale,
                       onCheckIn: booking.canCheckIn
                           ? () => context

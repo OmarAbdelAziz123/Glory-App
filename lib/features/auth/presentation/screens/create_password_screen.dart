@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -5,10 +7,14 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/di/service_locator.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../../core/models/otp_args.dart';
+import '../../../../core/models/questionnaire_args.dart';
 import '../../../../core/router/app_routes.dart';
+import '../../../../features/onboarding/domain/entities/onboarding_prefill_entity.dart';
 import '../../../../core/widgets/widgets.dart';
 import '../cubits/create_password/create_password_cubit.dart';
+import '../cubits/user_profile/user_profile_cubit.dart';
 import '../widgets/create_password_header.dart';
+import '../../../../core/l10n/l10n_extension.dart';
 
 final class CreatePasswordScreen extends StatefulWidget {
   const CreatePasswordScreen({
@@ -44,7 +50,7 @@ final class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
     final otpToken = widget.args?.otpToken;
     if (otpToken == null || otpToken.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('رمز التحقق غير صالح، حاول مرة أخرى')),
+        SnackBar(content: Text(context.l10n.invalidVerificationCode)),
       );
       return;
     }
@@ -89,11 +95,11 @@ final class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
   @override
   Widget build(BuildContext context) {
     final isRegister = _mode == CreatePasswordMode.register;
-    final title = isRegister ? 'انشاء كلمة مرور' : 'انشاء كلمة مرور جديدة';
-    final passwordLabel = isRegister ? 'كلمة المرور' : 'كلمة المرور الجديدة';
+    final title = isRegister ? context.l10n.createPassword : context.l10n.createNewPassword;
+    final passwordLabel = isRegister ? context.l10n.password : context.l10n.newPassword;
     final passwordHint = isRegister
-        ? 'قم بإدخال كلمة المرور الخاصة بك هنا'
-        : 'قم بإدخال كلمة المرور الجديدة الخاصة بك هنا';
+        ? context.l10n.enterPasswordHere
+        : context.l10n.enterNewPasswordHere;
 
     return BlocProvider(
       create: (_) => sl<CreatePasswordCubit>(),
@@ -109,18 +115,36 @@ final class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
           if (state.status == CreatePasswordStatus.success) {
             context.read<CreatePasswordCubit>().reset();
             if (isRegister) {
-              context.push(AppRoutes.subscriptionQuestionnaire);
+              final member = state.member;
+              if (member != null) {
+                context.read<UserProfileCubit>().setMember(member);
+              }
+              unawaited(context.read<UserProfileCubit>().fetchProfile());
+              context.go(
+                AppRoutes.subscriptionQuestionnaire,
+                extra: QuestionnaireScreenArgs(
+                  prefill: member == null
+                      ? null
+                      : OnboardingPrefillEntity(
+                          fullName: member.fullName,
+                          gender: member.gender,
+                          phone: member.phone,
+                          phoneCountryCode: member.phoneCountryCode,
+                        ),
+                  completeToHome: true,
+                ),
+              );
               return;
             }
 
             AppSuccessSheet.show(
               context,
-              title: 'نسيت كلمة المرور',
-              headline: 'تم إنشاء كلمة مرور جديدة بنجاح!',
-              highlightWord: 'بنجاح',
+              title: context.l10n.forgotPassword,
+              headline: context.l10n.newPasswordCreatedSuccess,
+              highlightWord: context.l10n.successfully,
               description:
-                  'حاول الاحتفاظ بكلمة المرور بعيدا لتفادي سرقة حسابك و بياناتك',
-              buttonLabel: 'تسجيل دخول',
+                  context.l10n.keepPasswordSafeHint,
+              buttonLabel: context.l10n.signIn,
               badgeAsset:
                   'assets/images/svgs/success_when_create_anew_password_icon.svg',
               onButtonPressed: () =>
@@ -154,10 +178,10 @@ final class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
                         ),
                         16.vertical,
                         AppPasswordField(
-                          label: 'تاكيد كلمة المرور',
+                          label: context.l10n.confirmPasswordAlt,
                           controller: _confirmCtrl,
                           focusNode: _confirmFocus,
-                          hint: 'قم بإدخال تاكيد كلمة المرور الخاصة بك هنا',
+                          hint: context.l10n.enterConfirmPasswordHere,
                           textInputAction: TextInputAction.done,
                           onChanged: (_) => setState(() {}),
                         ),
@@ -210,16 +234,16 @@ final class _RulesGrid extends StatelessWidget {
       spacing: 8,
       runSpacing: 8,
       children: [
-        AppPasswordRuleChip(label: '8 حروف علي الاقل', state: minLengthState),
+        AppPasswordRuleChip(label: context.l10n.passwordMinEightCharsHint, state: minLengthState),
         AppPasswordRuleChip(
-          label: 'تحتوي على رقم واحد على الأقل',
+          label: context.l10n.passwordHasDigit,
           state: digitState,
         ),
         AppPasswordRuleChip(
-          label: 'تحتوي على حرف كبير أو صغير',
+          label: context.l10n.passwordHasLetter,
           state: letterState,
         ),
-        AppPasswordRuleChip(label: 'كلمتي المرور متطابقتين', state: matchState),
+        AppPasswordRuleChip(label: context.l10n.passwordsMatch, state: matchState),
       ],
     );
   }
@@ -241,7 +265,7 @@ final class _BottomSection extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
       child: AppButton(
-        label: 'تأكيد',
+        label: context.l10n.confirm,
         isLoading: isLoading,
         onPressed: canSubmit && !isLoading ? onConfirm : null,
       ),

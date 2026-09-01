@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/audio/splash_sound_service.dart';
 import '../../../../core/di/service_locator.dart';
+import '../../../../core/l10n/locale_service.dart';
+import '../../../../core/utils/onboarding_navigation.dart';
+import '../../../auth/presentation/cubits/user_profile/user_profile_cubit.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../../../core/widgets/app_scaffold.dart';
 import '../cubits/splash_cubit.dart';
@@ -20,6 +24,7 @@ final class SplashScreen extends StatefulWidget {
 final class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
+  late final SplashSoundService _splashSound;
 
   late final Animation<double> _logoScale;
   late final Animation<double> _logoOpacity;
@@ -30,8 +35,12 @@ final class _SplashScreenState extends State<SplashScreen>
   @override
   void initState() {
     super.initState();
+    _splashSound = SplashSoundService();
     _setupAnimations();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _runSplash());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _splashSound.play();
+      _runSplash();
+    });
   }
 
   void _setupAnimations() {
@@ -78,23 +87,37 @@ final class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _runSplash() async {
+    if (!mounted) return;
+
     final cubit = context.read<SplashCubit>();
+    final profileCubit = context.read<UserProfileCubit>();
 
     await Future.wait([
       _controller.forward(),
-      Future<void>.delayed(const Duration(milliseconds: 900)),
+      Future<void>.delayed(SplashSoundService.duration),
       cubit.checkSession(),
     ]);
 
     if (!mounted) return;
 
-    context.go(
-      cubit.state.isAuthenticated ? AppRoutes.home : AppRoutes.login,
-    );
+    if (cubit.state.isAuthenticated) {
+      if (profileCubit.state.member == null) {
+        await profileCubit.fetchProfile();
+      }
+      if (!mounted) return;
+      await LocaleService.syncFromMember(profileCubit.state.member);
+      if (!mounted) return;
+      await navigateAfterAuthentication(context);
+      return;
+    }
+
+    if (!mounted) return;
+    context.go(AppRoutes.login);
   }
 
   @override
   void dispose() {
+    _splashSound.dispose();
     _controller.dispose();
     super.dispose();
   }

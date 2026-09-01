@@ -8,6 +8,7 @@ import '../../../../core/utils/family_utils.dart';
 import '../../../../core/widgets/widgets.dart';
 import '../../domain/entities/family_member_entity.dart';
 import '../cubits/family_form/family_form_cubit.dart';
+import 'package:glory_gym/core/l10n/l10n.dart';
 
 final class AddFamilyMemberScreen extends StatefulWidget {
   const AddFamilyMemberScreen({super.key, this.member});
@@ -36,6 +37,8 @@ final class _AddFamilyMemberScreenState extends State<AddFamilyMemberScreen> {
       _selectedGenderLabel != null &&
       _selectedRelationLabel != null;
 
+  bool _memberFieldsInitialized = false;
+
   @override
   void initState() {
     super.initState();
@@ -44,9 +47,21 @@ final class _AddFamilyMemberScreenState extends State<AddFamilyMemberScreen> {
 
     _nameController.text = member.fullName;
     _selectedBirthDate = member.dateOfBirth;
-    _birthDateController.text = FamilyUtils.formatBirthDate(member.dateOfBirth);
-    _selectedGenderLabel = FamilyUtils.genderLabel(member.gender);
-    _selectedRelationLabel = FamilyUtils.relationLabel(member.relation);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_memberFieldsInitialized || widget.member == null) return;
+    _memberFieldsInitialized = true;
+
+    final member = widget.member!;
+    final l10n = context.l10n;
+    _birthDateController.text =
+        FamilyUtils.formatBirthDate(l10n, member.dateOfBirth);
+    _selectedGenderLabel = FamilyUtils.genderLabel(l10n, member.gender);
+    _selectedRelationLabel =
+        FamilyUtils.relationLabel(l10n, member.relation);
     _genderController.text = _selectedGenderLabel ?? '';
     _relationController.text = _selectedRelationLabel ?? '';
   }
@@ -72,14 +87,15 @@ final class _AddFamilyMemberScreenState extends State<AddFamilyMemberScreen> {
 
     setState(() {
       _selectedBirthDate = picked;
-      _birthDateController.text = FamilyUtils.formatBirthDate(picked);
+      _birthDateController.text =
+          FamilyUtils.formatBirthDate(context.l10n, picked);
     });
   }
 
   Future<void> _pickGender() async {
     final selected = await _showPickerSheet(
-      title: 'النوع',
-      items: FamilyUtils.genderLabels,
+      title: context.l10n.type,
+      items: FamilyUtils.genderLabels(context.l10n),
       selected: _selectedGenderLabel,
     );
     if (selected == null) return;
@@ -91,8 +107,8 @@ final class _AddFamilyMemberScreenState extends State<AddFamilyMemberScreen> {
 
   Future<void> _pickRelation() async {
     final selected = await _showPickerSheet(
-      title: 'العلاقة',
-      items: FamilyUtils.relationLabels,
+      title: context.l10n.relationship,
+      items: FamilyUtils.relationLabels(context.l10n),
       selected: _selectedRelationLabel,
     );
     if (selected == null) return;
@@ -168,8 +184,10 @@ final class _AddFamilyMemberScreenState extends State<AddFamilyMemberScreen> {
   }
 
   Future<void> _submit(BuildContext providerContext) async {
-    final gender = FamilyUtils.genderValue(_selectedGenderLabel!);
-    final relation = FamilyUtils.relationValue(_selectedRelationLabel!);
+    final l10n = providerContext.l10n;
+    final gender = FamilyUtils.genderValue(l10n, _selectedGenderLabel!);
+    final relation =
+        FamilyUtils.relationValue(l10n, _selectedRelationLabel!);
     if (gender == null || relation == null || _selectedBirthDate == null) {
       return;
     }
@@ -207,7 +225,7 @@ final class _AddFamilyMemberScreenState extends State<AddFamilyMemberScreen> {
         builder: (providerContext) {
           return AppScaffold(
             appBar: AppPrimaryHeader(
-              title: _isEditing ? 'تعديل فرد العائلة' : 'اضافة فرد للعائلة',
+              title: _isEditing ? context.l10n.editFamilyMember : context.l10n.addFamilyMember,
               showBack: true,
               centerTitle: false,
             ),
@@ -222,16 +240,16 @@ final class _AddFamilyMemberScreenState extends State<AddFamilyMemberScreen> {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           AppTextField(
-                            label: 'الاسم الكامل',
+                            label: context.l10n.fullName,
                             controller: _nameController,
-                            hint: 'قم بإدخال الاسم الكامل',
+                            hint: context.l10n.enterFullName,
                             onChanged: (_) => setState(() {}),
                           ),
                           const SizedBox(height: 16),
                           AppTextField(
-                            label: 'تاريخ الميلاد',
+                            label: context.l10n.dateOfBirth,
                             controller: _birthDateController,
-                            hint: 'قم بإدخال تاريخ الميلاد',
+                            hint: context.l10n.enterDateOfBirth,
                             readOnly: true,
                             onTap: _pickDate,
                             suffixIcon: const Icon(
@@ -242,9 +260,9 @@ final class _AddFamilyMemberScreenState extends State<AddFamilyMemberScreen> {
                           ),
                           const SizedBox(height: 16),
                           AppTextField(
-                            label: 'النوع',
+                            label: context.l10n.type,
                             controller: _genderController,
-                            hint: 'قم باختيار النوع',
+                            hint: context.l10n.selectType,
                             readOnly: true,
                             onTap: _pickGender,
                             suffixIcon: const Icon(
@@ -255,9 +273,9 @@ final class _AddFamilyMemberScreenState extends State<AddFamilyMemberScreen> {
                           ),
                           const SizedBox(height: 16),
                           AppTextField(
-                            label: 'العلاقة',
+                            label: context.l10n.relationship,
                             controller: _relationController,
-                            hint: 'قم باختيار العلاقة',
+                            hint: context.l10n.selectRelationship,
                             readOnly: true,
                             onTap: _pickRelation,
                             suffixIcon: const Icon(
@@ -273,7 +291,7 @@ final class _AddFamilyMemberScreenState extends State<AddFamilyMemberScreen> {
                   const SizedBox(height: 16),
                   BlocBuilder<FamilyFormCubit, FamilyFormState>(
                     builder: (context, state) => AppButton(
-                      label: _isEditing ? 'حفظ التعديلات' : 'أضافة عضو جديد',
+                      label: _isEditing ? context.l10n.saveChanges : context.l10n.addNewMemberAlt,
                       isLoading: state.isSubmitting,
                       onPressed: _canSubmit && !state.isSubmitting
                           ? () => _submit(providerContext)

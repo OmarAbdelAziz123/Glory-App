@@ -25,13 +25,13 @@ final class HomeScreen extends StatefulWidget {
 }
 
 final class _HomeScreenState extends State<HomeScreen> {
-  static const _tabLabels = <String>[
-    'تسجيل للجيم',
-    'المواعيد',
-    'الحصص الجماعية',
-  ];
-
   int _selectedTabIndex = 0;
+
+  List<String> _tabLabels(BuildContext context) => [
+        context.l10n.gymCheckIn,
+        context.l10n.appointments,
+        context.l10n.groupClasses,
+      ];
 
   @override
   Widget build(BuildContext context) {
@@ -57,12 +57,12 @@ final class _HomeScreenState extends State<HomeScreen> {
                   final days = state.daysRemaining ?? 0;
                   AppSuccessSheet.show(
                     context,
-                    title: 'تسجيل للجيم',
-                    headline: 'لقد تم دخول الجيم بنجاح!',
-                    highlightWord: 'بنجاح',
+                    title: context.l10n.gymCheckIn,
+                    headline: context.l10n.gymCheckInSuccess,
+                    highlightWord: context.l10n.successfully,
                     description:
-                        'أهلاً بك في عائلة جلوري جيم! و نود ابلاغك بانه متبقي $days يوم من اشتراكك في الجيم',
-                    buttonLabel: 'الرئيسية',
+                        context.l10n.subscriptionDaysRemainingWelcome('$days'),
+                    buttonLabel: context.l10n.home,
                     badgeAsset:
                         'assets/images/svgs/success_when_create_anew_password_icon.svg',
                     onButtonPressed: () => Navigator.of(context).pop(),
@@ -79,13 +79,13 @@ final class _HomeScreenState extends State<HomeScreen> {
 
                   AppSuccessSheet.show(
                     context,
-                    title: 'تسجيل دخول التدريب',
-                    headline: 'لقد تم دخولك للحصة بنجاح!',
-                    highlightWord: 'بنجاح',
+                    title: context.l10n.trainingCheckIn,
+                    headline: context.l10n.classCheckInSuccess,
+                    highlightWord: context.l10n.successfully,
                     description:
-                        'أهلاً بك في عائلة جلوري جيم! لقد تم تسجيل دخول لحصة (${result.packageNameAr}) '
-                        'مع الكوتش (${result.instructorName}) متبقي معك ${result.remainingSessions} حصص',
-                    buttonLabel: 'الرئيسية',
+                        '${context.l10n.checkinClassWelcomePrefix(result.packageNameAr)}'
+                        '${context.l10n.checkinClassWelcomeSuffix(result.instructorName, '${result.remainingSessions}')}',
+                    buttonLabel: context.l10n.home,
                     badgeAsset:
                         'assets/images/svgs/success_when_create_anew_password_icon.svg',
                     onButtonPressed: () {
@@ -98,7 +98,7 @@ final class _HomeScreenState extends State<HomeScreen> {
             ],
             child: _HomeBody(
               selectedTabIndex: _selectedTabIndex,
-              tabLabels: _tabLabels,
+              tabLabels: _tabLabels(providerContext),
               onOpenBookingsTab: widget.onOpenBookingsTab,
               onOpenWorkoutsTab: widget.onOpenWorkoutsTab,
               onTabSelected: (index) =>
@@ -127,11 +127,9 @@ final class _HomeBody extends StatelessWidget {
   final VoidCallback? onOpenWorkoutsTab;
 
   Widget _tabContent(BuildContext context) {
-    final profile = context.watch<UserProfileCubit>().state;
     final qrState = context.watch<GymQrCubit>().state;
     final bookingsState = context.watch<BookingsListCubit>().state;
-    final locale =
-        BookingUtils.localeFromAppLanguage(profile.member?.appLanguage);
+    final locale = context.l10n.localeName;
 
     return switch (selectedTabIndex) {
       0 => HomeGymRegistrationTabContent(
@@ -178,8 +176,8 @@ final class _HomeBody extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           AppHomeHeader(
-            username: profile.displayName,
-            greeting: GreetingUtils.greeting(),
+            username: profile.displayName(context.l10n),
+            greeting: GreetingUtils.greeting(context.l10n),
             notificationCount: unreadCount,
             avatarUrl: profile.member?.avatarUrl,
             onNotificationTap: () async {
@@ -249,9 +247,9 @@ final class _HomeBody extends StatelessWidget {
   Future<void> _confirmCancel(BuildContext context, String bookingId) async {
     final shouldCancel = await AppConfirmDialog.show(
       context,
-      title: 'الغاء الحصة',
-      message: 'هل أنت متأكد أنك تريد الغاء هذه الحصة؟',
-      confirmLabel: 'الغاء الحصة',
+      title: context.l10n.cancelClass,
+      message: context.l10n.confirmCancelClass,
+      confirmLabel: context.l10n.cancelClass,
     );
 
     if (shouldCancel != true || !context.mounted) return;
@@ -263,7 +261,7 @@ final class _HomeBody extends StatelessWidget {
 
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('تم الغاء الحصة بنجاح')),
+        SnackBar(content: Text(context.l10n.classCancelledSuccess)),
       );
       return;
     }

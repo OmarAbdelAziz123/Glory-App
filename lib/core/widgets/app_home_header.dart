@@ -10,7 +10,7 @@ final class AppHomeHeader extends StatelessWidget {
   const AppHomeHeader({
     super.key,
     required this.username,
-    this.greeting = 'صباح الخير',
+    this.greeting,
     this.notificationCount = 0,
     this.avatarAsset,
     this.avatarUrl,
@@ -18,7 +18,7 @@ final class AppHomeHeader extends StatelessWidget {
   });
 
   final String username;
-  final String greeting;
+  final String? greeting;
   final int notificationCount;
   final String? avatarAsset;
   final String? avatarUrl;
@@ -86,8 +86,9 @@ final class AppHomeHeader extends StatelessWidget {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    greeting,
+                                  if (greeting != null)
+                                    Text(
+                                      greeting!,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: context.subtitleMedium.copyWith(

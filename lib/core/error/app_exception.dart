@@ -1,5 +1,7 @@
+import '../l10n/fallback_messages.dart';
+
 sealed class AppException implements Exception {
-  const AppException(this.message);
+  AppException(this.message);
 
   final String message;
 
@@ -8,21 +10,26 @@ sealed class AppException implements Exception {
 }
 
 final class ServerException extends AppException {
-  const ServerException([super.message = 'Server error occurred']);
+  ServerException([String? message])
+      : super(message ?? FallbackMessages.errorServer);
 }
 
 final class NetworkException extends AppException {
-  const NetworkException([super.message = 'No internet connection']);
+  NetworkException([String? message])
+      : super(message ?? FallbackMessages.noInternet);
 }
 
 final class CacheException extends AppException {
-  const CacheException([super.message = 'Cache error occurred']);
+  CacheException([String? message])
+      : super(message ?? FallbackMessages.cacheError);
 }
 
 final class UnauthorizedException extends AppException {
-  const UnauthorizedException([super.message = 'Unauthorized access']);
+  UnauthorizedException([String? message])
+      : super(message ?? FallbackMessages.errorUnauthorized);
 }
 
 final class ValidationException extends AppException {
-  const ValidationException([super.message = 'Validation failed']);
+  ValidationException([String? message])
+      : super(message ?? FallbackMessages.validationFailed);
 }

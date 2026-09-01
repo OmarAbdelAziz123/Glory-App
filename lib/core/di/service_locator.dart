@@ -10,6 +10,7 @@ import '../../features/auth/data/datasources/auth_api.dart';
 import '../../features/auth/data/datasources/auth_remote_api_service.dart';
 import '../../features/auth/data/repositories/auth_repository_impl.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';
+import '../../app/cubits/locale/app_locale_cubit.dart';
 import '../../features/auth/presentation/cubits/user_profile/user_profile_cubit.dart';
 import '../../features/auth/presentation/cubits/forgot_password/forgot_password_cubit.dart';
 import '../../features/auth/presentation/cubits/logout/logout_cubit.dart';
@@ -43,36 +44,59 @@ import '../../features/checkin/data/datasources/checkin_remote_api_service.dart'
 import '../../features/checkin/data/repositories/checkin_repository_impl.dart';
 import '../../features/checkin/domain/repositories/checkin_repository.dart';
 import '../../features/checkin/presentation/cubits/gym_qr/gym_qr_cubit.dart';
+import '../../features/checkin/presentation/cubits/qr_scan/qr_scan_cubit.dart';
 import '../../features/notifications/data/datasources/notifications_api.dart';
 import '../../features/notifications/data/datasources/notifications_remote_api_service.dart';
 import '../../features/notifications/data/repositories/notifications_repository_impl.dart';
 import '../../features/notifications/domain/repositories/notifications_repository.dart';
 import '../../features/notifications/presentation/cubits/notifications_list/notifications_list_cubit.dart';
 import '../../features/notifications/presentation/cubits/notifications_unread/notifications_unread_cubit.dart';
+import '../../features/onboarding/data/datasources/onboarding_api.dart';
+import '../../features/onboarding/data/datasources/onboarding_remote_api_service.dart';
+import '../../features/onboarding/data/repositories/onboarding_repository_impl.dart';
+import '../../features/onboarding/domain/repositories/onboarding_repository.dart';
 import '../../features/workouts/data/datasources/workouts_api.dart';
 import '../../features/workouts/data/datasources/workouts_remote_api_service.dart';
 import '../../features/workouts/data/repositories/workouts_repository_impl.dart';
 import '../../features/workouts/domain/repositories/workouts_repository.dart';
 import '../../features/workouts/presentation/cubits/workout_detail/workout_detail_cubit.dart';
 import '../../features/workouts/presentation/cubits/workouts_list/workouts_list_cubit.dart';
+import '../../features/coach_chat/data/datasources/coach_chat_api.dart';
+import '../../features/coach_chat/data/datasources/coach_chat_remote_api_service.dart';
+import '../../features/coach_chat/data/datasources/coach_chat_socket_service.dart';
+import '../../features/coach_chat/data/repositories/coach_chat_repository_impl.dart';
+import '../../features/coach_chat/domain/repositories/coach_chat_repository.dart';
+import '../../features/coach_chat/presentation/cubits/coach_chat_list/coach_chat_list_cubit.dart';
+import '../../features/coach_chat/presentation/cubits/coach_chat_unread/coach_chat_unread_cubit.dart';
+import '../../features/glory_ai/data/datasources/sandy_api.dart';
+import '../../features/glory_ai/data/datasources/sandy_remote_api_service.dart';
+import '../../features/glory_ai/data/repositories/sandy_repository_impl.dart';
+import '../../features/glory_ai/domain/repositories/sandy_repository.dart';
+import '../../features/glory_ai/presentation/cubits/sandy_conversations_list/sandy_conversations_list_cubit.dart';
+import '../../features/glory_ai/presentation/cubits/sandy_chat/sandy_chat_cubit.dart';
+import '../l10n/fallback_messages.dart';
 import '../network/api_client.dart';
 import '../network/endpoints.dart';
 import '../network/network_info.dart';
 import '../notifications/notification_service.dart';
 import '../storage/local_storage.dart';
 import '../storage/secure_storage.dart';
+import '../storage/storage_keys.dart';
 
 final sl = GetIt.instance;
 
 Future<void> setupServiceLocator() async {
   await _registerCore();
   _registerAuth();
+  _registerOnboarding();
   _registerFamily();
   _registerContent();
   _registerCheckin();
   _registerBookings();
   _registerNotifications();
   _registerWorkouts();
+  _registerCoachChat();
+  _registerSandyAi();
 }
 
 Future<void> _registerCore() async {
@@ -95,6 +119,9 @@ Future<void> _registerCore() async {
   // ── Storage ───────────────────────────────────────────
   sl.registerLazySingleton<ILocalStorage>(() => LocalStorage(sl()));
   sl.registerLazySingleton<ISecureStorage>(() => SecureStorage(sl()));
+
+  final savedLanguage = prefs.getString(StorageKeys.language);
+  LocaleHolder.languageCode = savedLanguage == 'en' ? 'en' : 'ar';
 
   // ── Network ───────────────────────────────────────────
   sl.registerLazySingleton<Dio>(
@@ -120,6 +147,7 @@ void _registerAuth() {
     () => AuthRepositoryImpl(sl(), sl()),
   );
 
+  sl.registerLazySingleton<AppLocaleCubit>(() => AppLocaleCubit());
   sl.registerLazySingleton<UserProfileCubit>(() => UserProfileCubit(sl()));
 
   sl.registerFactory<RegisterCubit>(() => RegisterCubit(sl()));
@@ -129,6 +157,18 @@ void _registerAuth() {
   sl.registerFactory<LoginCubit>(() => LoginCubit(sl()));
   sl.registerFactory<SplashCubit>(() => SplashCubit(sl()));
   sl.registerFactory<LogoutCubit>(() => LogoutCubit(sl()));
+}
+
+void _registerOnboarding() {
+  sl.registerLazySingleton<OnboardingApi>(
+    () => OnboardingApi(sl(), baseUrl: Endpoints.baseUrl),
+  );
+  sl.registerLazySingleton<OnboardingRemoteApiService>(
+    () => OnboardingRemoteApiService(sl(), sl()),
+  );
+  sl.registerLazySingleton<OnboardingRepository>(
+    () => OnboardingRepositoryImpl(sl()),
+  );
 }
 
 void _registerFamily() {
@@ -175,6 +215,7 @@ void _registerCheckin() {
   );
 
   sl.registerFactory<GymQrCubit>(() => GymQrCubit(sl()));
+  sl.registerFactory<QrScanCubit>(() => QrScanCubit(sl()));
 }
 
 void _registerBookings() {
@@ -227,5 +268,41 @@ void _registerWorkouts() {
   sl.registerFactory<WorkoutsListCubit>(() => WorkoutsListCubit(sl()));
   sl.registerFactoryParam<WorkoutDetailCubit, String, void>(
     (assignmentId, _) => WorkoutDetailCubit(sl(), assignmentId: assignmentId),
+  );
+}
+
+void _registerCoachChat() {
+  sl.registerLazySingleton<CoachChatApi>(
+    () => CoachChatApi(sl(), baseUrl: Endpoints.baseUrl),
+  );
+  sl.registerLazySingleton<CoachChatRemoteApiService>(
+    () => CoachChatRemoteApiService(sl(), sl()),
+  );
+  sl.registerLazySingleton<CoachChatSocketService>(
+    () => CoachChatSocketService(sl()),
+  );
+  sl.registerLazySingleton<CoachChatRepository>(
+    () => CoachChatRepositoryImpl(sl(), sl()),
+  );
+
+  sl.registerLazySingleton<CoachChatUnreadCubit>(
+    () => CoachChatUnreadCubit(sl()),
+  );
+  sl.registerFactory<CoachChatListCubit>(() => CoachChatListCubit(sl()));
+}
+
+void _registerSandyAi() {
+  sl.registerLazySingleton<SandyApi>(
+    () => SandyApi(sl(), baseUrl: Endpoints.baseUrl),
+  );
+  sl.registerLazySingleton<SandyRemoteApiService>(
+    () => SandyRemoteApiService(sl(), sl()),
+  );
+  sl.registerLazySingleton<SandyRepository>(
+    () => SandyRepositoryImpl(sl()),
+  );
+  sl.registerLazySingleton<SandyChatCubit>(() => SandyChatCubit(sl()));
+  sl.registerFactory<SandyConversationsListCubit>(
+    () => SandyConversationsListCubit(sl(), sl()),
   );
 }

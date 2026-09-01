@@ -37,6 +37,13 @@ abstract final class AppRoutes {
   // ── Notifications ─────────────────────────────────────
   static const String notifications = '/notifications';
 
+  // ── Coach Chat ────────────────────────────────────────
+  static const String coachChat = '/coach-chat';
+  static String coachChatThread(String id) => '/coach-chat/$id';
+
+  // ── Sandy AI ──────────────────────────────────────────
+  static const String sandyConversations = '/sandy-conversations';
+
   // ── About ─────────────────────────────────────────────
   static const String about = '/about';
   static const String whoWeAre = '/about/who-we-are';

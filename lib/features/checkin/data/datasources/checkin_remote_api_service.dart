@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import '../../../../core/l10n/fallback_messages.dart';
 
 import '../../../../core/error/app_exception.dart';
 import '../../../../core/error/app_failure.dart';
@@ -7,6 +8,7 @@ import '../../../../core/result/result.dart';
 import '../models/checkin_api_responses.dart';
 import '../models/qr_generate_model.dart';
 import '../models/qr_status_model.dart';
+import '../models/scan_qr_request.dart';
 import 'checkin_api.dart';
 
 final class CheckinRemoteApiService extends ApiService {
@@ -18,7 +20,7 @@ final class CheckinRemoteApiService extends ApiService {
         final response = await _checkinApi.generateQr();
         if (!response.success || response.data == null) {
           return Failure(
-            ServerFailure(response.message ?? 'حدث خطأ، حاول مرة أخرى'),
+            ServerFailure(response.message ?? FallbackMessages.errorTryAgain),
           );
         }
         return Success(response.data!);
@@ -28,7 +30,17 @@ final class CheckinRemoteApiService extends ApiService {
         final response = await _checkinApi.getQrStatus(id);
         if (!response.success || response.data == null) {
           return Failure(
-            ServerFailure(response.message ?? 'حدث خطأ، حاول مرة أخرى'),
+            ServerFailure(response.message ?? FallbackMessages.errorTryAgain),
+          );
+        }
+        return Success(response.data!);
+      });
+
+  Future<Result<QrStatusModel>> scanQr(String token) => _guard(() async {
+        final response = await _checkinApi.scanQr(ScanQrRequest(token: token));
+        if (!response.success || response.data == null) {
+          return Failure(
+            ServerFailure(response.message ?? FallbackMessages.errorTryAgain),
           );
         }
         return Success(response.data!);
@@ -48,8 +60,8 @@ final class CheckinRemoteApiService extends ApiService {
           DioExceptionType.receiveTimeout ||
           DioExceptionType.sendTimeout ||
           DioExceptionType.connectionError =>
-            const NetworkFailure(),
-          _ => ServerFailure(e.message ?? 'Unexpected error'),
+            NetworkFailure(FallbackMessages.noInternet),
+          _ => ServerFailure(e.message ?? FallbackMessages.errorGeneral),
         },
       );
     } on AppException catch (e) {

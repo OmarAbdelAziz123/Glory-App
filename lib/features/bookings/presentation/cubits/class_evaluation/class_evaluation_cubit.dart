@@ -30,7 +30,7 @@ final class ClassEvaluationCubit extends Cubit<ClassEvaluationState> {
         emit(
           state.copyWith(
             status: ClassEvaluationStatus.loaded,
-            questions: sorted,
+            questions: sorted.isEmpty ? const [] : [sorted.first],
           ),
         );
       },

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../../../core/l10n/l10n_extension.dart';
 import '../../../../../core/theme/app_colors.dart';
 
 final class SplashBrandName extends StatelessWidget {
@@ -19,13 +20,13 @@ final class SplashBrandName extends StatelessWidget {
       opacity: opacityAnimation,
       child: SlideTransition(
         position: slideAnimation,
-        child: const Column(
+        child: Column(
           children: [
-            _AppTitle(),
-            SizedBox(height: 10),
-            _GoldDivider(),
-            SizedBox(height: 16),
-            _Tagline(),
+            const _AppTitle(),
+            const SizedBox(height: 10),
+            const _GoldDivider(),
+            const SizedBox(height: 16),
+            _Tagline(text: context.l10n.splashTagline),
           ],
         ),
       ),
@@ -98,12 +99,14 @@ final class _GoldDivider extends StatelessWidget {
 }
 
 final class _Tagline extends StatelessWidget {
-  const _Tagline();
+  const _Tagline({required this.text});
+
+  final String text;
 
   @override
   Widget build(BuildContext context) {
     return Text(
-      'TRAIN  ·  GROW  ·  DOMINATE',
+      text,
       style: GoogleFonts.poppins(
         fontSize: 10,
         fontWeight: FontWeight.w400,

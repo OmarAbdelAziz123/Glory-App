@@ -4,21 +4,19 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/extensions/num_spacing_extension.dart';
 import '../../cubits/questionnaire/questionnaire_cubit.dart';
 import '../questionnaire_step_title.dart';
-import '../questionnaire_text_area.dart';
 import '../questionnaire_unit_field.dart';
 import '../questionnaire_yes_no_field.dart';
+import '../../../../../core/l10n/l10n_extension.dart';
 
 final class NutritionStep extends StatelessWidget {
   const NutritionStep({
     super.key,
     required this.mealsCtrl,
     required this.waterCtrl,
-    required this.supplementsCtrl,
   });
 
   final TextEditingController mealsCtrl;
   final TextEditingController waterCtrl;
-  final TextEditingController supplementsCtrl;
 
   @override
   Widget build(BuildContext context) {
@@ -28,48 +26,38 @@ final class NutritionStep extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const QuestionnaireStepTitle(
-          title: 'التغذية',
-          subtitle: 'عاداتك الغذائية اليومية.',
+        QuestionnaireStepTitle(
+          title: context.l10n.nutrition,
+          subtitle: context.l10n.dailyNutritionHabitsSubtitle,
         ),
         16.vertical,
         QuestionnaireYesNoField(
-          label: 'هل تتبع نظاماً غذائياً؟',
+          label: context.l10n.followDietQuestion,
           value: state.followsDiet,
           onChanged: cubit.updateFollowsDiet,
         ),
         16.vertical,
         QuestionnaireUnitField(
-          label: 'عدد الوجبات اليومية',
-          unit: 'وجبة',
-          hint: 'قم بإدخال عدد الوجبات',
+          label: context.l10n.dailyMealsCount,
+          unit: context.l10n.meal,
+          hint: context.l10n.enterNumberOfMeals,
           controller: mealsCtrl,
           onChanged: cubit.updateMealsPerDay,
         ),
         16.vertical,
         QuestionnaireUnitField(
-          label: 'كمية الماء اليومية',
-          unit: 'لتر',
-          hint: 'قم بإدخال كمية الماء',
+          label: context.l10n.dailyWaterIntake,
+          unit: context.l10n.liter,
+          hint: context.l10n.enterWaterAmount,
           controller: waterCtrl,
           onChanged: cubit.updateWaterLiters,
         ),
         16.vertical,
         QuestionnaireYesNoField(
-          label: 'هل تستخدم مكملات غذائية؟',
+          label: context.l10n.useSupplementsQuestion,
           value: state.usesSupplements,
           onChanged: cubit.updateUsesSupplements,
         ),
-        if (state.usesSupplements == true) ...[
-          8.vertical,
-          QuestionnaireTextArea(
-            label: 'التفاصيل',
-            hint: 'اذكر المكملات الغذائية',
-            controller: supplementsCtrl,
-            onChanged: cubit.updateSupplementsDetails,
-            required: true,
-          ),
-        ],
       ],
     );
   }

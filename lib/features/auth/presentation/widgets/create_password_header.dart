@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_styles_extension.dart';
+import '../../../../core/l10n/l10n_extension.dart';
 
 final class CreatePasswordHeader extends StatelessWidget {
   const CreatePasswordHeader({super.key, required this.title});
@@ -16,7 +17,7 @@ final class CreatePasswordHeader extends StatelessWidget {
       children: [
         Text(title, style: context.heading1),
         Text(
-          'يرجي إضافة كلمة مرور قوية للحفاظ علي بياناتك',
+          context.l10n.addStrongPasswordHint,
           style: context.captionRegular.copyWith(color: AppColors.neutral500),
         ),
       ],

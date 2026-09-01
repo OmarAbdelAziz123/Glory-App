@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_styles_extension.dart';
+import '../../../../core/l10n/l10n_extension.dart';
 
 final class OtpHeader extends StatelessWidget {
   const OtpHeader({
@@ -17,7 +18,7 @@ final class OtpHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text('رمز التحقق', style: context.heading1),
+        Text(context.l10n.verificationCode, style: context.heading1),
         const SizedBox(height: 8),
         RichText(
           textAlign: TextAlign.center,
@@ -25,8 +26,8 @@ final class OtpHeader extends StatelessWidget {
           text: TextSpan(
             style: context.captionRegular.copyWith(color: AppColors.neutral500),
             children: [
-              const TextSpan(
-                text: 'تم إرسال رمز مكون من 6 أرقام على بريدك الإلكتروني ',
+              TextSpan(
+                text: context.l10n.otpSentToEmail,
               ),
               TextSpan(
                 text: '( $email )',
@@ -41,7 +42,7 @@ final class OtpHeader extends StatelessWidget {
         GestureDetector(
           onTap: onChangeEmail,
           child: Text(
-            'تغير البريد الالكتروني',
+            context.l10n.changeEmail,
             style: context.subtitleMedium.copyWith(
               color: AppColors.primary,
               decoration: TextDecoration.underline,

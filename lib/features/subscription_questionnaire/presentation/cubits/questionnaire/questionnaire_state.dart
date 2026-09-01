@@ -1,51 +1,51 @@
 part of 'questionnaire_cubit.dart';
 
-enum QuestionnaireStatus { editing, submitted }
+enum QuestionnaireStatus { editing, submitting, submitted, failure }
 
 final class QuestionnaireState {
   const QuestionnaireState({
     this.step = 0,
     this.status = QuestionnaireStatus.editing,
+    this.errorMessage,
     // Step 1 — Personal
     this.fullName = '',
     this.age = '',
     this.gender,
+    this.phoneCountryCode = '+966',
     this.phone = '',
     this.profession = '',
-    // Step 2 — Goals
+    // Step 8 — Goals
     this.goals = const {},
     this.otherGoal = '',
-    // Step 3 — Medical
+    // Step 2 — Medical
     this.hasChronicDisease,
-    this.chronicDiseaseDetails = '',
     this.hasMedications,
-    this.medicationsDetails = '',
     this.hasInjuries,
     this.injuriesDetails = '',
     this.hasSurgery,
     this.surgeryDetails = '',
-    // Step 4 — Activity
+    // Step 3 — Activity
     this.exercisesCurrently,
     this.exerciseDaysPerWeek = '',
     this.exerciseTypes = '',
     this.exerciseDuration = '',
-    // Step 5 — Nutrition
+    // Step 4 — Nutrition
     this.followsDiet,
     this.mealsPerDay = '',
     this.waterLiters = '',
     this.usesSupplements,
-    this.supplementsDetails = '',
-    // Step 6 — Lifestyle
+    // Step 5 — Lifestyle
     this.sleepHours = '',
     this.workNature,
     this.stressLevel,
-    // Step 7 — Measurements
+    // Step 6 — Measurements
     this.bodyFat = '',
     this.waist = '',
     this.chest = '',
     this.arm = '',
     this.thigh = '',
-    // Step 8 — Training
+    this.photoUrls = const [],
+    // Step 7 — Training
     this.commitmentDays = '',
     this.preferredTime,
     this.preferredExercises,
@@ -57,10 +57,12 @@ final class QuestionnaireState {
 
   final int step;
   final QuestionnaireStatus status;
+  final String? errorMessage;
 
   final String fullName;
   final String age;
   final String? gender;
+  final String phoneCountryCode;
   final String phone;
   final String profession;
 
@@ -68,9 +70,7 @@ final class QuestionnaireState {
   final String otherGoal;
 
   final bool? hasChronicDisease;
-  final String chronicDiseaseDetails;
   final bool? hasMedications;
-  final String medicationsDetails;
   final bool? hasInjuries;
   final String injuriesDetails;
   final bool? hasSurgery;
@@ -85,7 +85,6 @@ final class QuestionnaireState {
   final String mealsPerDay;
   final String waterLiters;
   final bool? usesSupplements;
-  final String supplementsDetails;
 
   final String sleepHours;
   final String? workNature;
@@ -96,6 +95,7 @@ final class QuestionnaireState {
   final String chest;
   final String arm;
   final String thigh;
+  final List<String> photoUrls;
 
   final String commitmentDays;
   final String? preferredTime;
@@ -104,74 +104,84 @@ final class QuestionnaireState {
   final String personalTrainerDetails;
 
   bool get isLastStep => step >= totalSteps - 1;
+  bool get isSubmitting => status == QuestionnaireStatus.submitting;
 
   bool get canProceed => switch (step) {
         0 =>
           fullName.trim().isNotEmpty &&
-              age.trim().isNotEmpty &&
+              _isValidAge(age) &&
               gender != null &&
-              phone.trim().isNotEmpty &&
+              phone.trim().length >= 6 &&
               profession.trim().isNotEmpty,
-        1 => goals.isNotEmpty,
-        2 =>
+        1 =>
           hasChronicDisease != null &&
               hasMedications != null &&
               hasInjuries != null &&
               hasSurgery != null &&
-              (hasChronicDisease != true ||
-                  chronicDiseaseDetails.trim().isNotEmpty) &&
-              (hasMedications != true ||
-                  medicationsDetails.trim().isNotEmpty) &&
               (hasInjuries != true || injuriesDetails.trim().isNotEmpty) &&
               (hasSurgery != true || surgeryDetails.trim().isNotEmpty),
-        3 =>
+        2 =>
           exercisesCurrently != null &&
               (exercisesCurrently != true ||
-                  exerciseDaysPerWeek.trim().isNotEmpty),
-        4 =>
+                  _isValidDays(exerciseDaysPerWeek)),
+        3 =>
           followsDiet != null &&
-              mealsPerDay.trim().isNotEmpty &&
+              _isValidMeals(mealsPerDay) &&
               waterLiters.trim().isNotEmpty &&
-              usesSupplements != null &&
-              (usesSupplements != true ||
-                  supplementsDetails.trim().isNotEmpty),
-        5 =>
+              usesSupplements != null,
+        4 =>
           sleepHours.trim().isNotEmpty &&
               workNature != null &&
               stressLevel != null,
-        6 =>
-          bodyFat.trim().isNotEmpty &&
-              waist.trim().isNotEmpty &&
+        5 =>
+          waist.trim().isNotEmpty &&
               chest.trim().isNotEmpty &&
               arm.trim().isNotEmpty &&
               thigh.trim().isNotEmpty,
-        7 =>
-          commitmentDays.trim().isNotEmpty &&
+        6 =>
+          _isValidDays(commitmentDays) &&
               preferredTime != null &&
               preferredExercises != null &&
               trainedWithPersonalTrainer != null &&
               (trainedWithPersonalTrainer != true ||
                   personalTrainerDetails.trim().isNotEmpty),
+        7 => goals.isNotEmpty,
         _ => false,
       };
+
+  static bool _isValidAge(String value) {
+    final parsed = int.tryParse(value.trim());
+    return parsed != null && parsed >= 10 && parsed <= 100;
+  }
+
+  static bool _isValidDays(String value) {
+    final parsed = int.tryParse(value.trim());
+    return parsed != null && parsed >= 1 && parsed <= 7;
+  }
+
+  static bool _isValidMeals(String value) {
+    final parsed = int.tryParse(value.trim());
+    return parsed != null && parsed >= 1 && parsed <= 12;
+  }
 
   QuestionnaireState copyWith({
     int? step,
     QuestionnaireStatus? status,
+    String? errorMessage,
+    bool clearError = false,
     String? fullName,
     String? age,
     String? gender,
     bool clearGender = false,
+    String? phoneCountryCode,
     String? phone,
     String? profession,
     Set<String>? goals,
     String? otherGoal,
     bool? hasChronicDisease,
     bool clearHasChronicDisease = false,
-    String? chronicDiseaseDetails,
     bool? hasMedications,
     bool clearHasMedications = false,
-    String? medicationsDetails,
     bool? hasInjuries,
     bool clearHasInjuries = false,
     String? injuriesDetails,
@@ -189,7 +199,6 @@ final class QuestionnaireState {
     String? waterLiters,
     bool? usesSupplements,
     bool clearUsesSupplements = false,
-    String? supplementsDetails,
     String? sleepHours,
     String? workNature,
     bool clearWorkNature = false,
@@ -200,6 +209,7 @@ final class QuestionnaireState {
     String? chest,
     String? arm,
     String? thigh,
+    List<String>? photoUrls,
     String? commitmentDays,
     String? preferredTime,
     bool clearPreferredTime = false,
@@ -212,9 +222,11 @@ final class QuestionnaireState {
     return QuestionnaireState(
       step: step ?? this.step,
       status: status ?? this.status,
+      errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
       fullName: fullName ?? this.fullName,
       age: age ?? this.age,
       gender: clearGender ? null : (gender ?? this.gender),
+      phoneCountryCode: phoneCountryCode ?? this.phoneCountryCode,
       phone: phone ?? this.phone,
       profession: profession ?? this.profession,
       goals: goals ?? this.goals,
@@ -222,12 +234,9 @@ final class QuestionnaireState {
       hasChronicDisease: clearHasChronicDisease
           ? null
           : (hasChronicDisease ?? this.hasChronicDisease),
-      chronicDiseaseDetails:
-          chronicDiseaseDetails ?? this.chronicDiseaseDetails,
       hasMedications: clearHasMedications
           ? null
           : (hasMedications ?? this.hasMedications),
-      medicationsDetails: medicationsDetails ?? this.medicationsDetails,
       hasInjuries:
           clearHasInjuries ? null : (hasInjuries ?? this.hasInjuries),
       injuriesDetails: injuriesDetails ?? this.injuriesDetails,
@@ -246,7 +255,6 @@ final class QuestionnaireState {
       usesSupplements: clearUsesSupplements
           ? null
           : (usesSupplements ?? this.usesSupplements),
-      supplementsDetails: supplementsDetails ?? this.supplementsDetails,
       sleepHours: sleepHours ?? this.sleepHours,
       workNature: clearWorkNature ? null : (workNature ?? this.workNature),
       stressLevel:
@@ -256,6 +264,7 @@ final class QuestionnaireState {
       chest: chest ?? this.chest,
       arm: arm ?? this.arm,
       thigh: thigh ?? this.thigh,
+      photoUrls: photoUrls ?? this.photoUrls,
       commitmentDays: commitmentDays ?? this.commitmentDays,
       preferredTime:
           clearPreferredTime ? null : (preferredTime ?? this.preferredTime),

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:glory_gym/core/core.dart';
-import 'package:glory_gym/features/auth/presentation/cubits/user_profile/user_profile_cubit.dart';
 import 'package:glory_gym/features/bookings/presentation/cubits/class_evaluation/class_evaluation_cubit.dart';
 import 'package:go_router/go_router.dart';
 
@@ -33,13 +32,13 @@ final class _ClassEvaluationView extends StatelessWidget {
 
     AppSuccessSheet.show(
       context,
-      title: 'تقييم للحصة',
-      headline: 'لقد تم تقييم الحصة بنجاح!',
-      highlightWord: 'بنجاح',
+      title: context.l10n.evaluateClass,
+      headline: context.l10n.classEvaluatedSuccess,
+      highlightWord: context.l10n.successfully,
       description:
-          'أهلاً بك في عائلة جلوري جيم! لقد تم تسجيل دخول لحصة (${result.packageNameAr}) '
-          'مع الكوتش (${result.instructorName}) متبقي معك ${result.remainingSessions} حصص',
-      buttonLabel: 'الرئيسية',
+          '${context.l10n.checkinClassWelcomePrefix(result.packageNameAr)}'
+          '${context.l10n.checkinClassWelcomeSuffix(result.instructorName, '${result.remainingSessions}')}',
+      buttonLabel: context.l10n.home,
       badgeAsset:
           'assets/images/svgs/success_when_create_anew_password_icon.svg',
       onButtonPressed: () => context.go(AppRoutes.home),
@@ -48,10 +47,6 @@ final class _ClassEvaluationView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final profile = context.watch<UserProfileCubit>().state;
-    final locale =
-        BookingUtils.localeFromAppLanguage(profile.member?.appLanguage);
-
     return BlocListener<ClassEvaluationCubit, ClassEvaluationState>(
       listenWhen: (previous, current) =>
           previous.errorMessage != current.errorMessage &&
@@ -65,8 +60,8 @@ final class _ClassEvaluationView extends StatelessWidget {
         );
       },
       child: AppScaffold(
-        appBar: const AppPrimaryHeader(
-          title: 'تقييم للحصة',
+        appBar: AppPrimaryHeader(
+          title: context.l10n.evaluateClass,
           showBack: true,
           centerTitle: false,
         ),
@@ -80,42 +75,38 @@ final class _ClassEvaluationView extends StatelessWidget {
                 state.questions.isEmpty) {
               return Center(
                 child: Text(
-                  state.errorMessage ?? 'حدث خطأ، حاول مرة أخرى',
+                  state.errorMessage ?? context.l10n.errorTryAgain,
                   style: context.captionRegular,
                 ),
               );
             }
 
+            final question = state.questions.firstOrNull;
+            if (question == null) {
+              return const SizedBox.shrink();
+            }
+
             return Padding(
-              padding: const EdgeInsets.all(18),
+              padding: const EdgeInsets.fromLTRB(18, 0, 18, 18),
               child: Column(
                 children: [
                   Expanded(
-                    child: ListView.separated(
-                      itemCount: state.questions.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: 16),
-                      itemBuilder: (_, index) {
-                        final question = state.questions[index];
-                        final text = locale == 'ar'
-                            ? question.questionAr
-                            : question.questionEn;
-                        return _QuestionCard(
-                          question: text,
-                          selectedRating: state.answers[question.id],
-                          onRatingSelected: (rating) => context
-                              .read<ClassEvaluationCubit>()
-                              .setAnswer(question.id, rating),
-                        );
-                      },
+                    child: Align(
+                      alignment: Alignment.topCenter,
+                      child: _QuestionCard(
+                        question: context.l10n.classSatisfactionQuestion,
+                        selectedRating: state.answers[question.id],
+                        onRatingSelected: (rating) => context
+                            .read<ClassEvaluationCubit>()
+                            .setAnswer(question.id, rating),
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 16),
                   AppButton(
-                    label: 'إرسال',
+                    label: context.l10n.submit,
                     isLoading: state.status == ClassEvaluationStatus.submitting,
                     onPressed: state.canSubmit ? () => _submit(context) : null,
                   ),
-                  const SizedBox(height: 8),
                 ],
               ),
             );
@@ -140,6 +131,7 @@ final class _QuestionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.neutral100,
@@ -147,20 +139,22 @@ final class _QuestionCard extends StatelessWidget {
         border: Border.all(color: AppColors.neutral200),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
             question,
-            style: context.highlightBold,
-            textAlign: TextAlign.end,
+            style: context.subtitleMedium,
+            textAlign: TextAlign.start,
           ),
-          const SizedBox(height: 12),
-          for (int rating = 1; rating <= 5; rating++)
+          const SizedBox(height: 16),
+          for (int rating = 1; rating <= 5; rating++) ...[
+            if (rating > 1) const SizedBox(height: 12),
             _RatingOption(
               rating: rating,
               isSelected: selectedRating == rating,
               onTap: () => onRatingSelected(rating),
             ),
+          ],
         ],
       ),
     );
@@ -183,22 +177,21 @@ final class _RatingOption extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Row(
-          children: [
-            _RadioCircle(isSelected: isSelected),
-            8.horizontal,
-            Text(
-              rating.toString(),
-              style: context.captionRegular.copyWith(
-                color: AppColors.yellow100,
-              ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          _RadioCircle(isSelected: isSelected),
+          const SizedBox(width: 8),
+          Text(
+            rating.toString(),
+            style: context.subtitleMedium.copyWith(
+              fontSize: 14,
+              color: AppColors.yellow100,
             ),
-            4.horizontal,
-            _StarRow(filledCount: rating),
-          ],
-        ),
+          ),
+          const SizedBox(width: 4),
+          _StarRow(filledCount: rating),
+        ],
       ),
     );
   }
@@ -214,14 +207,16 @@ final class _StarRow extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        for (int i = 1; i <= 5; i++)
+        for (int i = 1; i <= 5; i++) ...[
+          if (i > 1) const SizedBox(width: 2),
           Icon(
             Icons.star_rounded,
-            size: 22,
+            size: 16,
             color: i <= filledCount
                 ? AppColors.yellow100
                 : AppColors.neutral300,
           ),
+        ],
       ],
     );
   }
@@ -235,15 +230,26 @@ final class _RadioCircle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 22,
-      height: 22,
+      width: 20,
+      height: 20,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         border: Border.all(
           color: isSelected ? AppColors.primary : AppColors.neutral400,
-          width: isSelected ? 6 : 1.5,
         ),
       ),
+      child: isSelected
+          ? Center(
+              child: Container(
+                width: 10,
+                height: 10,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.primary,
+                ),
+              ),
+            )
+          : null,
     );
   }
 }

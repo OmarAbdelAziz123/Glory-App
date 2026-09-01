@@ -1,4 +1,4 @@
-package com.app.glory_gym
+package com.app.glorygym
 
 import android.view.WindowManager
 import io.flutter.embedding.android.FlutterActivity
@@ -33,6 +33,6 @@ class MainActivity : FlutterActivity() {
     }
 
     companion object {
-        private const val SECURE_SCREEN_CHANNEL = "com.app.glory_gym/secure_screen"
+        private const val SECURE_SCREEN_CHANNEL = "com.app.glorygym/secure_screen"
     }
 }

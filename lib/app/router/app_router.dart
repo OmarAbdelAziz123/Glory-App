@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/l10n/l10n_extension.dart';
 import '../../core/models/content_args.dart';
 import '../../core/models/otp_args.dart';
 import '../../core/router/app_routes.dart';
+import '../../features/coach_chat/domain/entities/chat_entities.dart';
+import '../../features/coach_chat/presentation/screens/coach_chat_list_screen.dart';
+import '../../features/coach_chat/presentation/screens/coach_chat_thread_screen.dart';
 import '../../features/about/presentation/screens/about_screen.dart';
 import '../../features/about/presentation/screens/complaints_screen.dart';
 import '../../features/about/presentation/screens/faq_screen.dart';
@@ -16,7 +20,10 @@ import '../../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/otp_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
+import '../../features/onboarding/domain/entities/onboarding_prefill_entity.dart';
+import '../../features/onboarding/presentation/screens/onboarding_screen.dart';
 import '../../features/subscription_questionnaire/presentation/screens/questionnaire_screen.dart';
+import '../../../../core/models/questionnaire_args.dart';
 import '../../features/body_composition/presentation/screens/body_composition_screen.dart';
 import '../../features/body_composition/presentation/screens/size_measurements_screen.dart';
 import '../../features/bookings/presentation/screens/bookings_screen.dart';
@@ -24,6 +31,7 @@ import '../../features/family/domain/entities/family_member_entity.dart';
 import '../../features/family/presentation/screens/add_family_member_screen.dart';
 import '../../features/family/presentation/screens/family_screen.dart';
 import '../../features/glory_ai/presentation/screens/glory_ai_screen.dart';
+import '../../features/glory_ai/presentation/screens/sandy_conversations_list_screen.dart';
 import '../../features/home/presentation/screens/main_layout.dart';
 import '../../features/notifications/presentation/screens/notifications_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
@@ -32,16 +40,22 @@ import '../../features/splash/presentation/screens/splash_screen.dart';
 import '../../features/subscriptions/presentation/screens/subscriptions_screen.dart';
 import '../../features/workouts/presentation/screens/workout_detail_screen.dart';
 import '../../features/workouts/presentation/screens/workouts_screen.dart';
+import '../../core/widgets/app_coach_chat_fab_overlay.dart';
+
+/// Application route configuration.
 
 final class AppRouter {
   AppRouter._();
 
   static final GoRouter router = GoRouter(
     initialLocation: AppRoutes.splash,
+    // initialLocation: AppRoutes.subscriptionQuestionnaire,
     debugLogDiagnostics: false,
     routes: _routes,
     errorBuilder: (context, state) => Scaffold(
-      body: Center(child: Text('Route not found: ${state.uri}')),
+      body: Center(
+        child: Text(context.l10n.routeNotFound(state.uri.toString())),
+      ),
     ),
   );
 
@@ -84,9 +98,28 @@ final class AppRouter {
     GoRoute(
       path: AppRoutes.subscriptionQuestionnaire,
       name: 'subscriptionQuestionnaire',
-      builder: (_, _) => const QuestionnaireScreen(),
+      builder: (_, state) => QuestionnaireScreen(
+        args: state.extra as QuestionnaireScreenArgs?,
+      ),
+    ),
+    GoRoute(
+      path: AppRoutes.onboarding,
+      name: 'onboarding',
+      builder: (_, state) => OnboardingScreen(
+        prefill: state.extra as OnboardingPrefillEntity?,
+      ),
     ),
 
+    ShellRoute(
+      builder: (context, state, child) => AppCoachChatFabOverlay(
+        state: state,
+        child: child,
+      ),
+      routes: _appShellRoutes,
+    ),
+  ];
+
+  static final List<RouteBase> _appShellRoutes = [
     // ── Main tabs ────────────────────────────────────────
     GoRoute(
       path: AppRoutes.home,
@@ -170,6 +203,30 @@ final class AppRouter {
       ),
     ),
 
+    // ── Sandy AI ────────────────────────────────────────
+    GoRoute(
+      path: AppRoutes.sandyConversations,
+      name: 'sandyConversations',
+      builder: (_, _) => const SandyConversationsListScreen(),
+    ),
+
+    // ── Coach Chat ────────────────────────────────────────
+    GoRoute(
+      path: AppRoutes.coachChat,
+      name: 'coachChat',
+      builder: (_, _) => const CoachChatListScreen(),
+      routes: [
+        GoRoute(
+          path: ':id',
+          name: 'coachChatThread',
+          builder: (_, state) => CoachChatThreadScreen(
+            conversationId: state.pathParameters['id']!,
+            conversation: state.extra as ChatConversationEntity?,
+          ),
+        ),
+      ],
+    ),
+
     // ── Notifications ─────────────────────────────────────
     GoRoute(
       path: AppRoutes.notifications,
@@ -216,6 +273,5 @@ final class AppRouter {
         bookingId: state.extra as String? ?? '',
       ),
     ),
-
   ];
 }

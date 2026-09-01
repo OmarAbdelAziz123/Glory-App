@@ -11,6 +11,7 @@ import '../../../../core/utils/family_utils.dart';
 import '../../../../core/widgets/widgets.dart';
 import '../../domain/entities/family_member_entity.dart';
 import '../cubits/family_list/family_list_cubit.dart';
+import 'package:glory_gym/core/l10n/l10n.dart';
 
 final class FamilyScreen extends StatefulWidget {
   const FamilyScreen({super.key});
@@ -88,9 +89,9 @@ final class _FamilyScreenState extends State<FamilyScreen> {
   ) async {
     final shouldDelete = await AppConfirmDialog.show(
       providerContext,
-      title: 'حذف عضو',
-      message: 'هل أنت متأكد أنك تريد حذف "${member.fullName}"؟',
-      confirmLabel: 'حذف',
+      title: context.l10n.deleteMemberAlt,
+      message: context.l10n.deleteMemberConfirm(member.fullName),
+      confirmLabel: context.l10n.delete,
     );
 
     if (shouldDelete != true || !providerContext.mounted) return;
@@ -102,7 +103,7 @@ final class _FamilyScreenState extends State<FamilyScreen> {
 
     if (success) {
       ScaffoldMessenger.of(providerContext).showSnackBar(
-        const SnackBar(content: Text('تم حذف العضو بنجاح')),
+        SnackBar(content: Text(context.l10n.memberDeleted)),
       );
       return;
     }
@@ -134,8 +135,8 @@ final class _FamilyScreenState extends State<FamilyScreen> {
               );
             },
             child: AppScaffold(
-              appBar: const AppPrimaryHeader(
-                title: 'أفراد العائلة',
+              appBar: AppPrimaryHeader(
+                title: context.l10n.familyMembers,
                 showBack: true,
                 centerTitle: false,
               ),
@@ -153,7 +154,7 @@ final class _FamilyScreenState extends State<FamilyScreen> {
                   if (state.status == FamilyListStatus.failure &&
                       state.members.isEmpty) {
                     return _FamilyErrorView(
-                      message: state.errorMessage ?? 'حدث خطأ، حاول مرة أخرى',
+                      message: state.errorMessage ?? context.l10n.errorTryAgain,
                       onRetry: () => context
                           .read<FamilyListCubit>()
                           .loadMembers(refresh: true),
@@ -221,18 +222,18 @@ final class _FamilyEmptyView extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             Text(
-              'لا يوجد أفراد عائلة',
+              context.l10n.noFamilyMembers,
               style: context.highlightBold.copyWith(color: AppColors.neutral900),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
-              'ابدأ بإضافة أفراد عائلتك للمتابعة من التطبيق',
+              context.l10n.familyAddMembersHint,
               style: context.captionRegular.copyWith(color: AppColors.neutral500),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
-            AppButton(label: 'إضافة عضو جديد', onPressed: onAdd),
+            AppButton(label: context.l10n.addNewMember, onPressed: onAdd),
           ],
         ),
       ),
@@ -256,7 +257,7 @@ final class _FamilyErrorView extends StatelessWidget {
           children: [
             Text(message, textAlign: TextAlign.center),
             const SizedBox(height: 16),
-            AppButton(label: 'إعادة المحاولة', onPressed: onRetry),
+            AppButton(label: context.l10n.retry, onPressed: onRetry),
           ],
         ),
       ),
@@ -350,22 +351,22 @@ final class _MemberDetails extends StatelessWidget {
         children: [
           Expanded(
             child: _DetailCell(
-              label: 'تاريخ الاضافة',
-              value: FamilyUtils.formatAddedDate(member.createdAt),
+              label: context.l10n.dateAdded,
+              value: FamilyUtils.formatAddedDate(context.l10n, member.createdAt),
             ),
           ),
           const VerticalDivider(width: 1, color: AppColors.neutral200),
           Expanded(
             child: _DetailCell(
-              label: 'العلاقة',
-              value: FamilyUtils.relationLabel(member.relation),
+              label: context.l10n.relationship,
+              value: FamilyUtils.relationLabel(context.l10n, member.relation),
             ),
           ),
           const VerticalDivider(width: 1, color: AppColors.neutral200),
           Expanded(
             child: _DetailCell(
-              label: 'تاريخ الميلاد',
-              value: FamilyUtils.formatBirthDate(member.dateOfBirth),
+              label: context.l10n.dateOfBirth,
+              value: FamilyUtils.formatBirthDate(context.l10n, member.dateOfBirth),
             ),
           ),
         ],
@@ -434,7 +435,7 @@ final class _FamilyMemberActionsSheet extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Text(
-                'اختر إجراء',
+                context.l10n.chooseAction,
                 style: context.highlightBold.copyWith(color: AppColors.neutral900),
               ),
             ),
@@ -442,13 +443,13 @@ final class _FamilyMemberActionsSheet extends StatelessWidget {
             const Divider(height: 1, color: AppColors.neutral200),
             _ActionTile(
               icon: Iconsax.edit_2,
-              label: 'تعديل',
+              label: context.l10n.edit,
               onTap: onEdit,
             ),
             const Divider(height: 1, indent: 20, endIndent: 20, color: AppColors.neutral200),
             _ActionTile(
               icon: Iconsax.trash,
-              label: 'حذف',
+              label: context.l10n.delete,
               isDestructive: true,
               onTap: onDelete,
             ),

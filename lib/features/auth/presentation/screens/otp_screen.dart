@@ -14,6 +14,7 @@ import '../../../../core/theme/app_styles_extension.dart';
 import '../../../../core/widgets/widgets.dart';
 import '../cubits/otp/otp_cubit.dart';
 import '../widgets/otp_header.dart';
+import '../../../../core/l10n/l10n_extension.dart';
 
 final class OtpScreen extends StatefulWidget {
   const OtpScreen({super.key, this.args});
@@ -112,14 +113,14 @@ final class _OtpScreenState extends State<OtpScreen> {
           if (state.status == OtpStatus.resent && state.otpSent != null) {
             _startTimer(state.otpSent!.resendCooldownSeconds);
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('تم إرسال رمز التحقق مرة أخرى')),
+              SnackBar(content: Text(context.l10n.verificationCodeResent)),
             );
             context.read<OtpCubit>().resetActionStatus();
           }
         },
         child: AppScaffold(
           resizeToAvoidBottomInset: true,
-          appBar: AppBackHeader(title: 'رمز التحقق'),
+          appBar: AppBackHeader(title: context.l10n.verificationCode),
           body: SafeArea(
             child: Column(
               children: [
@@ -179,7 +180,7 @@ final class _CantAccessEmailRow extends StatelessWidget {
     return Column(
       children: [
         Text(
-          'لا تستطيع الوصول إلى بريدك الإلكتروني الآن؟',
+          context.l10n.cannotAccessEmailNow,
           style: context.captionRegular.copyWith(color: AppColors.neutral500),
           textAlign: TextAlign.center,
         ),
@@ -187,7 +188,7 @@ final class _CantAccessEmailRow extends StatelessWidget {
         GestureDetector(
           onTap: onSendToPhone,
           child: Text(
-            'أرسل الرمز إلى رقم هاتفك',
+            context.l10n.sendCodeToPhone,
             style: context.subtitleMedium.copyWith(
               color: AppColors.primary,
               decoration: TextDecoration.underline,
@@ -234,7 +235,7 @@ final class _BottomSection extends StatelessWidget {
           ),
           16.vertical,
           AppButton(
-            label: 'تأكيد',
+            label: context.l10n.confirm,
             isLoading: isVerifying,
             onPressed: canConfirm && !isVerifying ? onConfirm : null,
           ),
@@ -309,10 +310,10 @@ final class _CountdownResendRowState extends State<_CountdownResendRow> {
                   context.captionRegular.copyWith(color: AppColors.neutral500),
               children: [
                 TextSpan(
-                  text: 'ستنتهي صلاحية الكود خلال ( $timerText ثانية ) ',
+                  text: context.l10n.codeExpiresInTimer(timerText),
                 ),
                 TextSpan(
-                  text: 'إعادة إرسال',
+                  text: context.l10n.resend,
                   recognizer: _tapRecognizer,
                   style: context.captionRegular.copyWith(
                     color: widget.canResend

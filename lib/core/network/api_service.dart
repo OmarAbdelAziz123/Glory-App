@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 
 import '../error/app_exception.dart';
 import '../error/app_failure.dart';
+import '../l10n/fallback_messages.dart';
 import '../result/result.dart';
 
 abstract base class ApiService {
@@ -109,8 +110,8 @@ abstract base class ApiService {
       DioExceptionType.receiveTimeout ||
       DioExceptionType.sendTimeout ||
       DioExceptionType.connectionError =>
-        const NetworkFailure(),
-      _ => ServerFailure(e.message ?? 'Unexpected error'),
+        NetworkFailure(FallbackMessages.noInternet),
+      _ => ServerFailure(e.message ?? FallbackMessages.errorGeneral),
     };
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../core/l10n/fallback_messages.dart';
 import '../core/l10n/l10n_extension.dart';
 import '../core/theme/app_theme.dart';
 import '../core/widgets/secure_screen_scope.dart';
@@ -26,10 +27,11 @@ final class _AppView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final locale = context.watch<AppLocaleCubit>().state;
+    LocaleHolder.languageCode = locale.languageCode;
 
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
-      title: 'Glory Gym',
+      onGenerateTitle: (context) => context.l10n.appName,
       theme: AppTheme.light,
       locale: locale,
       localizationsDelegates: AppLocalizations.localizationsDelegates,

@@ -24,7 +24,8 @@ final class UserProfileState extends Equatable {
   bool get isUpdatingNotifications =>
       status == UserProfileStatus.updatingNotifications;
 
-  String get displayName => member?.fullName ?? 'اسم المستخدم';
+  String displayName(AppLocalizations l10n) =>
+      member?.fullName ?? l10n.username;
 
   String get displayEmail => member?.email ?? '';
 
@@ -34,15 +35,16 @@ final class UserProfileState extends Equatable {
     return '${profile.phoneCountryCode} ${profile.phone}';
   }
 
-  String get displayBirthDate => ProfileUtils.formatBirthDate(member?.dateOfBirth);
+  String displayBirthDate(AppLocalizations l10n) =>
+      ProfileUtils.formatBirthDate(l10n, member?.dateOfBirth);
 
-  String get displayMaritalStatus =>
-      ProfileUtils.maritalStatusLabel(member?.maritalStatus);
+  String displayMaritalStatus(AppLocalizations l10n) =>
+      ProfileUtils.maritalStatusLabel(l10n, member?.maritalStatus);
 
-  String get displayHealthNotes =>
+  String displayHealthNotes(AppLocalizations l10n) =>
       member?.healthNotes?.isNotEmpty == true
           ? member!.healthNotes!
-          : 'لا توجد أمراض';
+          : l10n.noDiseases;
 
   bool get pushEnabled => member?.pushEnabled ?? false;
 

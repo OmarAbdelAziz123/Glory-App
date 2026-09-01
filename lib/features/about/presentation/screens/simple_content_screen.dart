@@ -6,6 +6,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 import '../../../../core/di/service_locator.dart';
 import '../../../../core/models/content_args.dart';
 import '../cubits/info_page/info_page_cubit.dart';
+import '../../../../core/l10n/l10n_extension.dart';
 
 final class SimpleContentScreen extends StatelessWidget {
   const SimpleContentScreen({super.key, required this.args});
@@ -30,7 +31,7 @@ final class SimpleContentScreen extends StatelessWidget {
             ),
             body: state.status == InfoPageStatus.failure
                 ? _ErrorView(
-                    message: state.errorMessage ?? 'حدث خطأ، حاول مرة أخرى',
+                    message: state.errorMessage ?? context.l10n.errorTryAgain,
                     onRetry: () =>
                         context.read<InfoPageCubit>().loadPage(args.pageKey),
                   )
@@ -79,7 +80,7 @@ final class _ErrorView extends StatelessWidget {
           children: [
             Text(message, textAlign: TextAlign.center),
             const SizedBox(height: 16),
-            AppButton(label: 'إعادة المحاولة', onPressed: onRetry),
+            AppButton(label: context.l10n.retry, onPressed: onRetry),
           ],
         ),
       ),
