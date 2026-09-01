@@ -1,3 +1,5 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -77,52 +79,84 @@ final class _SandyConversationsListContent extends StatelessWidget {
     }
 
     if (!state.isLoading && state.isEmpty) {
-      return _EmptyView(
-        title: context.l10n.sandyNoConversations,
-        description: context.l10n.sandyNoConversationsDescription,
+      return _PlatformAdaptiveRefreshScroll(
+        onRefresh: () => context
+            .read<SandyConversationsListCubit>()
+            .loadConversations(refresh: true),
+        child: _EmptyView(
+          title: context.l10n.sandyNoConversations,
+          description: context.l10n.sandyNoConversationsDescription,
+        ),
       );
     }
 
     final isLoading = state.isLoading;
     final itemCount = isLoading ? 4 : state.conversations.length;
+    final onRefresh = isLoading
+        ? () async {}
+        : () => context
+            .read<SandyConversationsListCubit>()
+            .loadConversations(refresh: true);
+
+    Widget buildTile(int index) {
+      final conversation = isLoading
+          ? _placeholderConversation(context, index)
+          : state.conversations[index];
+
+      return AppEntrance(
+        delay: isLoading
+            ? Duration.zero
+            : Duration(milliseconds: 60 + (index * 70)),
+        offset: const Offset(0, 0.06),
+        animate: !isLoading,
+        child: _ConversationTile(
+          conversation: conversation,
+          enabled: !isLoading && !state.isUpdating,
+        ),
+      );
+    }
+
+    final listPhysics = isLoading
+        ? const NeverScrollableScrollPhysics()
+        : const AlwaysScrollableScrollPhysics();
+
+    final conversationList = defaultTargetPlatform == TargetPlatform.iOS
+        ? CustomScrollView(
+            physics: listPhysics,
+            slivers: [
+              if (!isLoading)
+                CupertinoSliverRefreshControl(onRefresh: onRefresh),
+              SliverPadding(
+                padding: const EdgeInsets.all(16),
+                sliver: SliverList.separated(
+                  itemCount: itemCount,
+                  separatorBuilder: (_, _) => const SizedBox(height: 12),
+                  itemBuilder: (context, index) => Skeletonizer(
+                    enabled: isLoading,
+                    child: buildTile(index),
+                  ),
+                ),
+              ),
+            ],
+          )
+        : RefreshIndicator(
+            color: AppColors.primary,
+            onRefresh: onRefresh,
+            child: Skeletonizer(
+              enabled: isLoading,
+              child: ListView.separated(
+                physics: listPhysics,
+                padding: const EdgeInsets.all(16),
+                itemCount: itemCount,
+                separatorBuilder: (_, _) => const SizedBox(height: 12),
+                itemBuilder: (context, index) => buildTile(index),
+              ),
+            ),
+          );
 
     return Stack(
       children: [
-        RefreshIndicator(
-          onRefresh: isLoading
-              ? () async {}
-              : () => context
-                  .read<SandyConversationsListCubit>()
-                  .loadConversations(refresh: true),
-          child: Skeletonizer(
-            enabled: isLoading,
-            child: ListView.separated(
-              physics: isLoading
-                  ? const NeverScrollableScrollPhysics()
-                  : const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(16),
-              itemCount: itemCount,
-              separatorBuilder: (_, _) => const SizedBox(height: 12),
-              itemBuilder: (context, index) {
-                final conversation = isLoading
-                    ? _placeholderConversation(context, index)
-                    : state.conversations[index];
-
-                return AppEntrance(
-                  delay: isLoading
-                      ? Duration.zero
-                      : Duration(milliseconds: 60 + (index * 70)),
-                  offset: const Offset(0, 0.06),
-                  animate: !isLoading,
-                  child: _ConversationTile(
-                    conversation: conversation,
-                    enabled: !isLoading && !state.isUpdating,
-                  ),
-                );
-              },
-            ),
-          ),
-        ),
+        conversationList,
         if (state.isUpdating)
           const Positioned(
             top: 12,
@@ -496,6 +530,45 @@ final class _ErrorView extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+final class _PlatformAdaptiveRefreshScroll extends StatelessWidget {
+  const _PlatformAdaptiveRefreshScroll({
+    required this.onRefresh,
+    required this.child,
+  });
+
+  final Future<void> Function() onRefresh;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
+      return CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        slivers: [
+          CupertinoSliverRefreshControl(onRefresh: onRefresh),
+          SliverFillRemaining(hasScrollBody: false, child: child),
+        ],
+      );
+    }
+
+    return RefreshIndicator(
+      color: AppColors.primary,
+      onRefresh: onRefresh,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: child,
+            ),
+          );
+        },
       ),
     );
   }
