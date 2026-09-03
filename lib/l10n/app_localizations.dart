@@ -2468,7 +2468,7 @@ abstract class AppLocalizations {
   /// No description provided for @sizeMeasurements.
   ///
   /// In en, this message translates to:
-  /// **'Size measurements'**
+  /// **'Body measurements'**
   String get sizeMeasurements;
 
   /// No description provided for @sleepHoursCount.

@@ -25,7 +25,7 @@ final class QuestionnaireTextField extends StatelessWidget {
 
   static OutlineInputBorder _border(Color color, double width) =>
       OutlineInputBorder(
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(8),
         borderSide: BorderSide(color: color, width: width),
       );
 

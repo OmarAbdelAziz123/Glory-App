@@ -23,11 +23,11 @@ final class QuestionnaireChoiceChip extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(8),
         child: Ink(
           decoration: BoxDecoration(
             color: selected ? AppColors.primary : AppColors.white,
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: BorderRadius.circular(8),
             border: selected
                 ? null
                 : Border.all(color: AppColors.neutral400),

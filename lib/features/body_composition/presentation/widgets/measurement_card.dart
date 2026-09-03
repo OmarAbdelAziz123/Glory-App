@@ -36,28 +36,35 @@ final class MeasurementCard extends StatelessWidget {
 
   final MeasurementCardData data;
 
+  static const _radius = 8.0;
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
+    return DecoratedBox(
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(_radius),
         border: Border.all(color: AppColors.neutral200),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _CardHeader(issuedBy: data.issuedBy, date: data.date),
-          const SizedBox(height: 12),
-          const Divider(height: 1, color: AppColors.neutral200),
-          ...data.rows.expand((row) => [
-                const SizedBox(height: 12),
-                _MetricRowWidget(row: row),
-                const SizedBox(height: 12),
-                const Divider(height: 1, color: AppColors.neutral200),
-              ]),
-        ],
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(_radius),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _CardHeader(issuedBy: data.issuedBy, date: data.date),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  for (var i = 0; i < data.rows.length; i++) ...[
+                    if (i > 0) const SizedBox(height: 12),
+                    _MetricRowWidget(row: data.rows[i]),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -73,18 +80,23 @@ final class _CardHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          issuedBy,
-          style: context.footnoteRegular.copyWith(color: AppColors.neutral500),
-        ),
-        Text(
-          date,
-          style: context.footnoteRegular.copyWith(color: AppColors.primary),
-        ),
-      ],
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      color: AppColors.primary10,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            date,
+            style: context.captionRegular.copyWith(color: AppColors.primary),
+          ),
+          Text(
+            issuedBy,
+            style: context.subtitleMedium.copyWith(color: AppColors.neutral600),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -96,17 +108,17 @@ final class _MetricRowWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (row.trailing == null) {
-      return _MetricCell(metric: row.leading);
-    }
-    return IntrinsicHeight(
-      child: Row(
-        children: [
-          Expanded(child: _MetricCell(metric: row.leading)),
-          const VerticalDivider(width: 1, color: AppColors.neutral200),
-          Expanded(child: _MetricCell(metric: row.trailing!)),
-        ],
-      ),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(child: _MetricCell(metric: row.leading)),
+        const SizedBox(width: 16),
+        Expanded(
+          child: row.trailing == null
+              ? const SizedBox.shrink()
+              : _MetricCell(metric: row.trailing!),
+        ),
+      ],
     );
   }
 }
@@ -119,18 +131,14 @@ final class _MetricCell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           metric.label,
-          style: context.footnoteRegular.copyWith(color: AppColors.neutral400),
-          textAlign: TextAlign.center,
+          style: context.captionRegular.copyWith(color: AppColors.neutral400),
         ),
-        const SizedBox(height: 6),
-        Text(
-          metric.value,
-          style: context.subtitleMedium,
-          textAlign: TextAlign.center,
-        ),
+        const SizedBox(height: 4),
+        Text(metric.value, style: context.contentSemibold),
       ],
     );
   }

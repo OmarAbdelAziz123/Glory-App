@@ -21,7 +21,9 @@ final class QuestionnaireStepTitle extends StatelessWidget {
       children: [
         Text(
           title,
-          style: context.featureBold.copyWith(color: AppColors.neutral1000),
+          style: context.featureSemiboldBold.copyWith(
+            color: AppColors.neutral1000,
+          ),
         ),
         6.vertical,
         Text(

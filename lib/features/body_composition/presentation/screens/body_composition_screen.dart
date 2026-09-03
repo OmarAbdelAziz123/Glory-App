@@ -10,7 +10,7 @@ final class BodyCompositionScreen extends StatelessWidget {
   List<MeasurementCardData> _cards(AppLocalizations l10n) => [
         MeasurementCardData(
           issuedBy: l10n.issuedByAhmedHossam,
-          date: 'Apr 2026.05',
+          date: 'Apr 2026 05',
           rows: [
             MeasurementMetricRow(
               leading: MeasurementMetric(label: l10n.weight, value: l10n.tenKilosLabel),
@@ -43,7 +43,7 @@ final class BodyCompositionScreen extends StatelessWidget {
         ),
         MeasurementCardData(
           issuedBy: l10n.issuedByAhmedHossam,
-          date: 'Apr 2026.05',
+          date: 'Apr 2026 05',
           rows: [
             MeasurementMetricRow(
               leading: MeasurementMetric(label: l10n.weight, value: l10n.tenKilosLabel),
@@ -89,7 +89,7 @@ final class BodyCompositionScreen extends StatelessWidget {
       body: ListView.separated(
         padding: const EdgeInsets.all(18),
         itemCount: cards.length,
-        separatorBuilder: (_, _) => const SizedBox(height: 16),
+        separatorBuilder: (_, _) => const SizedBox(height: 18),
         itemBuilder: (_, index) => MeasurementCard(data: cards[index]),
       ),
     );

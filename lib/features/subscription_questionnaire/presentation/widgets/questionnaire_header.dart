@@ -11,13 +11,11 @@ final class QuestionnaireHeader extends StatelessWidget
     super.key,
     required this.currentStep,
     required this.totalSteps,
-    this.title,
     this.onBack,
   });
 
   final int currentStep;
   final int totalSteps;
-  final String? title;
   final VoidCallback? onBack;
 
   static const _toolbarHeight = 72.0;
@@ -48,7 +46,7 @@ final class QuestionnaireHeader extends StatelessWidget
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            title ?? context.l10n.subscriptionQuestionnaire,
+            context.l10n.subscriptionQuestionnaire,
             textAlign: TextAlign.center,
             style: context.highlightBold.copyWith(color: AppColors.white),
           ),
@@ -71,7 +69,20 @@ final class QuestionnaireHeader extends StatelessWidget
                 alignment: AlignmentDirectional.centerStart,
                 child: GestureDetector(
                   onTap: onBack,
-                  child: AppNavBackIcon(fit: BoxFit.scaleDown),
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: AppColors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const AppNavBackIconLight(
+                      width: 18,
+                      height: 18,
+                      fit: BoxFit.scaleDown,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -86,11 +97,13 @@ final class QuestionnaireHeader extends StatelessWidget
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  const ColoredBox(color: AppColors.neutral10),
+                  ColoredBox(
+                    color: AppColors.white.withValues(alpha: 0.35),
+                  ),
                   FractionallySizedBox(
                     alignment: AlignmentDirectional.centerStart,
                     widthFactor: progress.clamp(0.0, 1.0),
-                    child: const ColoredBox(color: AppColors.neutral100),
+                    child: const ColoredBox(color: AppColors.primary800),
                   ),
                 ],
               ),

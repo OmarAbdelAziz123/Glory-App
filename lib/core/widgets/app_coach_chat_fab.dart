@@ -11,9 +11,13 @@ final class AppCoachChatFab extends StatefulWidget {
   const AppCoachChatFab({
     super.key,
     required this.onPressed,
+    this.handleTapInternally = true,
+    this.isDragging = false,
   });
 
   final VoidCallback onPressed;
+  final bool handleTapInternally;
+  final bool isDragging;
 
   @override
   State<AppCoachChatFab> createState() => _AppCoachChatFabState();
@@ -56,20 +60,73 @@ final class _AppCoachChatFabState extends State<AppCoachChatFab>
     super.dispose();
   }
 
+  @override
+  void didUpdateWidget(covariant AppCoachChatFab oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isDragging && !oldWidget.isDragging) {
+      _pulseController.stop();
+    } else if (!widget.isDragging && oldWidget.isDragging) {
+      _pulseController.repeat();
+    }
+  }
+
   Future<void> _handleTap() async {
     await _pressController.forward();
     await _pressController.reverse();
     widget.onPressed();
   }
 
+  Widget get _fabBody => Ink(
+        width: _size,
+        height: _size,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: const LinearGradient(
+            colors: [
+              AppColors.primary600,
+              AppColors.primary800,
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          border: widget.isDragging
+              ? Border.all(
+                  color: AppColors.white.withValues(alpha: 0.55),
+                  width: 2,
+                )
+              : null,
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary700
+                  .withValues(alpha: widget.isDragging ? 0.62 : 0.45),
+              blurRadius: widget.isDragging ? 24 : 16,
+              offset: Offset(0, widget.isDragging ? 10 : 6),
+              spreadRadius: widget.isDragging ? 1 : 0,
+            ),
+            BoxShadow(
+              color: AppColors.primary500
+                  .withValues(alpha: widget.isDragging ? 0.38 : 0.25),
+              blurRadius: widget.isDragging ? 36 : 28,
+              spreadRadius: widget.isDragging ? 2 : -4,
+              offset: Offset(0, widget.isDragging ? 14 : 10),
+            ),
+          ],
+        ),
+        child: const Icon(
+          Iconsax.messages_2,
+          color: AppColors.white,
+          size: 26,
+        ),
+      );
+
   @override
   Widget build(BuildContext context) {
     final label = context.l10n.coachChat;
 
-    return AnimatedSlide(
-      duration: const Duration(milliseconds: 420),
+    return AnimatedScale(
+      scale: widget.isDragging ? 1.12 : 1,
+      duration: const Duration(milliseconds: 160),
       curve: Curves.easeOutCubic,
-      offset: Offset.zero,
       child: Semantics(
         button: true,
         label: label,
@@ -80,7 +137,24 @@ final class _AppCoachChatFabState extends State<AppCoachChatFab>
                   alignment: Alignment.center,
                   clipBehavior: Clip.none,
                   children: [
-                    ...List.generate(2, (index) {
+                    if (widget.isDragging)
+                      Container(
+                        width: _size + 14,
+                        height: _size + 14,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: AppColors.primary500.withValues(alpha: 0.18),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.primary500.withValues(alpha: 0.22),
+                              blurRadius: 18,
+                              spreadRadius: 2,
+                            ),
+                          ],
+                        ),
+                      ),
+                    if (!widget.isDragging)
+                      ...List.generate(2, (index) {
                       return AnimatedBuilder(
                         animation: _pulseController,
                         builder: (context, child) {
@@ -112,47 +186,17 @@ final class _AppCoachChatFabState extends State<AppCoachChatFab>
                       child: Material(
                         color: Colors.transparent,
                         elevation: 0,
-                        child: InkWell(
-                          onTap: _handleTap,
-                          customBorder: const CircleBorder(),
-                          splashColor: AppColors.white.withValues(alpha: 0.18),
-                          highlightColor: AppColors.white.withValues(alpha: 0.08),
-                          child: Ink(
-                            width: _size,
-                            height: _size,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              gradient: const LinearGradient(
-                                colors: [
-                                  AppColors.primary600,
-                                  AppColors.primary800,
-                                ],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppColors.primary700
-                                      .withValues(alpha: 0.45),
-                                  blurRadius: 16,
-                                  offset: const Offset(0, 6),
-                                ),
-                                BoxShadow(
-                                  color: AppColors.primary500
-                                      .withValues(alpha: 0.25),
-                                  blurRadius: 28,
-                                  spreadRadius: -4,
-                                  offset: const Offset(0, 10),
-                                ),
-                              ],
-                            ),
-                            child: const Icon(
-                              Iconsax.messages_2,
-                              color: AppColors.white,
-                              size: 26,
-                            ),
-                          ),
-                        ),
+                        child: widget.handleTapInternally
+                            ? InkWell(
+                                onTap: _handleTap,
+                                customBorder: const CircleBorder(),
+                                splashColor:
+                                    AppColors.white.withValues(alpha: 0.18),
+                                highlightColor:
+                                    AppColors.white.withValues(alpha: 0.08),
+                                child: _fabBody,
+                              )
+                            : _fabBody,
                       ),
                     ),
                     PositionedDirectional(

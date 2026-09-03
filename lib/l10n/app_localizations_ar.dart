@@ -1257,7 +1257,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get signIn => 'تسجيل دخول';
 
   @override
-  String get sizeMeasurements => 'قياسات الحجم';
+  String get sizeMeasurements => 'قياسات الجسم';
 
   @override
   String get sleepHoursCount => 'عدد ساعات النوم';

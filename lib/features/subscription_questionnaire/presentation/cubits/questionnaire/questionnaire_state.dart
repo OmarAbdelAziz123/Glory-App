@@ -14,38 +14,38 @@ final class QuestionnaireState {
     this.phoneCountryCode = '+966',
     this.phone = '',
     this.profession = '',
-    // Step 8 — Goals
+    // Step 2 — Goals
     this.goals = const {},
     this.otherGoal = '',
-    // Step 2 — Medical
+    // Step 3 — Medical
     this.hasChronicDisease,
     this.hasMedications,
     this.hasInjuries,
     this.injuriesDetails = '',
     this.hasSurgery,
     this.surgeryDetails = '',
-    // Step 3 — Activity
+    // Step 4 — Activity
     this.exercisesCurrently,
     this.exerciseDaysPerWeek = '',
     this.exerciseTypes = '',
     this.exerciseDuration = '',
-    // Step 4 — Nutrition
+    // Step 5 — Nutrition
     this.followsDiet,
     this.mealsPerDay = '',
     this.waterLiters = '',
     this.usesSupplements,
-    // Step 5 — Lifestyle
+    // Step 6 — Lifestyle
     this.sleepHours = '',
     this.workNature,
     this.stressLevel,
-    // Step 6 — Measurements
+    // Step 7 — Measurements
     this.bodyFat = '',
     this.waist = '',
     this.chest = '',
     this.arm = '',
     this.thigh = '',
     this.photoUrls = const [],
-    // Step 7 — Training
+    // Step 8 — Training
     this.commitmentDays = '',
     this.preferredTime,
     this.preferredExercises,
@@ -107,45 +107,53 @@ final class QuestionnaireState {
   bool get isSubmitting => status == QuestionnaireStatus.submitting;
 
   bool get canProceed => switch (step) {
+        // Step 1 — Personal
         0 =>
           fullName.trim().isNotEmpty &&
               _isValidAge(age) &&
               gender != null &&
               phone.trim().length >= 6 &&
               profession.trim().isNotEmpty,
-        1 =>
+        // Step 2 — Goals
+        1 => goals.isNotEmpty,
+        // Step 3 — Medical
+        2 =>
           hasChronicDisease != null &&
               hasMedications != null &&
               hasInjuries != null &&
               hasSurgery != null &&
               (hasInjuries != true || injuriesDetails.trim().isNotEmpty) &&
               (hasSurgery != true || surgeryDetails.trim().isNotEmpty),
-        2 =>
+        // Step 4 — Activity
+        3 =>
           exercisesCurrently != null &&
               (exercisesCurrently != true ||
                   _isValidDays(exerciseDaysPerWeek)),
-        3 =>
+        // Step 5 — Nutrition
+        4 =>
           followsDiet != null &&
               _isValidMeals(mealsPerDay) &&
               waterLiters.trim().isNotEmpty &&
               usesSupplements != null,
-        4 =>
+        // Step 6 — Lifestyle
+        5 =>
           sleepHours.trim().isNotEmpty &&
               workNature != null &&
               stressLevel != null,
-        5 =>
+        // Step 7 — Measurements
+        6 =>
           waist.trim().isNotEmpty &&
               chest.trim().isNotEmpty &&
               arm.trim().isNotEmpty &&
               thigh.trim().isNotEmpty,
-        6 =>
+        // Step 8 — Training
+        7 =>
           _isValidDays(commitmentDays) &&
               preferredTime != null &&
               preferredExercises != null &&
               trainedWithPersonalTrainer != null &&
               (trainedWithPersonalTrainer != true ||
                   personalTrainerDetails.trim().isNotEmpty),
-        7 => goals.isNotEmpty,
         _ => false,
       };
 

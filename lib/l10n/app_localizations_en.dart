@@ -1266,7 +1266,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get signIn => 'Sign in';
 
   @override
-  String get sizeMeasurements => 'Size measurements';
+  String get sizeMeasurements => 'Body measurements';
 
   @override
   String get sleepHoursCount => 'Hours of sleep';

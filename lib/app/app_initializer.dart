@@ -8,6 +8,7 @@ import '../../firebase_options.dart';
 import '../core/di/service_locator.dart';
 import '../core/l10n/locale_service.dart';
 import '../core/notifications/fcm_service.dart';
+import '../core/platform/navigation_mode_service.dart';
 
 final class AppInitializer {
   AppInitializer._();
@@ -17,6 +18,7 @@ final class AppInitializer {
     await _initHydratedStorage();
     await setupServiceLocator();
     await LocaleService.bootstrap();
+    await NavigationModeService.check3ButtonNavigation();
     await _initializeFirebase();
   }
 

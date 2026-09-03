@@ -211,7 +211,6 @@ final class _QuestionnaireViewState extends State<_QuestionnaireView> {
               appBar: QuestionnaireHeader(
                 currentStep: state.step,
                 totalSteps: QuestionnaireState.totalSteps,
-                title: widget.completeToHome ? context.l10n.personalData : context.l10n.subscriptionQuestionnaire,
                 onBack: widget.completeToHome && state.step == 0
                     ? null
                     : () => _onBack(context, state),
@@ -219,10 +218,23 @@ final class _QuestionnaireViewState extends State<_QuestionnaireView> {
               body: Column(
                 children: [
                   Expanded(
-                    child: PageView(
-                      controller: _pageController,
-                      physics: const NeverScrollableScrollPhysics(),
-                      children: [
+                    child: Transform.translate(
+                      offset: const Offset(0, -12),
+                      child: DecoratedBox(
+                        decoration: const BoxDecoration(
+                          color: AppColors.white,
+                          borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(12),
+                          ),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(12),
+                          ),
+                          child: PageView(
+                            controller: _pageController,
+                            physics: const NeverScrollableScrollPhysics(),
+                            children: [
                         _StepScroll(
                           child: PersonalDataStep(
                             fullNameCtrl: _fullNameCtrl,
@@ -231,6 +243,9 @@ final class _QuestionnaireViewState extends State<_QuestionnaireView> {
                             phoneCtrl: _phoneCtrl,
                             phoneFieldKey: _phoneFieldKey,
                           ),
+                        ),
+                        _StepScroll(
+                          child: GoalsStep(otherGoalCtrl: _otherGoalCtrl),
                         ),
                         _StepScroll(
                           child: MedicalHistoryStep(
@@ -267,10 +282,10 @@ final class _QuestionnaireViewState extends State<_QuestionnaireView> {
                             trainerCtrl: _trainerCtrl,
                           ),
                         ),
-                        _StepScroll(
-                          child: GoalsStep(otherGoalCtrl: _otherGoalCtrl),
-                        ),
                       ],
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                   _FooterButton(

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../core/l10n/fallback_messages.dart';
 import '../core/l10n/l10n_extension.dart';
+import '../core/platform/navigation_mode_service.dart';
 import '../core/theme/app_theme.dart';
 import '../core/widgets/secure_screen_scope.dart';
 import 'app_bloc_providers.dart';
@@ -37,9 +38,19 @@ final class _AppView extends StatelessWidget {
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       routerConfig: AppRouter.router,
-      builder: (context, child) => SecureScreenScope(
-        child: child ?? const SizedBox.shrink(),
-      ),
+      builder: (context, child) {
+        final content = child ?? const SizedBox.shrink();
+        final extraBottom = NavigationModeService.extraBottomPadding;
+
+        return SecureScreenScope(
+          child: extraBottom > 0
+              ? Padding(
+                  padding: EdgeInsets.only(bottom: extraBottom),
+                  child: content,
+                )
+              : content,
+        );
+      },
     );
   }
 }

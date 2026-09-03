@@ -41,6 +41,7 @@ final class MeasurementsStep extends StatelessWidget {
           hint: context.l10n.enterBodyFatPercentage,
           controller: bodyFatCtrl,
           onChanged: cubit.updateBodyFat,
+          required: false,
         ),
         16.vertical,
         QuestionnaireUnitField(

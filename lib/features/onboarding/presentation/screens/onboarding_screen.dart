@@ -189,16 +189,28 @@ final class _OnboardingViewState extends State<_OnboardingView> {
               appBar: QuestionnaireHeader(
                 currentStep: state.step,
                 totalSteps: QuestionnaireState.totalSteps,
-                title: context.l10n.personalData,
                 onBack: state.step > 0 ? () => _onBack(context, state) : null,
               ),
               body: Column(
                 children: [
                   Expanded(
-                    child: PageView(
-                      controller: _pageController,
-                      physics: const NeverScrollableScrollPhysics(),
-                      children: [
+                    child: Transform.translate(
+                      offset: const Offset(0, -12),
+                      child: DecoratedBox(
+                        decoration: const BoxDecoration(
+                          color: AppColors.white,
+                          borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(12),
+                          ),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(12),
+                          ),
+                          child: PageView(
+                            controller: _pageController,
+                            physics: const NeverScrollableScrollPhysics(),
+                            children: [
                         _StepScroll(
                           child: PersonalDataStep(
                             fullNameCtrl: _fullNameCtrl,
@@ -207,6 +219,9 @@ final class _OnboardingViewState extends State<_OnboardingView> {
                             phoneCtrl: _phoneCtrl,
                             phoneFieldKey: _phoneFieldKey,
                           ),
+                        ),
+                        _StepScroll(
+                          child: GoalsStep(otherGoalCtrl: _otherGoalCtrl),
                         ),
                         _StepScroll(
                           child: MedicalHistoryStep(
@@ -243,10 +258,10 @@ final class _OnboardingViewState extends State<_OnboardingView> {
                             trainerCtrl: _trainerCtrl,
                           ),
                         ),
-                        _StepScroll(
-                          child: GoalsStep(otherGoalCtrl: _otherGoalCtrl),
-                        ),
                       ],
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                   _FooterButton(
