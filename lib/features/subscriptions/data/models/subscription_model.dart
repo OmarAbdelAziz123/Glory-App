@@ -1,5 +1,10 @@
-final class SubscriptionPackageEntity {
-  const SubscriptionPackageEntity({
+import 'package:json_annotation/json_annotation.dart';
+
+part 'subscription_model.g.dart';
+
+@JsonSerializable()
+final class SubscriptionPackageModel {
+  const SubscriptionPackageModel({
     required this.id,
     required this.nameEn,
     required this.nameAr,
@@ -7,6 +12,9 @@ final class SubscriptionPackageEntity {
     required this.durationUnit,
     required this.durationValue,
   });
+
+  factory SubscriptionPackageModel.fromJson(Map<String, dynamic> json) =>
+      _$SubscriptionPackageModelFromJson(json);
 
   final String id;
   final String nameEn;
@@ -16,45 +24,30 @@ final class SubscriptionPackageEntity {
   final int durationValue;
 }
 
-final class SubscriptionEntity {
-  const SubscriptionEntity({
+@JsonSerializable()
+final class SubscriptionModel {
+  const SubscriptionModel({
     required this.id,
-    required this.package,
     required this.startDate,
     required this.endDate,
     required this.status,
     required this.price,
+    required this.package,
     this.sessionCount,
     this.remainingSessions,
     this.remainingDays,
   });
 
+  factory SubscriptionModel.fromJson(Map<String, dynamic> json) =>
+      _$SubscriptionModelFromJson(json);
+
   final String id;
-  final SubscriptionPackageEntity package;
   final DateTime startDate;
   final DateTime endDate;
-  final SubscriptionStatus status;
-  final double price;
+  final String status;
+  final String price;
+  final SubscriptionPackageModel package;
   final int? sessionCount;
   final int? remainingSessions;
   final int? remainingDays;
-
-  String packageName({required bool isArabic}) =>
-      isArabic ? package.nameAr : package.nameEn;
-}
-
-enum SubscriptionStatus { active, expired, cancelled }
-
-final class SubscriptionsPageEntity {
-  const SubscriptionsPageEntity({
-    required this.items,
-    required this.page,
-    required this.totalPages,
-  });
-
-  final List<SubscriptionEntity> items;
-  final int page;
-  final int totalPages;
-
-  bool get hasMore => page < totalPages;
 }

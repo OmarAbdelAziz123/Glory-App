@@ -211,16 +211,25 @@ final class _WorkoutCardsTab extends StatelessWidget {
 
     return BlocBuilder<WorkoutsListCubit, WorkoutsListState>(
       builder: (context, state) {
-        if (state.isLoading) {
-          return const Center(child: CircularProgressIndicator());
+        Future<void> refresh() =>
+            context.read<WorkoutsListCubit>().loadWorkouts(refresh: true);
+
+        if (state.isLoading && state.workouts.isEmpty) {
+          return AppPlatformRefreshScroll(
+            onRefresh: refresh,
+            child: const Center(child: CircularProgressIndicator()),
+          );
         }
 
         if (state.status == WorkoutsListStatus.failure &&
             state.workouts.isEmpty) {
-          return Center(
-            child: Text(
-              state.errorMessage ?? context.l10n.errorTryAgain,
-              style: context.captionRegular,
+          return AppPlatformRefreshScroll(
+            onRefresh: refresh,
+            child: Center(
+              child: Text(
+                state.errorMessage ?? context.l10n.errorTryAgain,
+                style: context.captionRegular,
+              ),
             ),
           );
         }
@@ -250,7 +259,9 @@ final class _WorkoutCardsTab extends StatelessWidget {
                   delay: Duration(milliseconds: (entry.key.clamp(0, 5)) * 70),
                   offset: const Offset(0, 0.06),
                   child: GestureDetector(
-                    onTap: () => context.push('/workouts/${workout.id}'),
+                    onTap: () => context.push(
+                      AppRoutes.workoutDetail.replaceFirst(':id', workout.id),
+                    ),
                     child: GroupClassCard(
                       item: item,
                       showPlayButton: true,
@@ -268,11 +279,17 @@ final class _WorkoutCardsTab extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Expanded(
-              child: ListView.separated(
+              child: AppPlatformRefreshListView(
                 controller: scrollController,
-                itemCount: cards.length,
+                onRefresh: refresh,
+                itemCount: cards.length + (state.isLoadingMore ? 1 : 0),
                 separatorBuilder: (_, _) => const SizedBox(height: 18),
-                itemBuilder: (_, index) => cards[index],
+                itemBuilder: (_, index) {
+                  if (index >= cards.length) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  return cards[index];
+                },
               ),
             ),
             if (showScanButton && hasPendingWorkout) ...[

@@ -39,6 +39,16 @@ import '../../features/bookings/data/repositories/bookings_repository_impl.dart'
 import '../../features/bookings/domain/repositories/bookings_repository.dart';
 import '../../features/bookings/presentation/cubits/bookings_list/bookings_list_cubit.dart';
 import '../../features/bookings/presentation/cubits/class_evaluation/class_evaluation_cubit.dart';
+import '../../features/body_composition/data/datasources/body_records_api.dart';
+import '../../features/body_composition/data/datasources/body_records_remote_api_service.dart';
+import '../../features/body_composition/data/repositories/body_composition_repository_impl.dart';
+import '../../features/body_composition/domain/repositories/body_composition_repository.dart';
+import '../../features/body_composition/presentation/cubits/body_records_list/body_records_list_cubit.dart';
+import '../../features/subscriptions/data/datasources/subscriptions_api.dart';
+import '../../features/subscriptions/data/datasources/subscriptions_remote_api_service.dart';
+import '../../features/subscriptions/data/repositories/subscriptions_repository_impl.dart';
+import '../../features/subscriptions/domain/repositories/subscriptions_repository.dart';
+import '../../features/subscriptions/presentation/cubits/subscriptions_list/subscriptions_list_cubit.dart';
 import '../../features/checkin/data/datasources/checkin_api.dart';
 import '../../features/checkin/data/datasources/checkin_remote_api_service.dart';
 import '../../features/checkin/data/repositories/checkin_repository_impl.dart';
@@ -93,6 +103,8 @@ Future<void> setupServiceLocator() async {
   _registerContent();
   _registerCheckin();
   _registerBookings();
+  _registerBodyComposition();
+  _registerSubscriptions();
   _registerNotifications();
   _registerWorkouts();
   _registerCoachChat();
@@ -232,6 +244,38 @@ void _registerBookings() {
   sl.registerFactory<BookingsListCubit>(() => BookingsListCubit(sl()));
   sl.registerFactoryParam<ClassEvaluationCubit, String, void>(
     (bookingId, _) => ClassEvaluationCubit(sl(), bookingId: bookingId),
+  );
+}
+
+void _registerBodyComposition() {
+  sl.registerLazySingleton<BodyRecordsApi>(
+    () => BodyRecordsApi(sl(), baseUrl: Endpoints.baseUrl),
+  );
+  sl.registerLazySingleton<BodyRecordsRemoteApiService>(
+    () => BodyRecordsRemoteApiService(sl(), sl()),
+  );
+  sl.registerLazySingleton<BodyCompositionRepository>(
+    () => BodyCompositionRepositoryImpl(sl()),
+  );
+
+  sl.registerFactoryParam<BodyRecordsListCubit, String, void>(
+    (type, _) => BodyRecordsListCubit(sl(), type: type),
+  );
+}
+
+void _registerSubscriptions() {
+  sl.registerLazySingleton<SubscriptionsApi>(
+    () => SubscriptionsApi(sl(), baseUrl: Endpoints.baseUrl),
+  );
+  sl.registerLazySingleton<SubscriptionsRemoteApiService>(
+    () => SubscriptionsRemoteApiService(sl(), sl()),
+  );
+  sl.registerLazySingleton<SubscriptionsRepository>(
+    () => SubscriptionsRepositoryImpl(sl()),
+  );
+
+  sl.registerFactory<SubscriptionsListCubit>(
+    () => SubscriptionsListCubit(sl()),
   );
 }
 

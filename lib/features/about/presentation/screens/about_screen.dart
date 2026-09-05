@@ -1,11 +1,9 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/di/service_locator.dart';
+import '../../../../core/l10n/l10n_extension.dart';
 import '../../../../core/models/content_args.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -13,7 +11,6 @@ import '../../../../core/widgets/app_nav_tile.dart';
 import '../../../../core/widgets/app_primary_header.dart';
 import '../../../../core/widgets/app_scaffold.dart';
 import '../cubits/contact/contact_cubit.dart';
-import '../../../../core/l10n/l10n_extension.dart';
 
 final class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
@@ -45,11 +42,11 @@ final class AboutScreen extends StatelessWidget {
                 label: context.l10n.aboutUs,
                 onTap: () => context.push(AppRoutes.whoWeAre),
               ),
-              _AboutTileData(
-                iconAsset: 'app_ratings_icon.svg',
-                label: context.l10n.appReviews,
-                onTap: () => _openAppRating(context),
-              ),
+              // _AboutTileData(
+              //   iconAsset: 'app_ratings_icon.svg',
+              //   label: context.l10n.appReviews,
+              //   onTap: () => _openAppRating(context),
+              // ),
               _AboutTileData(
                 iconAsset: 'contact_us_icon.svg',
                 label: context.l10n.contactUs,
@@ -102,25 +99,26 @@ final class AboutScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _openAppRating(BuildContext context) async {
-    final links = context.read<ContactCubit>().state.links;
-    final url = Platform.isIOS ? links?.appStore : links?.playStore;
-
-    if (url == null || url.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.evaluationLinkUnavailable)),
-      );
-      return;
-    }
-
-    final uri = Uri.tryParse(url);
-    if (uri == null || !await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.couldNotOpenEvaluationLink)),
-      );
-    }
-  }
+  // Future<void> _openAppRating(BuildContext context) async {
+  //   final links = context.read<ContactCubit>().state.links;
+  //   final url = Platform.isIOS ? links?.appStore : links?.playStore;
+  //
+  //   if (url == null || url.isEmpty) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(content: Text(context.l10n.evaluationLinkUnavailable)),
+  //     );
+  //     return;
+  //   }
+  //
+  //   final uri = Uri.tryParse(url);
+  //   if (uri == null ||
+  //       !await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+  //     if (!context.mounted) return;
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(content: Text(context.l10n.couldNotOpenEvaluationLink)),
+  //     );
+  //   }
+  // }
 }
 
 final class _AboutTileData {

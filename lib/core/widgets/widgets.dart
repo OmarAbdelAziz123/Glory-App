@@ -16,6 +16,7 @@ export 'app_home_header.dart';
 export 'app_error_message.dart';
 export 'app_otp_field.dart';
 export 'app_page_header.dart';
+export 'app_platform_refresh_scroll.dart';
 export 'app_nav_back_icon.dart';
 export 'app_primary_header.dart';
 export 'app_password_field.dart';

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:glory_gym/core/core.dart';
 import 'package:glory_gym/core/utils/greeting_utils.dart';
 import 'package:glory_gym/features/auth/presentation/cubits/user_profile/user_profile_cubit.dart';
+import 'package:glory_gym/features/bookings/presentation/bookings_refresh_notifier.dart';
 import 'package:glory_gym/features/bookings/presentation/cubits/bookings_list/bookings_list_cubit.dart';
 import 'package:glory_gym/features/checkin/presentation/cubits/gym_qr/gym_qr_cubit.dart';
 import 'package:glory_gym/features/home/presentation/widgets/home_tab_contents.dart';
@@ -96,13 +97,19 @@ final class _HomeScreenState extends State<HomeScreen> {
                 },
               ),
             ],
-            child: _HomeBody(
-              selectedTabIndex: _selectedTabIndex,
-              tabLabels: _tabLabels(providerContext),
-              onOpenBookingsTab: widget.onOpenBookingsTab,
-              onOpenWorkoutsTab: widget.onOpenWorkoutsTab,
-              onTabSelected: (index) =>
-                  setState(() => _selectedTabIndex = index),
+            child: BookingsRefreshListener(
+              onRefresh: () => context.read<BookingsListCubit>().loadBookings(
+                    refresh: true,
+                    limit: 2,
+                  ),
+              child: _HomeBody(
+                selectedTabIndex: _selectedTabIndex,
+                tabLabels: _tabLabels(providerContext),
+                onOpenBookingsTab: widget.onOpenBookingsTab,
+                onOpenWorkoutsTab: widget.onOpenWorkoutsTab,
+                onTabSelected: (index) =>
+                    setState(() => _selectedTabIndex = index),
+              ),
             ),
           );
         },
@@ -141,8 +148,12 @@ final class _HomeBody extends StatelessWidget {
           canRegenerate: qrState.canRegenerate,
           onGenerateQr: () => context.read<GymQrCubit>().generateQr(),
         ),
-      1 => SingleChildScrollView(
+      1 => AppPlatformRefreshScroll(
           key: const ValueKey('home-tab-appointments'),
+          onRefresh: () => context.read<BookingsListCubit>().loadBookings(
+                refresh: true,
+                limit: 2,
+              ),
           child: HomeAppointmentsTabContent(
             bookings: bookingsState.bookings,
             locale: locale,
@@ -157,8 +168,12 @@ final class _HomeBody extends StatelessWidget {
             ),
           ),
         ),
-      _ => SingleChildScrollView(
+      _ => AppPlatformRefreshScroll(
           key: const ValueKey('home-tab-classes'),
+          onRefresh: () => context.read<WorkoutsListCubit>().loadWorkouts(
+                refresh: true,
+                limit: 1,
+              ),
           child: HomeGroupClassesTabContent(
             onViewAll: onOpenWorkoutsTab,
           ),

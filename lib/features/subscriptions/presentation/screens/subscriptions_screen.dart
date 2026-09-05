@@ -1,74 +1,144 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:glory_gym/core/core.dart';
-import 'package:glory_gym/l10n/app_localizations.dart';
+import 'package:glory_gym/core/utils/subscription_utils.dart';
+import 'package:glory_gym/features/subscriptions/domain/entities/subscription_entity.dart';
+import 'package:glory_gym/features/subscriptions/presentation/cubits/subscriptions_list/subscriptions_list_cubit.dart';
 
 final class SubscriptionsScreen extends StatelessWidget {
   const SubscriptionsScreen({super.key});
 
-  List<_SubscriptionData> _subscriptions(AppLocalizations l10n) => [
-        _SubscriptionData(
-          packageName: l10n.packageName,
-          packageType: l10n.sessions,
-          startDate: l10n.sampleDateJune2026,
-          endDate: l10n.sampleDateMay2026,
-        ),
-        _SubscriptionData(
-          packageName: l10n.packageName,
-          packageType: l10n.sessions,
-          startDate: l10n.sampleDateJune2026,
-          endDate: l10n.sampleDateMay2026,
-        ),
-        _SubscriptionData(
-          packageName: l10n.packageName,
-          packageType: l10n.sessions,
-          startDate: l10n.sampleDateJune2026,
-          endDate: l10n.sampleDateMay2026,
-        ),
-      ];
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => sl<SubscriptionsListCubit>()..loadSubscriptions(),
+      child: const _SubscriptionsView(),
+    );
+  }
+}
+
+final class _SubscriptionsView extends StatefulWidget {
+  const _SubscriptionsView();
+
+  @override
+  State<_SubscriptionsView> createState() => _SubscriptionsViewState();
+}
+
+final class _SubscriptionsViewState extends State<_SubscriptionsView> {
+  final _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final current = _scrollController.position.pixels;
+    if (current >= maxScroll - 200) {
+      context.read<SubscriptionsListCubit>().loadMore();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final subscriptions = _subscriptions(context.l10n);
+    final l10n = context.l10n;
+    final isArabic = l10n.localeName.startsWith('ar');
 
     return AppScaffold(
       appBar: AppPrimaryHeader(
-        title: context.l10n.mySubscriptions,
+        title: l10n.mySubscriptions,
         showBack: true,
         centerTitle: false,
       ),
-      body: ListView.separated(
-        padding: const EdgeInsets.all(18),
-        itemCount: subscriptions.length,
-        separatorBuilder: (_, _) => const SizedBox(height: 16),
-        itemBuilder: (_, index) =>
-            _SubscriptionCard(data: subscriptions[index]),
+      body: BlocBuilder<SubscriptionsListCubit, SubscriptionsListState>(
+        builder: (context, state) {
+          if (state.isLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (state.status == SubscriptionsListStatus.failure &&
+              state.isEmpty) {
+            return Center(
+              child: Text(
+                state.errorMessage ?? l10n.errorTryAgain,
+                style: context.captionRegular,
+              ),
+            );
+          }
+
+          if (state.isEmpty) {
+            return Center(
+              child: Text(
+                l10n.noData,
+                style: context.captionRegular.copyWith(
+                  color: AppColors.neutral500,
+                ),
+              ),
+            );
+          }
+
+          return ListView.separated(
+            controller: _scrollController,
+            padding: const EdgeInsets.all(18),
+            itemCount:
+                state.subscriptions.length + (state.isLoadingMore ? 1 : 0),
+            separatorBuilder: (_, _) => const SizedBox(height: 16),
+            itemBuilder: (context, index) {
+              if (index >= state.subscriptions.length) {
+                return const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+
+              final subscription = state.subscriptions[index];
+              return _SubscriptionCard(
+                subscription: subscription,
+                packageName: subscription.packageName(isArabic: isArabic),
+                packageType: SubscriptionUtils.packageTypeLabel(
+                  l10n,
+                  subscription,
+                ),
+                startDate: SubscriptionUtils.formatDate(
+                  l10n,
+                  subscription.startDate,
+                ),
+                endDate: SubscriptionUtils.formatDate(
+                  l10n,
+                  subscription.endDate,
+                ),
+              );
+            },
+          );
+        },
       ),
     );
   }
 }
 
-// ── Data model ────────────────────────────────────────────────────────────────
-
-final class _SubscriptionData {
-  const _SubscriptionData({
+final class _SubscriptionCard extends StatelessWidget {
+  const _SubscriptionCard({
+    required this.subscription,
     required this.packageName,
     required this.packageType,
     required this.startDate,
     required this.endDate,
   });
 
+  final SubscriptionEntity subscription;
   final String packageName;
   final String packageType;
   final String startDate;
   final String endDate;
-}
-
-// ── Private widgets ───────────────────────────────────────────────────────────
-
-final class _SubscriptionCard extends StatelessWidget {
-  const _SubscriptionCard({required this.data});
-
-  final _SubscriptionData data;
 
   @override
   Widget build(BuildContext context) {
@@ -82,11 +152,46 @@ final class _SubscriptionCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _PackageHeader(name: data.packageName),
+          _PackageHeader(name: packageName),
           const SizedBox(height: 12),
           const Divider(height: 1, color: AppColors.neutral200),
           const SizedBox(height: 12),
-          _PackageDetails(data: data),
+          IntrinsicHeight(
+            child: Row(
+              children: [
+                Expanded(
+                  child: _DetailCell(
+                    label: context.l10n.startDate,
+                    value: startDate,
+                  ),
+                ),
+                const VerticalDivider(width: 1, color: AppColors.neutral200),
+                Expanded(
+                  child: _DetailCell(
+                    label: context.l10n.endDate,
+                    value: endDate,
+                  ),
+                ),
+                const VerticalDivider(width: 1, color: AppColors.neutral200),
+                Expanded(
+                  child: _DetailCell(
+                    label: context.l10n.packageType,
+                    value: packageType,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (subscription.remainingSessions != null) ...[
+            const SizedBox(height: 12),
+            const Divider(height: 1, color: AppColors.neutral200),
+            const SizedBox(height: 12),
+            _DetailCell(
+              label: context.l10n.sessions,
+              value:
+                  '${subscription.remainingSessions}/${subscription.sessionCount ?? subscription.remainingSessions}',
+            ),
+          ],
         ],
       ),
     );
@@ -106,8 +211,13 @@ final class _PackageHeader extends StatelessWidget {
           width: 32,
           height: 32,
           decoration: BoxDecoration(
-            color: AppColors.neutral200,
+            color: AppColors.primary10,
             borderRadius: BorderRadius.circular(6),
+          ),
+          child: const Icon(
+            Icons.card_membership_outlined,
+            size: 18,
+            color: AppColors.primary700,
           ),
         ),
         12.horizontal,
@@ -118,33 +228,6 @@ final class _PackageHeader extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-final class _PackageDetails extends StatelessWidget {
-  const _PackageDetails({required this.data});
-
-  final _SubscriptionData data;
-
-  @override
-  Widget build(BuildContext context) {
-    return IntrinsicHeight(
-      child: Row(
-        children: [
-          Expanded(
-            child: _DetailCell(label: context.l10n.startDate, value: data.startDate),
-          ),
-          const VerticalDivider(width: 1, color: AppColors.neutral200),
-          Expanded(
-            child: _DetailCell(label: context.l10n.endDate, value: data.endDate),
-          ),
-          const VerticalDivider(width: 1, color: AppColors.neutral200),
-          Expanded(
-            child: _DetailCell(label: context.l10n.packageType, value: data.packageType),
-          ),
-        ],
-      ),
     );
   }
 }

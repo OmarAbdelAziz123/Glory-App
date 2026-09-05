@@ -191,7 +191,7 @@ final class HomeAppointmentsTabContent extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
-        if (isLoading)
+        if (isLoading && bookings.isEmpty)
           const Center(child: CircularProgressIndicator())
         else if (bookings.isEmpty)
           AppEntrance(
@@ -273,7 +273,7 @@ final class HomeGroupClassesTabContent extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
-        if (workoutsState.isLoading)
+        if (workoutsState.isLoading && workoutsState.workouts.isEmpty)
           const Center(child: CircularProgressIndicator())
         else if (workoutsState.status == WorkoutsListStatus.failure &&
             workoutsState.workouts.isEmpty)

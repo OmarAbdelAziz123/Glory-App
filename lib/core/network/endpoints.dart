@@ -64,6 +64,9 @@ abstract final class Endpoints {
       '/mobile/chat/conversations/{id}/read';
   static const String mobileChatUnreadCount = '/mobile/chat/unread-count';
 
+  // ── Mobile Body Records ───────────────────────────────
+  static const String mobileBodyRecords = '/mobile/body-records';
+
   // ── Mobile Workouts ───────────────────────────────────
   static const String mobileWorkouts = '/mobile/workouts';
   static const String mobileWorkoutById = '/mobile/workouts/{id}';
@@ -84,6 +87,8 @@ abstract final class Endpoints {
   static String memberById(String id) => '/members/$id';
 
   // ── Subscriptions ────────────────────────────────────
+  static const String mobileSubscriptions = '/mobile/subscriptions';
+  static const String mobileSubscriptionsCurrent = '/mobile/subscriptions/current';
   static const String subscriptions = '/subscriptions';
   static String subscriptionById(String id) => '/subscriptions/$id';
   static String memberSubscriptions(String memberId) =>

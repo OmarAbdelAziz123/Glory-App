@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:glory_gym/core/result/result.dart';
 import 'package:glory_gym/core/utils/workout_utils.dart';
+import 'package:glory_gym/l10n/app_localizations_ar.dart';
 import 'package:glory_gym/features/home/presentation/widgets/group_class_card.dart';
 import 'package:glory_gym/features/workouts/data/mappers/workout_mappers.dart';
 import 'package:glory_gym/features/workouts/data/models/workout_models.dart';
@@ -82,8 +83,11 @@ final class _FakeWorkoutsRepository implements WorkoutsRepository {
 }
 
 void main() {
+  late AppLocalizationsAr l10n;
+
   setUpAll(() async {
     await initializeDateFormatting('ar');
+    l10n = AppLocalizationsAr();
   });
 
   group('Workout models', () {
@@ -123,12 +127,33 @@ void main() {
       expect(video.stepNumber, 1);
       expect(video.instructionAr, 'كارديو');
     });
+
+    test('parses seed list item from mobile workouts API', () {
+      final entity = _assignmentFromJson(workoutSeedListItemJson);
+
+      expect(entity.id, 'seed_wa_4');
+      expect(entity.status, 'UPCOMING');
+      expect(entity.workoutNameAr, 'برنامج كارديو');
+      expect(entity.durationDays, 40);
+      expect(entity.instructorName, 'Coach Ahmed');
+      expect(entity.previewThumbnailUrl, isNotNull);
+    });
+
+    test('parses seed detail from mobile workouts by id API', () {
+      final entity = _detailFromJson(workoutSeedDetailJson);
+
+      expect(entity.id, 'seed_wa_4');
+      expect(entity.canAddWeight, isFalse);
+      expect(entity.instructions, hasLength(2));
+      expect(entity.instructions.first.instructionAr, 'إحماء');
+      expect(entity.instructions.last.instructionAr, 'التمرين الأساسي');
+    });
   });
 
   group('WorkoutUtils', () {
     test('localizes workout type labels', () {
-      expect(WorkoutUtils.typeLabel('CARDIO'), 'كارديو');
-      expect(WorkoutUtils.typeLabel('STRENGTH'), 'قوة');
+      expect(WorkoutUtils.typeLabel(l10n, 'CARDIO'), 'كارديو');
+      expect(WorkoutUtils.typeLabel(l10n, 'STRENGTH'), 'قوة');
     });
 
     test('maps status to card badge', () {
@@ -148,7 +173,11 @@ void main() {
 
     test('maps in-progress entity to group class card item', () {
       final entity = _assignmentFromJson(workoutListItemJson);
-      final item = WorkoutUtils.toGroupClassItem(entity, locale: 'ar');
+      final item = WorkoutUtils.toGroupClassItem(
+        entity,
+        l10n: l10n,
+        locale: 'ar',
+      );
 
       expect(item.className, 'برنامج كارديو');
       expect(item.classType, 'كارديو');
@@ -160,7 +189,11 @@ void main() {
 
     test('maps upcoming entity with issuedBy instead of startDate', () {
       final entity = _assignmentFromJson(workoutUpcomingListItemJson);
-      final item = WorkoutUtils.toGroupClassItem(entity, locale: 'ar');
+      final item = WorkoutUtils.toGroupClassItem(
+        entity,
+        l10n: l10n,
+        locale: 'ar',
+      );
 
       expect(item.startDate, isNull);
       expect(item.issuedBy, 'سارة علي');
@@ -173,8 +206,8 @@ void main() {
     });
 
     test('formats weight labels with unit', () {
-      expect(WorkoutUtils.weightLabel('10.00'), '10.00 كيلو');
-      expect(WorkoutUtils.weightLabel(null), isEmpty);
+      expect(WorkoutUtils.weightLabel(l10n, '10.00'), '10.00 كيلو');
+      expect(WorkoutUtils.weightLabel(l10n, null), isEmpty);
     });
   });
 

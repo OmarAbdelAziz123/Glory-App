@@ -10,6 +10,7 @@ export 'router/app_routes.dart';
 export 'storage/storage.dart';
 export 'theme/theme.dart';
 export 'usecases/use_case.dart';
+export 'utils/body_record_utils.dart';
 export 'utils/booking_utils.dart';
 export 'utils/content_utils.dart';
 export 'utils/family_utils.dart';

@@ -18,6 +18,13 @@ abstract final class BookingUtils {
     return locale == 'ar' ? booking.packageNameAr : booking.packageNameEn;
   }
 
+  static String assessmentQuestionLabel(
+    AssessmentQuestionEntity question, {
+    String locale = 'ar',
+  }) {
+    return locale == 'ar' ? question.questionAr : question.questionEn;
+  }
+
   static String formatDate(AppLocalizations l10n, DateTime dateTime) {
     return DateFormat('d MMMM y', l10n.localeName).format(dateTime.toLocal());
   }

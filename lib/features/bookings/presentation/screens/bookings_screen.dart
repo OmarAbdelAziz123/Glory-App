@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:glory_gym/core/core.dart';
+import 'package:glory_gym/features/bookings/presentation/bookings_refresh_notifier.dart';
 import 'package:glory_gym/features/bookings/presentation/cubits/bookings_list/bookings_list_cubit.dart';
 import 'package:glory_gym/features/bookings/presentation/widgets/booking_card.dart';
 import 'package:glory_gym/core/l10n/l10n.dart';
@@ -13,7 +14,15 @@ final class BookingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => sl<BookingsListCubit>()..loadBookings(),
-      child: const _BookingsView(),
+      child: Builder(
+        builder: (context) {
+          return BookingsRefreshListener(
+            onRefresh: () =>
+                context.read<BookingsListCubit>().loadBookings(refresh: true),
+            child: const _BookingsView(),
+          );
+        },
+      ),
     );
   }
 }
@@ -116,34 +125,48 @@ final class _BookingsViewState extends State<_BookingsView> {
         ),
         body: BlocBuilder<BookingsListCubit, BookingsListState>(
           builder: (context, state) {
-            if (state.isLoading) {
-              return const Center(child: CircularProgressIndicator());
+            Future<void> refresh() => context
+                .read<BookingsListCubit>()
+                .loadBookings(refresh: true);
+
+            if (state.isLoading && state.bookings.isEmpty) {
+              return AppPlatformRefreshScroll(
+                onRefresh: refresh,
+                child: const Center(child: CircularProgressIndicator()),
+              );
             }
 
             if (state.status == BookingsListStatus.failure &&
                 state.bookings.isEmpty) {
-              return Center(
-                child: Text(
-                  state.errorMessage ?? context.l10n.errorTryAgain,
-                  style: context.captionRegular,
-                ),
-              );
-            }
-
-            if (state.isEmpty) {
-              return Center(
-                child: Text(
-                  context.l10n.noBookingsCurrently,
-                  style: context.captionRegular.copyWith(
-                    color: AppColors.neutral500,
+              return AppPlatformRefreshScroll(
+                onRefresh: refresh,
+                child: Center(
+                  child: Text(
+                    state.errorMessage ?? context.l10n.errorTryAgain,
+                    style: context.captionRegular,
                   ),
                 ),
               );
             }
 
-            return ListView.separated(
+            if (state.isEmpty) {
+              return AppPlatformRefreshScroll(
+                onRefresh: refresh,
+                child: Center(
+                  child: Text(
+                    context.l10n.noBookingsCurrently,
+                    style: context.captionRegular.copyWith(
+                      color: AppColors.neutral500,
+                    ),
+                  ),
+                ),
+              );
+            }
+
+            return AppPlatformRefreshListView(
               controller: _scrollController,
               padding: const EdgeInsets.all(18),
+              onRefresh: refresh,
               itemCount: state.bookings.length + (state.isLoadingMore ? 1 : 0),
               separatorBuilder: (_, _) => const SizedBox(height: 14),
               itemBuilder: (context, index) {

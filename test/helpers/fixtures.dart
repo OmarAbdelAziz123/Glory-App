@@ -210,3 +210,85 @@ const workoutVideoJson = {
   'instructionEn': 'Cardio',
   'instructionAr': 'كارديو',
 };
+
+/// Matches GET /mobile/workouts seed response.
+const workoutSeedListItemJson = {
+  'id': 'seed_wa_4',
+  'status': 'UPCOMING',
+  'workout': {
+    'id': 'seed_wo_1',
+    'nameEn': 'Cardio Program',
+    'nameAr': 'برنامج كارديو',
+    'type': 'CARDIO',
+    'level': 'BEGINNER',
+  },
+  'startDate': null,
+  'endDate': null,
+  'durationDays': 40,
+  'instructor': {
+    'id': 'seed_user_instr_1',
+    'fullName': 'Coach Ahmed',
+    'avatarUrl': null,
+  },
+  'previewVideoUrl': 'https://player.vimeo.com/video/000003',
+  'previewThumbnailUrl': 'https://i.vimeocdn.com/video/thumb3.jpg',
+};
+
+/// Matches GET /mobile/workouts/{id} seed response.
+const workoutSeedDetailJson = {
+  'id': 'seed_wa_4',
+  'status': 'UPCOMING',
+  'startDate': null,
+  'endDate': null,
+  'durationDays': 40,
+  'remainingDays': null,
+  'suggestedWeight': null,
+  'suggestedWeightLast': null,
+  'userWeight': null,
+  'userWeightLast': null,
+  'canAddWeight': false,
+  'instructor': {
+    'id': 'seed_user_instr_1',
+    'fullName': 'Coach Ahmed',
+    'avatarUrl': null,
+  },
+  'workout': {
+    'id': 'seed_wo_1',
+    'nameEn': 'Cardio Program',
+    'nameAr': 'برنامج كارديو',
+    'type': 'CARDIO',
+    'level': 'BEGINNER',
+    'durationDays': 40,
+  },
+  'instructions': [
+    {
+      'id': 'seed_wi_1',
+      'stepNumber': 1,
+      'instructionEn': 'Warmup',
+      'instructionAr': 'إحماء',
+      'videos': [
+        {
+          'id': 'seed_vid_3',
+          'videoUrl': 'https://player.vimeo.com/video/000003',
+          'thumbnailUrl': 'https://i.vimeocdn.com/video/thumb3.jpg',
+          'duration': '02:10',
+        },
+      ],
+    },
+    {
+      'id': 'seed_wi_2',
+      'stepNumber': 2,
+      'instructionEn': 'Main set',
+      'instructionAr': 'التمرين الأساسي',
+      'videos': [
+        {
+          'id': 'seed_vid_1',
+          'videoUrl': 'https://player.vimeo.com/video/000001',
+          'thumbnailUrl': 'https://i.vimeocdn.com/video/thumb1.jpg',
+          'duration': '02:10',
+        },
+      ],
+    },
+  ],
+  'createdAt': '2026-09-03T10:58:34.514Z',
+};

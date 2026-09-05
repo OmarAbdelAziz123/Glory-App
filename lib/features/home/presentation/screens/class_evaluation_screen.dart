@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:glory_gym/core/core.dart';
+import 'package:glory_gym/features/bookings/presentation/bookings_refresh_notifier.dart';
 import 'package:glory_gym/features/bookings/presentation/cubits/class_evaluation/class_evaluation_cubit.dart';
 import 'package:go_router/go_router.dart';
 
@@ -26,6 +27,8 @@ final class _ClassEvaluationView extends StatelessWidget {
   Future<void> _submit(BuildContext context) async {
     final success = await context.read<ClassEvaluationCubit>().submit();
     if (!context.mounted || !success) return;
+
+    BookingsRefreshNotifier.request();
 
     final result = context.read<ClassEvaluationCubit>().state.result;
     if (result == null) return;
@@ -81,25 +84,40 @@ final class _ClassEvaluationView extends StatelessWidget {
               );
             }
 
-            final question = state.questions.firstOrNull;
-            if (question == null) {
-              return const SizedBox.shrink();
+            if (state.questions.isEmpty) {
+              return Center(
+                child: Text(
+                  context.l10n.noData,
+                  style: context.captionRegular.copyWith(
+                    color: AppColors.neutral500,
+                  ),
+                ),
+              );
             }
+
+            final locale = context.l10n.localeName;
 
             return Padding(
               padding: const EdgeInsets.fromLTRB(18, 0, 18, 18),
               child: Column(
                 children: [
                   Expanded(
-                    child: Align(
-                      alignment: Alignment.topCenter,
-                      child: _QuestionCard(
-                        question: context.l10n.classSatisfactionQuestion,
-                        selectedRating: state.answers[question.id],
-                        onRatingSelected: (rating) => context
-                            .read<ClassEvaluationCubit>()
-                            .setAnswer(question.id, rating),
-                      ),
+                    child: ListView.separated(
+                      itemCount: state.questions.length,
+                      separatorBuilder: (_, _) => const SizedBox(height: 16),
+                      itemBuilder: (context, index) {
+                        final question = state.questions[index];
+                        return _QuestionCard(
+                          question: BookingUtils.assessmentQuestionLabel(
+                            question,
+                            locale: locale,
+                          ),
+                          selectedRating: state.answers[question.id],
+                          onRatingSelected: (rating) => context
+                              .read<ClassEvaluationCubit>()
+                              .setAnswer(question.id, rating),
+                        );
+                      },
                     ),
                   ),
                   AppButton(
@@ -147,109 +165,51 @@ final class _QuestionCard extends StatelessWidget {
             textAlign: TextAlign.start,
           ),
           const SizedBox(height: 16),
-          for (int rating = 1; rating <= 5; rating++) ...[
-            if (rating > 1) const SizedBox(height: 12),
-            _RatingOption(
-              rating: rating,
-              isSelected: selectedRating == rating,
-              onTap: () => onRatingSelected(rating),
-            ),
-          ],
+          _InteractiveStarRating(
+            rating: selectedRating,
+            onRatingChanged: onRatingSelected,
+          ),
         ],
       ),
     );
   }
 }
 
-final class _RatingOption extends StatelessWidget {
-  const _RatingOption({
+final class _InteractiveStarRating extends StatelessWidget {
+  const _InteractiveStarRating({
     required this.rating,
-    required this.isSelected,
-    required this.onTap,
+    required this.onRatingChanged,
   });
 
-  final int rating;
-  final bool isSelected;
-  final VoidCallback onTap;
+  final int? rating;
+  final ValueChanged<int> onRatingChanged;
 
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          _RadioCircle(isSelected: isSelected),
-          const SizedBox(width: 8),
-          Text(
-            rating.toString(),
-            style: context.subtitleMedium.copyWith(
-              fontSize: 14,
-              color: AppColors.yellow100,
-            ),
-          ),
-          const SizedBox(width: 4),
-          _StarRow(filledCount: rating),
-        ],
-      ),
-    );
-  }
-}
-
-final class _StarRow extends StatelessWidget {
-  const _StarRow({required this.filledCount});
-
-  final int filledCount;
+  static const _starCount = 5;
+  static const _starSize = 36.0;
 
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        for (int i = 1; i <= 5; i++) ...[
-          if (i > 1) const SizedBox(width: 2),
-          Icon(
-            Icons.star_rounded,
-            size: 16,
-            color: i <= filledCount
-                ? AppColors.yellow100
-                : AppColors.neutral300,
+        for (int star = 1; star <= _starCount; star++) ...[
+          if (star > 1) const SizedBox(width: 8),
+          GestureDetector(
+            onTap: () => onRatingChanged(star),
+            behavior: HitTestBehavior.opaque,
+            child: Padding(
+              padding: const EdgeInsets.all(4),
+              child: Icon(
+                Icons.star_rounded,
+                size: _starSize,
+                color: rating != null && star <= rating!
+                    ? AppColors.yellow100
+                    : AppColors.neutral300,
+              ),
+            ),
           ),
         ],
       ],
-    );
-  }
-}
-
-final class _RadioCircle extends StatelessWidget {
-  const _RadioCircle({required this.isSelected});
-
-  final bool isSelected;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 20,
-      height: 20,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(
-          color: isSelected ? AppColors.primary : AppColors.neutral400,
-        ),
-      ),
-      child: isSelected
-          ? Center(
-              child: Container(
-                width: 10,
-                height: 10,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColors.primary,
-                ),
-              ),
-            )
-          : null,
     );
   }
 }
