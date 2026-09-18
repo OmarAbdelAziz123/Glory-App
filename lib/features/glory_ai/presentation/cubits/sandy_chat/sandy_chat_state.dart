@@ -5,6 +5,7 @@ enum SandyChatStatus {
   loading,
   loaded,
   sending,
+  streaming,
   loadingMore,
   failure,
 }
@@ -20,6 +21,7 @@ final class SandyChatState extends Equatable {
     this.showSuggestions = false,
     this.errorMessage,
     this.lastFailedMessage,
+    this.hasTrainingCaution = false,
   });
 
   final SandyChatStatus status;
@@ -31,8 +33,11 @@ final class SandyChatState extends Equatable {
   final bool showSuggestions;
   final String? errorMessage;
   final String? lastFailedMessage;
+  final bool hasTrainingCaution;
 
   bool get isTyping => status == SandyChatStatus.sending;
+  bool get isStreaming => status == SandyChatStatus.streaming;
+  bool get isBusy => isTyping || isStreaming;
   bool get isLoading => status == SandyChatStatus.loading;
   bool get isLoadingMore => status == SandyChatStatus.loadingMore;
   bool get hasMore => page < totalPages;
@@ -48,6 +53,7 @@ final class SandyChatState extends Equatable {
     bool? showSuggestions,
     String? errorMessage,
     String? lastFailedMessage,
+    bool? hasTrainingCaution,
     bool clearError = false,
     bool clearLastFailedMessage = false,
     bool clearConversationId = false,
@@ -65,6 +71,7 @@ final class SandyChatState extends Equatable {
       lastFailedMessage: clearLastFailedMessage
           ? null
           : (lastFailedMessage ?? this.lastFailedMessage),
+      hasTrainingCaution: hasTrainingCaution ?? this.hasTrainingCaution,
     );
   }
 
@@ -79,5 +86,6 @@ final class SandyChatState extends Equatable {
         showSuggestions,
         errorMessage,
         lastFailedMessage,
+        hasTrainingCaution,
       ];
 }

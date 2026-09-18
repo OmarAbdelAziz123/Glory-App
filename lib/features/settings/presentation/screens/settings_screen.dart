@@ -7,6 +7,7 @@ import 'package:iconsax/iconsax.dart';
 import '../../../../../app/cubits/locale/app_locale_cubit.dart';
 import '../../../../../core/di/service_locator.dart';
 import '../../../../../core/l10n/l10n.dart';
+import '../../../../../core/models/delete_account_otp_args.dart';
 import '../../../../../core/router/app_routes.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_styles_extension.dart';
@@ -15,6 +16,7 @@ import '../../../../../core/widgets/app_entrance.dart';
 import '../../../../../core/widgets/app_member_avatar.dart';
 import '../../../../../core/widgets/app_primary_header.dart';
 import '../../../../../core/widgets/app_scaffold.dart';
+import '../../../auth/presentation/cubits/delete_account/delete_account_cubit.dart';
 import '../../../auth/presentation/cubits/logout/logout_cubit.dart';
 import '../../../auth/presentation/cubits/user_profile/user_profile_cubit.dart';
 import '../../../coach_chat/data/datasources/coach_chat_socket_service.dart';
@@ -69,42 +71,91 @@ final class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  Future<void> _confirmDeleteAccount(BuildContext context) async {
+    final l10n = context.l10n;
+    final shouldDelete = await AppConfirmDialog.show(
+      context,
+      title: l10n.deleteAccount,
+      message: l10n.confirmDeleteAccount,
+      confirmLabel: l10n.deleteAccount,
+    );
+
+    if (shouldDelete == true && context.mounted) {
+      context.read<DeleteAccountCubit>().requestOtp();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => sl<LogoutCubit>(),
-      child: BlocListener<LogoutCubit, LogoutState>(
-        listener: (context, state) {
-          if (state.status == LogoutStatus.failure &&
-              state.errorMessage != null) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.errorMessage!)),
-            );
-          }
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => sl<LogoutCubit>()),
+        BlocProvider(create: (_) => sl<DeleteAccountCubit>()),
+      ],
+      child: MultiBlocListener(
+        listeners: [
+          BlocListener<LogoutCubit, LogoutState>(
+            listener: (context, state) {
+              if (state.status == LogoutStatus.failure &&
+                  state.errorMessage != null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(state.errorMessage!)),
+                );
+              }
 
-          if (state.status == LogoutStatus.success) {
-            context.read<UserProfileCubit>().clear();
-            sl<CoachChatSocketService>().disconnect();
-            context.read<CoachChatUnreadCubit>().resetCount();
-            context.go(AppRoutes.login);
-            context.read<LogoutCubit>().reset();
-          }
-        },
-        child: BlocListener<UserProfileCubit, UserProfileState>(
-          listenWhen: (previous, current) =>
-              previous.errorMessage != current.errorMessage &&
-              current.errorMessage != null &&
-              current.status == UserProfileStatus.loaded,
-          listener: (context, state) {
-            final message = state.errorMessage;
-            if (message == null) return;
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(message)),
-            );
-          },
-          child: BlocBuilder<LogoutCubit, LogoutState>(
-            builder: (context, logoutState) {
-              final profile = context.watch<UserProfileCubit>().state;
+              if (state.status == LogoutStatus.success) {
+                context.read<UserProfileCubit>().clear();
+                sl<CoachChatSocketService>().disconnect();
+                context.read<CoachChatUnreadCubit>().resetCount();
+                context.go(AppRoutes.login);
+                context.read<LogoutCubit>().reset();
+              }
+            },
+          ),
+          BlocListener<DeleteAccountCubit, DeleteAccountState>(
+            listener: (context, state) {
+              if (state.status == DeleteAccountStatus.failure &&
+                  state.errorMessage != null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(state.errorMessage!)),
+                );
+                context.read<DeleteAccountCubit>().reset();
+              }
+
+              if (state.status == DeleteAccountStatus.otpSent &&
+                  state.otpSent != null) {
+                final otp = state.otpSent!;
+                context.push(
+                  AppRoutes.deleteAccountOtp,
+                  extra: DeleteAccountOtpArgs(
+                    email: otp.email,
+                    expiresInSeconds: otp.expiresInSeconds,
+                    resendCooldownSeconds: otp.resendCooldownSeconds,
+                  ),
+                );
+                context.read<DeleteAccountCubit>().reset();
+              }
+            },
+          ),
+          BlocListener<UserProfileCubit, UserProfileState>(
+            listenWhen: (previous, current) =>
+                previous.errorMessage != current.errorMessage &&
+                current.errorMessage != null &&
+                current.status == UserProfileStatus.loaded,
+            listener: (context, state) {
+              final message = state.errorMessage;
+              if (message == null) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(message)),
+              );
+            },
+          ),
+        ],
+        child: BlocBuilder<LogoutCubit, LogoutState>(
+          builder: (context, logoutState) {
+            final deleteState = context.watch<DeleteAccountCubit>().state;
+            final profile = context.watch<UserProfileCubit>().state;
+            final isBusy = logoutState.isLoading || deleteState.isBusy;
 
             return AppScaffold(
               appBar: AppPrimaryHeader(
@@ -131,13 +182,13 @@ final class _SettingsScreenState extends State<SettingsScreen> {
                         const SizedBox(height: 16),
                         _buildTilesGroup(
                           context,
-                          logoutState.isLoading,
+                          isBusy,
                           profile,
                         ),
                       ],
                     ),
                   ),
-                  if (logoutState.isLoading)
+                  if (isBusy)
                     const ColoredBox(
                       color: Color(0x33000000),
                       child: Center(child: CircularProgressIndicator()),
@@ -147,14 +198,13 @@ final class _SettingsScreenState extends State<SettingsScreen> {
             );
           },
         ),
-        ),
       ),
     );
   }
 
   Widget _buildTilesGroup(
     BuildContext context,
-    bool isLoggingOut,
+    bool isBusy,
     UserProfileState profile,
   ) {
     final l10n = context.l10n;
@@ -232,12 +282,13 @@ final class _SettingsScreenState extends State<SettingsScreen> {
         iconAsset: 'logout_icon.svg',
         label: l10n.logout,
         isDestructive: true,
-        onTap: isLoggingOut ? null : () => _confirmLogout(context),
+        onTap: isBusy ? null : () => _confirmLogout(context),
       ),
       _SettingsTile(
         iconAsset: 'delete_icon.svg',
         label: l10n.deleteAccount,
         isDestructive: true,
+        onTap: isBusy ? null : () => _confirmDeleteAccount(context),
       ),
     ];
 

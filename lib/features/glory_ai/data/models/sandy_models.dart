@@ -139,6 +139,8 @@ final class SandyMessageModel {
     required this.createdAt,
     this.citations,
     this.refusalReason,
+    this.fileUrl,
+    this.fileType,
   });
 
   factory SandyMessageModel.fromJson(Map<String, dynamic> json) =>
@@ -150,6 +152,8 @@ final class SandyMessageModel {
   final DateTime createdAt;
   final List<SandyCitationModel>? citations;
   final String? refusalReason;
+  final String? fileUrl;
+  final String? fileType;
 }
 
 @JsonSerializable()
@@ -162,4 +166,100 @@ final class SandyRenameConversationRequest {
   final String title;
 
   Map<String, dynamic> toJson() => _$SandyRenameConversationRequestToJson(this);
+}
+
+@JsonSerializable(createFactory: false, includeIfNull: false)
+final class SandyAnalyzeDocumentRequest {
+  const SandyAnalyzeDocumentRequest({
+    required this.fileUrl,
+    this.note,
+    this.conversationId,
+    this.lang,
+  });
+
+  final String fileUrl;
+  final String? note;
+  final String? conversationId;
+  final String? lang;
+
+  Map<String, dynamic> toJson() => _$SandyAnalyzeDocumentRequestToJson(this);
+}
+
+@JsonSerializable()
+final class SandyMedicalFlagModel {
+  const SandyMedicalFlagModel({
+    required this.severity,
+    required this.note,
+    this.area,
+  });
+
+  factory SandyMedicalFlagModel.fromJson(Map<String, dynamic> json) =>
+      _$SandyMedicalFlagModelFromJson(json);
+
+  final String severity;
+  final String? area;
+  final String note;
+}
+
+@JsonSerializable()
+final class SandyAnalyzeDocumentModel {
+  const SandyAnalyzeDocumentModel({
+    required this.recordId,
+    required this.kind,
+    required this.title,
+    required this.reply,
+    required this.summary,
+    this.flags,
+    this.trainingCaution,
+    this.meta,
+  });
+
+  factory SandyAnalyzeDocumentModel.fromJson(Map<String, dynamic> json) =>
+      _$SandyAnalyzeDocumentModelFromJson(json);
+
+  final String recordId;
+  final String kind;
+  final String title;
+  final String reply;
+  final String summary;
+  final List<SandyMedicalFlagModel>? flags;
+  final bool? trainingCaution;
+  final SandyChatMetaModel? meta;
+}
+
+@JsonSerializable()
+final class SandyMedicalDocumentModel {
+  const SandyMedicalDocumentModel({
+    required this.id,
+    required this.kind,
+    required this.title,
+    required this.fileUrl,
+    required this.createdAt,
+    this.fileType,
+    this.summary,
+    this.extracted,
+    this.flags,
+    this.trainingCaution,
+  });
+
+  factory SandyMedicalDocumentModel.fromJson(Map<String, dynamic> json) =>
+      _$SandyMedicalDocumentModelFromJson(json);
+
+  final String id;
+  final String kind;
+  final String title;
+  final String fileUrl;
+  final String? fileType;
+  final String? summary;
+  @JsonKey(fromJson: _extractedToString)
+  final String? extracted;
+  final List<SandyMedicalFlagModel>? flags;
+  final bool? trainingCaution;
+  final DateTime createdAt;
+}
+
+String? _extractedToString(Object? value) {
+  if (value == null) return null;
+  if (value is String) return value;
+  return value.toString();
 }

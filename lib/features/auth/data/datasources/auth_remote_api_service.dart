@@ -6,6 +6,7 @@ import '../../../../core/error/app_failure.dart';
 import '../../../../core/network/api_service.dart';
 import '../../../../core/result/result.dart';
 import '../models/complete_registration_request.dart';
+import '../models/confirm_code_request.dart';
 import '../models/forgot_password_request.dart';
 import '../models/login_model.dart';
 import '../models/login_request.dart';
@@ -117,6 +118,26 @@ final class AuthRemoteApiService extends ApiService {
   Future<Result<void>> logout(LogoutRequest request) => _guard(
         () async {
           final response = await _authApi.logout(request);
+          if (!response.success) {
+            return Failure(
+              ServerFailure(response.message ?? FallbackMessages.errorTryAgain),
+            );
+          }
+          return const Success(null);
+        },
+      );
+
+  Future<Result<OtpSentModel>> requestDeleteAccount() => _guard(
+        () async {
+          final response = await _authApi.requestDeleteAccount();
+          return _mapResponse(response.success, response.data, response.message);
+        },
+      );
+
+  Future<Result<void>> confirmDeleteAccount(ConfirmCodeRequest request) =>
+      _guard(
+        () async {
+          final response = await _authApi.confirmDeleteAccount(request);
           if (!response.success) {
             return Failure(
               ServerFailure(response.message ?? FallbackMessages.errorTryAgain),

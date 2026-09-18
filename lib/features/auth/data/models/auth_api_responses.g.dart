@@ -116,3 +116,12 @@ Map<String, dynamic> _$NotificationsApiResponseToJson(
   'data': instance.data,
   'message': instance.message,
 };
+
+MessageApiResponse _$MessageApiResponseFromJson(Map<String, dynamic> json) =>
+    MessageApiResponse(
+      success: json['success'] as bool,
+      message: json['message'] as String?,
+    );
+
+Map<String, dynamic> _$MessageApiResponseToJson(MessageApiResponse instance) =>
+    <String, dynamic>{'success': instance.success, 'message': instance.message};

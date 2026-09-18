@@ -120,7 +120,112 @@ class AppLocalizationsAr extends AppLocalizations {
   String get bmi => 'مؤشر كتلة الجسم';
 
   @override
-  String get bodyCompositionScan => 'فحص تكوين الجسم';
+  String get bodyCompositionScan => 'سجل الإنبودي';
+
+  @override
+  String get inbodySubtitle =>
+      'كل فحوصات الإنبودي من الجهاز أو من الإدارة، الأحدث أولاً.';
+
+  @override
+  String get inbodyTotalTests => 'عدد الفحوصات';
+
+  @override
+  String get inbodyFirstTest => 'أول فحص';
+
+  @override
+  String get inbodyLatestTest => 'آخر فحص';
+
+  @override
+  String get inbodySinceStarted => 'من أول فحص';
+
+  @override
+  String get inbodyLatestValues => 'آخر النتائج';
+
+  @override
+  String get inbodyFilterAll => 'الكل';
+
+  @override
+  String get inbodyFilterDevice => 'الجهاز';
+
+  @override
+  String get inbodyFilterManual => 'يدوي';
+
+  @override
+  String get inbodyDateRange => 'الفترة';
+
+  @override
+  String get inbodyClearDates => 'مسح التاريخ';
+
+  @override
+  String get inbodyChartWeight => 'الوزن';
+
+  @override
+  String get inbodyChartMuscle => 'العضلات';
+
+  @override
+  String get inbodyChartFat => 'الدهون %';
+
+  @override
+  String get inbodyEmptyTitle => 'لا توجد فحوصات إنبودي بعد';
+
+  @override
+  String get inbodyEmptyDescription =>
+      'بعد فحصك على جهاز الإنبودي في الجيم، أو تسجيله من الإدارة، هيظهر هنا.';
+
+  @override
+  String get inbodyEmptyFilter => 'لا توجد فحوصات مطابقة للفلتر.';
+
+  @override
+  String get inbodyDeviceBadge => 'الجهاز';
+
+  @override
+  String get inbodyManualBadge => 'يدوي';
+
+  @override
+  String inbodyEnteredBy(String name) {
+    return 'أدخله $name';
+  }
+
+  @override
+  String get inbodyOpenPdf => 'فتح ورقة النتيجة';
+
+  @override
+  String get inbodyMoreFromDevice => 'المزيد من الجهاز';
+
+  @override
+  String get inbodyBodyWater => 'ماء الجسم';
+
+  @override
+  String get inbodyScore => 'درجة الإنبودي';
+
+  @override
+  String get inbodyHeight => 'الطول';
+
+  @override
+  String get inbodyBodyFatMass => 'كتلة الدهون';
+
+  @override
+  String get inbodyDetailTitle => 'تفاصيل الفحص';
+
+  @override
+  String inbodyTestsCount(int count) {
+    return '$count فحوصات';
+  }
+
+  @override
+  String get inbodyUnitKg => 'كجم';
+
+  @override
+  String get inbodyUnitCm => 'سم';
+
+  @override
+  String get inbodyUnitKcal => 'سعرة';
+
+  @override
+  String get inbodyProgress => 'التطور';
+
+  @override
+  String get inbodyHistorySection => 'كل الفحوصات';
 
   @override
   String get bodyFatPercentage => 'نسبة الدهون في الجسم';
@@ -266,6 +371,10 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get confirmLogout => 'هل أنت متأكد أنك تريد تسجيل الخروج؟';
+
+  @override
+  String get confirmDeleteAccount =>
+      'هل أنت متأكد أنك تريد حذف حسابك؟ لا يمكن التراجع عن هذا الإجراء.';
 
   @override
   String get confirmPassword => 'تأكيد كلمة المرور';
@@ -418,6 +527,9 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get deleteAccount => 'حذف الحساب';
+
+  @override
+  String get accountDeletedSuccess => 'تم حذف الحساب بنجاح';
 
   @override
   String get deleteConfirmMember => 'هل أنت متأكد من حذف هذا العضو؟';
@@ -1169,7 +1281,29 @@ class AppLocalizationsAr extends AppLocalizations {
   String get sampleDateMay2026 => '١ مايو ٢٠٢٦';
 
   @override
-  String get sandyAi => 'Sandy AI';
+  String get sandyAi => 'ساندي';
+
+  @override
+  String get sandyAiSubtitle => 'مساعدك للتمرين والتغذية';
+
+  @override
+  String get sandyWelcomeTitle => 'أهلاً، أنا ساندي';
+
+  @override
+  String get sandyWelcomeBody =>
+      'اسألني عن التمارين، التغذية، أو اشتراكك. تقدر كمان ترفع نتيجة تحليل أو صورة أشعة من زر الإرفاق.';
+
+  @override
+  String get sandyToolbarNew => 'جديدة';
+
+  @override
+  String get sandyToolbarHistory => 'السجل';
+
+  @override
+  String get sandyToolbarFiles => 'ملفاتي';
+
+  @override
+  String get sandyCopyShort => 'نسخ';
 
   @override
   String get sandyAskMeHint =>
@@ -1222,6 +1356,96 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get sandyNoConversationsDescription =>
       'ابدأ المحادثة مع ساندي وستظهر محادثاتك هنا.';
+
+  @override
+  String get sandyDocumentsHint =>
+      'تقدر كمان ترفع نتيجة تحليل أو صورة أشعة، وساندي تشرحها وتحفظها في ملفاتك الصحية.';
+
+  @override
+  String get sandyUploadMedicalFile => 'رفع ملف طبي';
+
+  @override
+  String get sandyUploadMedicalFileSubtitle =>
+      'ارفع نتيجة مختبر (PDF) أو صورة أشعة. ساندي تشرحها وتحوّلك للطبيب عند الحاجة.';
+
+  @override
+  String get sandyUploadFromGallery => 'اختيار صورة من المعرض';
+
+  @override
+  String get sandyUploadFromCamera => 'التقاط صورة بالكاميرا';
+
+  @override
+  String get sandyUploadPdf => 'رفع ملف PDF';
+
+  @override
+  String get sandySendFileToSandy => 'إرسال الملف إلى ساندي';
+
+  @override
+  String get sandyMedicalConsent =>
+      'الملف خاص بك وبساندي فقط، ولن يظهر للمدرب أو الإدارة. الشرح توجيه للسلامة وليس تشخيصاً طبياً. بمواصلتك أنت توافق على حفظ ملخص خاص في ملفك.';
+
+  @override
+  String get sandyDocumentNoteHint =>
+      'ملاحظة اختيارية، مثل: وقعت على إيدي وبتوجعني';
+
+  @override
+  String get sandySendToSandy => 'إرسال إلى ساندي';
+
+  @override
+  String get sandyCopyMessage => 'نسخ الرسالة';
+
+  @override
+  String get sandyMessageCopied => 'تم نسخ الرسالة';
+
+  @override
+  String get sandyHealthFiles => 'ملفاتي الصحية';
+
+  @override
+  String get sandyHealthFilesPrivacy =>
+      'الملفات والملخصات خاصة بك وبساندي فقط، ولا تظهر للمدرب أو الإدارة. الشرح توجيه للسلامة وليس تشخيصاً طبياً.';
+
+  @override
+  String get sandyNoHealthFiles => 'لا توجد ملفات صحية بعد';
+
+  @override
+  String get sandyNoHealthFilesDescription =>
+      'ارفع نتيجة تحليل أو صورة أشعة من شات ساندي وستظهر هنا. يمكنك حذف أي ملف في أي وقت.';
+
+  @override
+  String get sandyDeleteDocument => 'حذف الملف الطبي';
+
+  @override
+  String get sandyDeleteDocumentConfirm =>
+      'سيتم حذف الملف وذاكرة ساندي المرتبطة به نهائياً.';
+
+  @override
+  String get sandyDocumentDeleted => 'تم حذف الملف الطبي';
+
+  @override
+  String get sandyNotADiagnosis =>
+      'هذا توجيه للسلامة وليس تشخيصاً أو علاجاً. راجع الطبيب.';
+
+  @override
+  String get sandyTrainingCautionBanner =>
+      'ساندي نبهت إن في إصابة أو ملاحظة تستدعي إيقاف تمرين منطقة معيّنة لحين فحص الطبيب.';
+
+  @override
+  String get sandyTrainingCautionShort => 'تنبيه: إيقاف تمرين حتى فحص الطبيب';
+
+  @override
+  String get sandyDocKindLab => 'نتيجة مختبر';
+
+  @override
+  String get sandyDocKindImaging => 'أشعة / تصوير';
+
+  @override
+  String get sandyDocKindReport => 'تقرير طبي';
+
+  @override
+  String get sandyDocKindPrescription => 'وصفة';
+
+  @override
+  String get sandyDocKindOther => 'ملف طبي';
 
   @override
   String get save => 'حفظ';
@@ -1406,6 +1630,9 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get verificationCode => 'رمز التحقق';
+
+  @override
+  String get verifyIdentity => 'إثبات هويتك';
 
   @override
   String get verificationCodeResent => 'تم إرسال رمز التحقق مرة أخرى';

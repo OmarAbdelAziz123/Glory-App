@@ -10,9 +10,3 @@ void main() async {
   await AppInitializer.initialize();
   runApp(const App());
 }
-// 668914
-
-/// Remove change username & Photo in Profile Screen only one time from Admin Dashboard
-/// and Password
-/// 
-/// شات بين المستخدمين والسيلز في التطبيق

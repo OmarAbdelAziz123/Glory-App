@@ -25,6 +25,23 @@ final class SandyRepositoryImpl implements SandyRepository {
   }
 
   @override
+  Future<Result<SandyChatResultEntity>> streamMessage({
+    required String message,
+    String? conversationId,
+    required void Function(String text) onDelta,
+  }) async {
+    final result = await _remote.streamMessage(
+      message: message,
+      conversationId: conversationId,
+      onDelta: onDelta,
+    );
+    return switch (result) {
+      Success(:final data) => Success(data.toEntity()),
+      Failure(:final failure) => Failure(failure),
+    };
+  }
+
+  @override
   Future<Result<List<String>>> getSuggestions({required String lang}) async {
     return _remote.getSuggestions(lang: lang);
   }
@@ -74,4 +91,62 @@ final class SandyRepositoryImpl implements SandyRepository {
   @override
   Future<Result<void>> deleteConversation(String conversationId) =>
       _remote.deleteConversation(conversationId);
+
+  @override
+  Future<Result<SandyDocumentAnalyzeResultEntity>> analyzeDocument({
+    required String filePath,
+    String? note,
+    String? conversationId,
+    String? lang,
+  }) async {
+    final upload = await _remote.uploadFile(filePath);
+    switch (upload) {
+      case Failure(:final failure):
+        return Failure(failure);
+      case Success(data: final fileUrl):
+        final result = await _remote.analyzeDocument(
+          fileUrl: fileUrl,
+          note: note,
+          conversationId: conversationId,
+          lang: lang,
+        );
+        return switch (result) {
+          Success(:final data) => Success(data.toEntity()),
+          Failure(:final failure) => Failure(failure),
+        };
+    }
+  }
+
+  @override
+  Future<Result<SandyDocumentsPageEntity>> getDocuments({
+    int page = 1,
+    int limit = 20,
+  }) async {
+    final result = await _remote.getDocuments(page: page, limit: limit);
+    return switch (result) {
+      Success(:final data) => Success(
+          SandyDocumentsPageEntity(
+            items: data.data?.map((e) => e.toEntity()).toList() ?? const [],
+            page: data.meta?.page ?? page,
+            totalPages: data.meta?.totalPages ?? page,
+          ),
+        ),
+      Failure(:final failure) => Failure(failure),
+    };
+  }
+
+  @override
+  Future<Result<SandyMedicalDocumentEntity>> getDocument(
+    String documentId,
+  ) async {
+    final result = await _remote.getDocument(documentId);
+    return switch (result) {
+      Success(:final data) => Success(data.toEntity()),
+      Failure(:final failure) => Failure(failure),
+    };
+  }
+
+  @override
+  Future<Result<void>> deleteDocument(String documentId) =>
+      _remote.deleteDocument(documentId);
 }

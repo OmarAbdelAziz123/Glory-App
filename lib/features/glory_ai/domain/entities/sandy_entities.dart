@@ -29,6 +29,12 @@ final class SandyMessageEntity {
     required this.createdAt,
     this.citations = const [],
     this.refusalReason,
+    this.attachmentUrl,
+    this.attachmentLabel,
+    this.attachmentIsImage = false,
+    this.flags = const [],
+    this.trainingCaution = false,
+    this.isMedicalGuidance = false,
   });
 
   final String id;
@@ -37,8 +43,134 @@ final class SandyMessageEntity {
   final DateTime createdAt;
   final List<SandyCitationEntity> citations;
   final SandyRefusalReason? refusalReason;
+  final String? attachmentUrl;
+  final String? attachmentLabel;
+  final bool attachmentIsImage;
+  final List<SandyMedicalFlagEntity> flags;
+  final bool trainingCaution;
+  final bool isMedicalGuidance;
 
   bool get isUser => role == SandyMessageRole.user;
+  bool get hasAttachment => attachmentUrl != null && attachmentUrl!.isNotEmpty;
+  bool get hasHighSeverityFlag =>
+      flags.any((flag) => flag.severity == SandyFlagSeverity.high);
+
+  SandyMessageEntity copyWith({
+    String? id,
+    String? body,
+    List<SandyCitationEntity>? citations,
+    SandyRefusalReason? refusalReason,
+    bool clearRefusalReason = false,
+  }) {
+    return SandyMessageEntity(
+      id: id ?? this.id,
+      body: body ?? this.body,
+      role: role,
+      createdAt: createdAt,
+      citations: citations ?? this.citations,
+      refusalReason:
+          clearRefusalReason ? null : (refusalReason ?? this.refusalReason),
+      attachmentUrl: attachmentUrl,
+      attachmentLabel: attachmentLabel,
+      attachmentIsImage: attachmentIsImage,
+      flags: flags,
+      trainingCaution: trainingCaution,
+      isMedicalGuidance: isMedicalGuidance,
+    );
+  }
+}
+
+enum SandyDocumentKind {
+  labResult,
+  imaging,
+  report,
+  prescription,
+  other,
+}
+
+enum SandyFlagSeverity { low, medium, high }
+
+final class SandyMedicalFlagEntity {
+  const SandyMedicalFlagEntity({
+    required this.severity,
+    required this.note,
+    this.area,
+  });
+
+  final SandyFlagSeverity severity;
+  final String? area;
+  final String note;
+}
+
+final class SandyMedicalDocumentEntity {
+  const SandyMedicalDocumentEntity({
+    required this.id,
+    required this.kind,
+    required this.title,
+    required this.fileUrl,
+    required this.createdAt,
+    this.fileType,
+    this.summary,
+    this.flags = const [],
+    this.trainingCaution = false,
+  });
+
+  final String id;
+  final SandyDocumentKind kind;
+  final String title;
+  final String fileUrl;
+  final String? fileType;
+  final String? summary;
+  final List<SandyMedicalFlagEntity> flags;
+  final bool trainingCaution;
+  final DateTime createdAt;
+
+  bool get isImage {
+    final type = (fileType ?? '').toLowerCase();
+    final url = fileUrl.toLowerCase();
+    if (type.contains('pdf') || url.contains('.pdf')) return false;
+    return type.contains('image') ||
+        url.contains('.png') ||
+        url.contains('.jpg') ||
+        url.contains('.jpeg') ||
+        url.contains('.webp') ||
+        url.contains('.heic') ||
+        kind == SandyDocumentKind.imaging;
+  }
+}
+
+final class SandyDocumentAnalyzeResultEntity {
+  const SandyDocumentAnalyzeResultEntity({
+    required this.recordId,
+    required this.kind,
+    required this.title,
+    required this.reply,
+    required this.summary,
+    required this.flags,
+    required this.trainingCaution,
+  });
+
+  final String recordId;
+  final SandyDocumentKind kind;
+  final String title;
+  final String reply;
+  final String summary;
+  final List<SandyMedicalFlagEntity> flags;
+  final bool trainingCaution;
+}
+
+final class SandyDocumentsPageEntity {
+  const SandyDocumentsPageEntity({
+    required this.items,
+    required this.page,
+    required this.totalPages,
+  });
+
+  final List<SandyMedicalDocumentEntity> items;
+  final int page;
+  final int totalPages;
+
+  bool get hasMore => page < totalPages;
 }
 
 final class SandyConversationPreviewEntity {

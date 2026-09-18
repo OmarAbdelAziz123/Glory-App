@@ -9,6 +9,7 @@ import '../../domain/repositories/auth_repository.dart';
 import '../datasources/auth_remote_api_service.dart';
 import '../mappers/auth_mappers.dart';
 import '../models/complete_registration_request.dart';
+import '../models/confirm_code_request.dart';
 import '../models/forgot_password_request.dart';
 import '../models/login_request.dart';
 import '../models/logout_request.dart';
@@ -217,6 +218,30 @@ final class AuthRepositoryImpl implements AuthRepository {
 
     await _clearSession();
     return const Success(null);
+  }
+
+  @override
+  Future<Result<OtpSentEntity>> requestDeleteAccount() async {
+    final result = await _remote.requestDeleteAccount();
+
+    return switch (result) {
+      Success(:final data) => Success(data.toEntity()),
+      Failure(:final failure) => Failure(failure),
+    };
+  }
+
+  @override
+  Future<Result<void>> confirmDeleteAccount({required String code}) async {
+    final result = await _remote.confirmDeleteAccount(
+      ConfirmCodeRequest(code: code),
+    );
+
+    if (result case Success()) {
+      await _clearSession();
+      return const Success(null);
+    }
+
+    return Failure((result as Failure).failure);
   }
 
   Future<void> _clearSession() async {

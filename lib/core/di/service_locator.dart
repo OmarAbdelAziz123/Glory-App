@@ -13,6 +13,7 @@ import '../../features/auth/domain/repositories/auth_repository.dart';
 import '../../app/cubits/locale/app_locale_cubit.dart';
 import '../../features/auth/presentation/cubits/user_profile/user_profile_cubit.dart';
 import '../../features/auth/presentation/cubits/forgot_password/forgot_password_cubit.dart';
+import '../../features/auth/presentation/cubits/delete_account/delete_account_cubit.dart';
 import '../../features/auth/presentation/cubits/logout/logout_cubit.dart';
 import '../../features/splash/presentation/cubits/splash_cubit.dart';
 import '../../features/auth/presentation/cubits/create_password/create_password_cubit.dart';
@@ -44,6 +45,11 @@ import '../../features/body_composition/data/datasources/body_records_remote_api
 import '../../features/body_composition/data/repositories/body_composition_repository_impl.dart';
 import '../../features/body_composition/domain/repositories/body_composition_repository.dart';
 import '../../features/body_composition/presentation/cubits/body_records_list/body_records_list_cubit.dart';
+import '../../features/inbody/data/datasources/inbody_remote_api_service.dart';
+import '../../features/inbody/data/repositories/inbody_repository_impl.dart';
+import '../../features/inbody/domain/repositories/inbody_repository.dart';
+import '../../features/inbody/presentation/cubits/inbody_detail/inbody_detail_cubit.dart';
+import '../../features/inbody/presentation/cubits/inbody_history/inbody_history_cubit.dart';
 import '../../features/subscriptions/data/datasources/subscriptions_api.dart';
 import '../../features/subscriptions/data/datasources/subscriptions_remote_api_service.dart';
 import '../../features/subscriptions/data/repositories/subscriptions_repository_impl.dart';
@@ -84,6 +90,7 @@ import '../../features/glory_ai/data/repositories/sandy_repository_impl.dart';
 import '../../features/glory_ai/domain/repositories/sandy_repository.dart';
 import '../../features/glory_ai/presentation/cubits/sandy_conversations_list/sandy_conversations_list_cubit.dart';
 import '../../features/glory_ai/presentation/cubits/sandy_chat/sandy_chat_cubit.dart';
+import '../../features/glory_ai/presentation/cubits/sandy_documents/sandy_documents_cubit.dart';
 import '../l10n/fallback_messages.dart';
 import '../network/api_client.dart';
 import '../network/endpoints.dart';
@@ -104,6 +111,7 @@ Future<void> setupServiceLocator() async {
   _registerCheckin();
   _registerBookings();
   _registerBodyComposition();
+  _registerInbody();
   _registerSubscriptions();
   _registerNotifications();
   _registerWorkouts();
@@ -169,6 +177,7 @@ void _registerAuth() {
   sl.registerFactory<LoginCubit>(() => LoginCubit(sl()));
   sl.registerFactory<SplashCubit>(() => SplashCubit(sl()));
   sl.registerFactory<LogoutCubit>(() => LogoutCubit(sl()));
+  sl.registerFactory<DeleteAccountCubit>(() => DeleteAccountCubit(sl()));
 }
 
 void _registerOnboarding() {
@@ -263,6 +272,19 @@ void _registerBodyComposition() {
   );
 }
 
+void _registerInbody() {
+  sl.registerLazySingleton<InbodyRemoteApiService>(
+    () => InbodyRemoteApiService(sl()),
+  );
+  sl.registerLazySingleton<InbodyRepository>(
+    () => InbodyRepositoryImpl(sl()),
+  );
+  sl.registerFactory<InbodyHistoryCubit>(() => InbodyHistoryCubit(sl()));
+  sl.registerFactoryParam<InbodyDetailCubit, String, void>(
+    (testId, _) => InbodyDetailCubit(sl(), testId: testId),
+  );
+}
+
 void _registerSubscriptions() {
   sl.registerLazySingleton<SubscriptionsApi>(
     () => SubscriptionsApi(sl(), baseUrl: Endpoints.baseUrl),
@@ -349,4 +371,5 @@ void _registerSandyAi() {
   sl.registerFactory<SandyConversationsListCubit>(
     () => SandyConversationsListCubit(sl(), sl()),
   );
+  sl.registerFactory<SandyDocumentsCubit>(() => SandyDocumentsCubit(sl()));
 }

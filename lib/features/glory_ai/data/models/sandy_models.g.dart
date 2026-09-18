@@ -128,6 +128,8 @@ SandyMessageModel _$SandyMessageModelFromJson(Map<String, dynamic> json) =>
           ?.map((e) => SandyCitationModel.fromJson(e as Map<String, dynamic>))
           .toList(),
       refusalReason: json['refusalReason'] as String?,
+      fileUrl: json['fileUrl'] as String?,
+      fileType: json['fileType'] as String?,
     );
 
 Map<String, dynamic> _$SandyMessageModelToJson(SandyMessageModel instance) =>
@@ -138,6 +140,8 @@ Map<String, dynamic> _$SandyMessageModelToJson(SandyMessageModel instance) =>
       'createdAt': instance.createdAt.toIso8601String(),
       'citations': instance.citations,
       'refusalReason': instance.refusalReason,
+      'fileUrl': instance.fileUrl,
+      'fileType': instance.fileType,
     };
 
 SandyRenameConversationRequest _$SandyRenameConversationRequestFromJson(
@@ -147,3 +151,90 @@ SandyRenameConversationRequest _$SandyRenameConversationRequestFromJson(
 Map<String, dynamic> _$SandyRenameConversationRequestToJson(
   SandyRenameConversationRequest instance,
 ) => <String, dynamic>{'title': instance.title};
+
+Map<String, dynamic> _$SandyAnalyzeDocumentRequestToJson(
+  SandyAnalyzeDocumentRequest instance,
+) => <String, dynamic>{
+  'fileUrl': instance.fileUrl,
+  'note': ?instance.note,
+  'conversationId': ?instance.conversationId,
+  'lang': ?instance.lang,
+};
+
+SandyMedicalFlagModel _$SandyMedicalFlagModelFromJson(
+  Map<String, dynamic> json,
+) => SandyMedicalFlagModel(
+  severity: json['severity'] as String,
+  note: json['note'] as String,
+  area: json['area'] as String?,
+);
+
+Map<String, dynamic> _$SandyMedicalFlagModelToJson(
+  SandyMedicalFlagModel instance,
+) => <String, dynamic>{
+  'severity': instance.severity,
+  'area': instance.area,
+  'note': instance.note,
+};
+
+SandyAnalyzeDocumentModel _$SandyAnalyzeDocumentModelFromJson(
+  Map<String, dynamic> json,
+) => SandyAnalyzeDocumentModel(
+  recordId: json['recordId'] as String,
+  kind: json['kind'] as String,
+  title: json['title'] as String,
+  reply: json['reply'] as String,
+  summary: json['summary'] as String,
+  flags: (json['flags'] as List<dynamic>?)
+      ?.map((e) => SandyMedicalFlagModel.fromJson(e as Map<String, dynamic>))
+      .toList(),
+  trainingCaution: json['trainingCaution'] as bool?,
+  meta: json['meta'] == null
+      ? null
+      : SandyChatMetaModel.fromJson(json['meta'] as Map<String, dynamic>),
+);
+
+Map<String, dynamic> _$SandyAnalyzeDocumentModelToJson(
+  SandyAnalyzeDocumentModel instance,
+) => <String, dynamic>{
+  'recordId': instance.recordId,
+  'kind': instance.kind,
+  'title': instance.title,
+  'reply': instance.reply,
+  'summary': instance.summary,
+  'flags': instance.flags,
+  'trainingCaution': instance.trainingCaution,
+  'meta': instance.meta,
+};
+
+SandyMedicalDocumentModel _$SandyMedicalDocumentModelFromJson(
+  Map<String, dynamic> json,
+) => SandyMedicalDocumentModel(
+  id: json['id'] as String,
+  kind: json['kind'] as String,
+  title: json['title'] as String,
+  fileUrl: json['fileUrl'] as String,
+  createdAt: DateTime.parse(json['createdAt'] as String),
+  fileType: json['fileType'] as String?,
+  summary: json['summary'] as String?,
+  extracted: _extractedToString(json['extracted']),
+  flags: (json['flags'] as List<dynamic>?)
+      ?.map((e) => SandyMedicalFlagModel.fromJson(e as Map<String, dynamic>))
+      .toList(),
+  trainingCaution: json['trainingCaution'] as bool?,
+);
+
+Map<String, dynamic> _$SandyMedicalDocumentModelToJson(
+  SandyMedicalDocumentModel instance,
+) => <String, dynamic>{
+  'id': instance.id,
+  'kind': instance.kind,
+  'title': instance.title,
+  'fileUrl': instance.fileUrl,
+  'fileType': instance.fileType,
+  'summary': instance.summary,
+  'extracted': instance.extracted,
+  'flags': instance.flags,
+  'trainingCaution': instance.trainingCaution,
+  'createdAt': instance.createdAt.toIso8601String(),
+};

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:glory_gym/core/core.dart';
 import 'package:glory_gym/features/notifications/domain/entities/notification_entity.dart';
 import 'package:glory_gym/features/notifications/presentation/cubits/notifications_list/notifications_list_cubit.dart';
@@ -93,6 +94,12 @@ final class _NotificationsView extends StatelessWidget {
 
     if (context.mounted) {
       context.read<NotificationsListCubit>().clearSelected();
+    }
+
+    final title = '${notification.titleEn} ${notification.titleAr}'.toLowerCase();
+    if (title.contains('inbody') || title.contains('إنبودي')) {
+      if (!context.mounted) return;
+      await context.push(AppRoutes.bodyComposition);
     }
   }
 

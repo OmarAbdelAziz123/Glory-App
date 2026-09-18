@@ -11,11 +11,13 @@ final class QuestionnaireHeader extends StatelessWidget
     super.key,
     required this.currentStep,
     required this.totalSteps,
+    this.title,
     this.onBack,
   });
 
   final int currentStep;
   final int totalSteps;
+  final String? title;
   final VoidCallback? onBack;
 
   static const _toolbarHeight = 72.0;
@@ -46,7 +48,7 @@ final class QuestionnaireHeader extends StatelessWidget
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            context.l10n.subscriptionQuestionnaire,
+            title ?? context.l10n.subscriptionQuestionnaire,
             textAlign: TextAlign.center,
             style: context.highlightBold.copyWith(color: AppColors.white),
           ),

@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/di/service_locator.dart';
 import '../../../../core/models/questionnaire_args.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/widgets.dart';
-import '../../../onboarding/domain/repositories/onboarding_repository.dart';
+import '../../../onboarding/presentation/screens/dynamic_onboarding_screen.dart';
 import '../cubits/questionnaire/questionnaire_cubit.dart';
 import '../widgets/questionnaire_header.dart';
 import '../widgets/steps/activity_step.dart';
@@ -19,7 +18,6 @@ import '../widgets/steps/nutrition_step.dart';
 import '../widgets/steps/personal_data_step.dart';
 import '../widgets/steps/training_step.dart';
 import '../../../../core/l10n/l10n_extension.dart';
-import '../../../../core/utils/onboarding_navigation.dart';
 
 final class QuestionnaireScreen extends StatelessWidget {
   const QuestionnaireScreen({super.key, this.args});
@@ -28,6 +26,10 @@ final class QuestionnaireScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (args?.completeToHome ?? false) {
+      return DynamicOnboardingScreen(prefill: args?.prefill);
+    }
+
     return BlocProvider(
       create: (_) => QuestionnaireCubit()..applyPrefill(args?.prefill),
       child: _QuestionnaireView(completeToHome: args?.completeToHome ?? false),
@@ -139,26 +141,6 @@ final class _QuestionnaireViewState extends State<_QuestionnaireView> {
     _syncPhoneCountryCode(cubit);
 
     if (state.isLastStep) {
-      if (widget.completeToHome) {
-        final success = await cubit.submitOnboarding(sl<OnboardingRepository>());
-        if (!context.mounted) return;
-
-        if (success) {
-          await markOnboardingCompletedLocally();
-          if (!context.mounted) return;
-          _showSuccess(context);
-          return;
-        }
-
-        final error = cubit.state.errorMessage;
-        if (error != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(error)),
-          );
-        }
-        return;
-      }
-
       cubit.markSubmittedLocally();
       return;
     }

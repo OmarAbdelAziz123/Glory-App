@@ -51,4 +51,8 @@ abstract interface class AuthRepository {
   Future<Result<bool>> updatePushNotifications({required bool enabled});
 
   Future<Result<void>> logout();
+
+  Future<Result<OtpSentEntity>> requestDeleteAccount();
+
+  Future<Result<void>> confirmDeleteAccount({required String code});
 }

@@ -107,7 +107,10 @@ final class _SplashScreenState extends State<SplashScreen>
       if (!mounted) return;
       await LocaleService.syncFromMember(profileCubit.state.member);
       if (!mounted) return;
-      await navigateAfterAuthentication(context);
+      await navigateAfterAuthentication(
+        context,
+        onboardingCompleted: profileCubit.state.member?.onboardingCompleted,
+      );
       return;
     }
 

@@ -1,21 +1,29 @@
+import 'dart:io';
 import 'dart:math' as math;
 
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart' as intl;
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/l10n/l10n_extension.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_styles_extension.dart';
-import '../../../../core/widgets/app_primary_header.dart';
+import '../../../../core/utils/camera_permission_utils.dart';
 import '../../../../core/widgets/app_scaffold.dart';
 import '../../../coach_chat/presentation/utils/chat_time_formatter.dart';
 import '../../domain/entities/sandy_entities.dart';
 import '../cubits/sandy_chat/sandy_chat_cubit.dart';
+import '../widgets/sandy_attach_sheet.dart';
+import '../widgets/sandy_document_submit_sheet.dart';
 
 final class GloryAiScreen extends StatelessWidget {
   const GloryAiScreen({super.key});
@@ -71,6 +79,63 @@ final class _GloryAiViewState extends State<_GloryAiView> {
     _scrollToBottom();
   }
 
+  Future<void> _handleAttach() async {
+    if (context.read<SandyChatCubit>().state.isBusy) return;
+
+    final source = await SandyAttachSheet.show(context);
+    if (source == null || !mounted) return;
+
+    final path = await _pickFile(source);
+    if (path == null || !mounted) return;
+
+    final submit = await SandyDocumentSubmitSheet.show(
+      context,
+      filePath: path,
+    );
+    if (submit == null || !mounted) return;
+
+    await context.read<SandyChatCubit>().analyzeDocument(
+          filePath: path,
+          note: submit.note,
+        );
+    _scrollToBottom();
+  }
+
+  Future<String?> _pickFile(SandyAttachSource source) async {
+    try {
+      switch (source) {
+        case SandyAttachSource.gallery:
+          final image = await ImagePicker().pickImage(
+            source: ImageSource.gallery,
+            imageQuality: 85,
+          );
+          return image?.path;
+        case SandyAttachSource.camera:
+          final granted = await CameraPermissionUtils.ensureGranted(context);
+          if (!granted || !mounted) return null;
+          final image = await ImagePicker().pickImage(
+            source: ImageSource.camera,
+            imageQuality: 85,
+          );
+          return image?.path;
+        case SandyAttachSource.pdf:
+          final result = await FilePicker.platform.pickFiles(
+            type: FileType.custom,
+            allowedExtensions: const ['pdf'],
+          );
+          return result?.files.single.path;
+      }
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> _openHealthFiles() async {
+    await context.push(AppRoutes.sandyHealthFiles);
+    if (!mounted) return;
+    await context.read<SandyChatCubit>().refreshTrainingCaution();
+  }
+
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_scrollController.hasClients) return;
@@ -94,8 +159,9 @@ final class _GloryAiViewState extends State<_GloryAiView> {
   Widget build(BuildContext context) {
     return BlocConsumer<SandyChatCubit, SandyChatState>(
       listenWhen: (previous, current) =>
-          previous.messages.length != current.messages.length ||
+          previous.messages != current.messages ||
           previous.isTyping != current.isTyping ||
+          previous.isStreaming != current.isStreaming ||
           previous.errorMessage != current.errorMessage,
       listener: (context, state) {
         _scrollToBottom();
@@ -108,26 +174,7 @@ final class _GloryAiViewState extends State<_GloryAiView> {
       },
       builder: (context, state) {
         return AppScaffold(
-          appBar: AppPrimaryHeader(
-            title: context.l10n.sandyAi,
-            showBack: false,
-            centerTitle: true,
-            actions: [
-              IconButton(
-                tooltip: context.l10n.sandyNewChat,
-                onPressed: state.isTyping
-                    ? null
-                    : () => context.read<SandyChatCubit>().startNewConversation(),
-                icon: const Icon(Iconsax.add, color: AppColors.white),
-              ),
-              IconButton(
-                tooltip: context.l10n.sandyChatHistory,
-                onPressed: () => context.push(AppRoutes.sandyConversations),
-                icon: const Icon(Iconsax.message_text_1, color: AppColors.white),
-              ),
-              const SizedBox(width: 8),
-            ],
-          ),
+          appBar: const _SandyChatHeader(),
           body: DecoratedBox(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
@@ -138,6 +185,14 @@ final class _GloryAiViewState extends State<_GloryAiView> {
             ),
             child: Column(
               children: [
+                _SandyActionsBar(
+                  enabled: !state.isBusy,
+                  onNewChat: () =>
+                      context.read<SandyChatCubit>().startNewConversation(),
+                  onHistory: () => context.push(AppRoutes.sandyConversations),
+                  onHealthFiles: _openHealthFiles,
+                ),
+                if (state.hasTrainingCaution) const _TrainingCautionBanner(),
                 if (state.isLoading && state.isEmpty)
                   const Expanded(
                     child: Center(
@@ -157,8 +212,10 @@ final class _GloryAiViewState extends State<_GloryAiView> {
                 _ChatInputBar(
                   controller: _inputController,
                   focusNode: _inputFocusNode,
-                  canSend: _canSend && !state.isTyping,
+                  canSend: _canSend && !state.isBusy,
+                  canAttach: !state.isBusy,
                   onSend: _handleSend,
+                  onAttach: _handleAttach,
                 ),
               ],
             ),
@@ -183,10 +240,7 @@ final class _GloryAiViewState extends State<_GloryAiView> {
 
     if (state.isEmpty && !state.isLoading) {
       if (index == cursor) {
-        return _WelcomeBubble(
-          text:
-              '${context.l10n.sandyWelcomeMessage}${context.l10n.sandyAskMeHint}',
-        );
+        return const _SandyWelcomeCard();
       }
       cursor++;
     }
@@ -237,18 +291,343 @@ final class _GloryAiViewState extends State<_GloryAiView> {
   }
 }
 
-final class _WelcomeBubble extends StatelessWidget {
-  const _WelcomeBubble({required this.text});
+final class _TrainingCautionBanner extends StatelessWidget {
+  const _TrainingCautionBanner();
 
-  final String text;
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.red10,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.red100.withValues(alpha: 0.4)),
+      ),
+      child: Text(
+        context.l10n.sandyTrainingCautionBanner,
+        style: context.footnoteRegular.copyWith(
+          color: AppColors.red200,
+          height: 1.45,
+        ),
+      ),
+    );
+  }
+}
+
+final class _FlagNote extends StatelessWidget {
+  const _FlagNote({required this.flag});
+
+  final SandyMedicalFlagEntity flag;
+
+  @override
+  Widget build(BuildContext context) {
+    final isHigh = flag.severity == SandyFlagSeverity.high;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: isHigh ? AppColors.red10 : AppColors.primary100,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Text(
+          [
+            if (flag.area != null && flag.area!.isNotEmpty) flag.area,
+            flag.note,
+          ].whereType<String>().join(' — '),
+          style: context.footnoteRegular.copyWith(
+            color: isHigh ? AppColors.red200 : AppColors.primary800,
+            height: 1.4,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+final class _MessageAttachment extends StatelessWidget {
+  const _MessageAttachment({
+    required this.url,
+    required this.isImage,
+    this.label,
+    this.onDark = false,
+  });
+
+  final String url;
+  final String? label;
+  final bool isImage;
+  final bool onDark;
+
+  bool get _isRemote =>
+      url.startsWith('http://') || url.startsWith('https://');
+
+  @override
+  Widget build(BuildContext context) {
+    if (!isImage) {
+      return Row(
+        children: [
+          Icon(
+            Iconsax.document_text,
+            size: 18,
+            color: onDark ? AppColors.white : AppColors.primary800,
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              label ?? url.split('/').last,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: context.footnoteRegular.copyWith(
+                color: onDark ? AppColors.white : AppColors.neutral800,
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: SizedBox(
+        height: 120,
+        width: double.infinity,
+        child: _isRemote
+            ? CachedNetworkImage(imageUrl: url, fit: BoxFit.cover)
+            : Image.file(File(url), fit: BoxFit.cover),
+      ),
+    );
+  }
+}
+
+final class _SandyChatHeader extends StatelessWidget
+    implements PreferredSizeWidget {
+  const _SandyChatHeader();
+
+  @override
+  Size get preferredSize => const Size.fromHeight(72);
+
+  @override
+  Widget build(BuildContext context) {
+    return AppBar(
+      toolbarHeight: 72,
+      backgroundColor: AppColors.primary,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      automaticallyImplyLeading: false,
+      centerTitle: false,
+      titleSpacing: 16,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(16),
+          bottomRight: Radius.circular(16),
+        ),
+      ),
+      title: Row(
+        children: [
+          Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: AppColors.white.withValues(alpha: 0.22),
+              border: Border.all(
+                color: AppColors.white.withValues(alpha: 0.55),
+              ),
+            ),
+            child: Center(
+              child: SvgPicture.asset(
+                'assets/images/svgs/ai_icon.svg',
+                width: 20,
+                height: 20,
+                colorFilter: const ColorFilter.mode(
+                  AppColors.white,
+                  BlendMode.srcIn,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  context.l10n.sandyAi,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: context.highlightBold.copyWith(color: AppColors.white),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  context.l10n.sandyAiSubtitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: context.footnoteRegular.copyWith(
+                    color: AppColors.white.withValues(alpha: 0.9),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+final class _SandyActionsBar extends StatelessWidget {
+  const _SandyActionsBar({
+    required this.enabled,
+    required this.onNewChat,
+    required this.onHistory,
+    required this.onHealthFiles,
+  });
+
+  final bool enabled;
+  final VoidCallback onNewChat;
+  final VoidCallback onHistory;
+  final VoidCallback onHealthFiles;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: _AiBubbleContent(
-        body: text,
-        time: ChatTimeFormatter.formatTime(DateTime.now()),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+      child: Row(
+        children: [
+          Expanded(
+            child: _SandyActionChip(
+              icon: Iconsax.add,
+              label: context.l10n.sandyToolbarNew,
+              tooltip: context.l10n.sandyNewChat,
+              onTap: enabled ? onNewChat : null,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: _SandyActionChip(
+              icon: Iconsax.message_text_1,
+              label: context.l10n.sandyToolbarHistory,
+              tooltip: context.l10n.sandyChatHistory,
+              onTap: onHistory,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: _SandyActionChip(
+              icon: Iconsax.document,
+              label: context.l10n.sandyToolbarFiles,
+              tooltip: context.l10n.sandyHealthFiles,
+              onTap: onHealthFiles,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+final class _SandyActionChip extends StatelessWidget {
+  const _SandyActionChip({
+    required this.icon,
+    required this.label,
+    required this.tooltip,
+    this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final String tooltip;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(14),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(14),
+          child: Ink(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: AppColors.neutral200),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(icon, size: 16, color: AppColors.primary800),
+                  const SizedBox(width: 6),
+                  Flexible(
+                    child: Text(
+                      label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: context.footnoteRegular.copyWith(
+                        color: AppColors.neutral800,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+final class _SandyWelcomeCard extends StatelessWidget {
+  const _SandyWelcomeCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16, top: 8),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.fromLTRB(16, 18, 16, 16),
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: AppColors.primary200),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withValues(alpha: 0.08),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            const _AiAvatar(size: 52),
+            const SizedBox(height: 12),
+            Text(
+              context.l10n.sandyWelcomeTitle,
+              textAlign: TextAlign.center,
+              style: context.highlightBold.copyWith(color: AppColors.neutral900),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              context.l10n.sandyWelcomeBody,
+              textAlign: TextAlign.center,
+              style: context.captionRegular.copyWith(
+                color: AppColors.neutral600,
+                height: 1.55,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -332,11 +711,19 @@ final class _SandyMessageBubble extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: message.isUser
-          ? _UserBubbleContent(body: message.body, time: time)
+          ? _UserBubbleContent(
+              body: message.body,
+              time: time,
+              attachmentUrl: message.attachmentUrl,
+              attachmentLabel: message.attachmentLabel,
+              attachmentIsImage: message.attachmentIsImage,
+            )
           : _AiBubbleContent(
               body: message.body,
               time: time,
               citations: message.citations,
+              flags: message.flags,
+              isMedicalGuidance: message.isMedicalGuidance,
               onRetry: onRetry,
               onContactCoach: onContactCoach,
             ),
@@ -349,6 +736,8 @@ final class _AiBubbleContent extends StatelessWidget {
     required this.body,
     required this.time,
     this.citations = const [],
+    this.flags = const [],
+    this.isMedicalGuidance = false,
     this.onRetry,
     this.onContactCoach,
   });
@@ -356,6 +745,8 @@ final class _AiBubbleContent extends StatelessWidget {
   final String body;
   final String time;
   final List<SandyCitationEntity> citations;
+  final List<SandyMedicalFlagEntity> flags;
+  final bool isMedicalGuidance;
   final VoidCallback? onRetry;
   final VoidCallback? onContactCoach;
 
@@ -403,22 +794,42 @@ final class _AiBubbleContent extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Text(
+                      SelectableText(
                         body,
+                        textDirection: intl.Bidi.detectRtlDirectionality(body)
+                            ? TextDirection.rtl
+                            : TextDirection.ltr,
                         style: context.captionRegular.copyWith(
                           color: AppColors.neutral900,
                           height: 1.55,
                         ),
                       ),
-                      const SizedBox(height: 6),
-                      Align(
-                        alignment: AlignmentDirectional.centerEnd,
-                        child: Text(
-                          time,
+                      if (isMedicalGuidance) ...[
+                        const SizedBox(height: 10),
+                        Text(
+                          context.l10n.sandyNotADiagnosis,
                           style: context.footnoteRegular.copyWith(
-                            color: AppColors.neutral400,
+                            color: AppColors.neutral500,
+                            height: 1.4,
                           ),
                         ),
+                      ],
+                      if (flags.isNotEmpty) ...[
+                        const SizedBox(height: 10),
+                        ...flags.map((flag) => _FlagNote(flag: flag)),
+                      ],
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          _CopyMessageButton(text: body),
+                          const Spacer(),
+                          Text(
+                            time,
+                            style: context.footnoteRegular.copyWith(
+                              color: AppColors.neutral400,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -463,10 +874,19 @@ final class _AiBubbleContent extends StatelessWidget {
 }
 
 final class _UserBubbleContent extends StatelessWidget {
-  const _UserBubbleContent({required this.body, required this.time});
+  const _UserBubbleContent({
+    required this.body,
+    required this.time,
+    this.attachmentUrl,
+    this.attachmentLabel,
+    this.attachmentIsImage = false,
+  });
 
   final String body;
   final String time;
+  final String? attachmentUrl;
+  final String? attachmentLabel;
+  final bool attachmentIsImage;
 
   @override
   Widget build(BuildContext context) {
@@ -500,24 +920,85 @@ final class _UserBubbleContent extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
+            if (attachmentUrl != null && attachmentUrl!.isNotEmpty) ...[
+              _MessageAttachment(
+                url: attachmentUrl!,
+                label: attachmentLabel,
+                isImage: attachmentIsImage,
+                onDark: true,
+              ),
+              const SizedBox(height: 8),
+            ],
+            SelectableText(
               body,
+              textDirection: intl.Bidi.detectRtlDirectionality(body)
+                  ? TextDirection.rtl
+                  : TextDirection.ltr,
               style: context.captionRegular.copyWith(
                 color: AppColors.white,
                 height: 1.55,
               ),
             ),
             const SizedBox(height: 6),
-            Align(
-              alignment: AlignmentDirectional.centerEnd,
-              child: Text(
-                time,
-                style: context.footnoteRegular.copyWith(
-                  color: AppColors.white.withValues(alpha: 0.85),
+            Row(
+              children: [
+                _CopyMessageButton(text: body, onDark: true),
+                const Spacer(),
+                Text(
+                  time,
+                  style: context.footnoteRegular.copyWith(
+                    color: AppColors.white.withValues(alpha: 0.85),
+                  ),
                 ),
-              ),
+              ],
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+final class _CopyMessageButton extends StatelessWidget {
+  const _CopyMessageButton({required this.text, this.onDark = false});
+
+  final String text;
+  final bool onDark;
+
+  @override
+  Widget build(BuildContext context) {
+    if (text.trim().isEmpty) return const SizedBox.shrink();
+
+    final color = onDark
+        ? AppColors.white.withValues(alpha: 0.85)
+        : AppColors.neutral400;
+
+    return Tooltip(
+      message: context.l10n.sandyCopyMessage,
+      child: InkWell(
+        onTap: () async {
+          await Clipboard.setData(ClipboardData(text: text.trim()));
+          if (!context.mounted) return;
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              SnackBar(content: Text(context.l10n.sandyMessageCopied)),
+            );
+        },
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Iconsax.copy, size: 14, color: color),
+              const SizedBox(width: 4),
+              Text(
+                context.l10n.sandyCopyShort,
+                style: context.footnoteRegular.copyWith(color: color),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -741,13 +1222,17 @@ final class _ChatInputBar extends StatefulWidget {
     required this.controller,
     required this.focusNode,
     required this.canSend,
+    required this.canAttach,
     required this.onSend,
+    required this.onAttach,
   });
 
   final TextEditingController controller;
   final FocusNode focusNode;
   final bool canSend;
+  final bool canAttach;
   final ValueChanged<String> onSend;
+  final VoidCallback onAttach;
 
   @override
   State<_ChatInputBar> createState() => _ChatInputBarState();
@@ -794,11 +1279,15 @@ final class _ChatInputBarState extends State<_ChatInputBar> {
       ),
       child: Row(
         children: [
+          _AttachButton(
+            enabled: widget.canAttach,
+            onTap: widget.onAttach,
+          ),
           Expanded(
             child: TextField(
               controller: widget.controller,
               focusNode: widget.focusNode,
-              textAlign: TextAlign.right,
+              textAlign: TextAlign.start,
               textInputAction: TextInputAction.send,
               onSubmitted: (value) {
                 if (widget.canSend) widget.onSend(value);
@@ -823,6 +1312,26 @@ final class _ChatInputBarState extends State<_ChatInputBar> {
             onTap: () => widget.onSend(widget.controller.text),
           ),
         ],
+      ),
+    );
+  }
+}
+
+final class _AttachButton extends StatelessWidget {
+  const _AttachButton({required this.enabled, required this.onTap});
+
+  final bool enabled;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      onPressed: enabled ? onTap : null,
+      tooltip: context.l10n.sandyUploadMedicalFile,
+      icon: Icon(
+        Iconsax.paperclip,
+        color: enabled ? AppColors.primary800 : AppColors.neutral400,
+        size: 20,
       ),
     );
   }

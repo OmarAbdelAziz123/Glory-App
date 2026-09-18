@@ -27,6 +27,7 @@ extension MemberModelMapper on MemberModel {
         emailVerifiedAt: emailVerifiedAt != null
             ? DateTime.tryParse(emailVerifiedAt!)
             : null,
+        onboardingCompleted: onboardingCompleted,
         createdAt: DateTime.parse(createdAt),
       );
 }

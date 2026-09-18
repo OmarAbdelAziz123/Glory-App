@@ -16,6 +16,7 @@ final class MemberEntity {
     required this.status,
     required this.source,
     this.emailVerifiedAt,
+    this.onboardingCompleted,
     required this.createdAt,
   });
 
@@ -35,6 +36,7 @@ final class MemberEntity {
   final String status;
   final String source;
   final DateTime? emailVerifiedAt;
+  final bool? onboardingCompleted;
   final DateTime createdAt;
 
   MemberEntity copyWith({
@@ -54,6 +56,7 @@ final class MemberEntity {
     String? status,
     String? source,
     DateTime? emailVerifiedAt,
+    bool? onboardingCompleted,
     DateTime? createdAt,
   }) =>
       MemberEntity(
@@ -73,6 +76,7 @@ final class MemberEntity {
         status: status ?? this.status,
         source: source ?? this.source,
         emailVerifiedAt: emailVerifiedAt ?? this.emailVerifiedAt,
+        onboardingCompleted: onboardingCompleted ?? this.onboardingCompleted,
         createdAt: createdAt ?? this.createdAt,
       );
 }

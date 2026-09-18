@@ -7,6 +7,12 @@ abstract interface class SandyRepository {
     String? conversationId,
   });
 
+  Future<Result<SandyChatResultEntity>> streamMessage({
+    required String message,
+    String? conversationId,
+    required void Function(String text) onDelta,
+  });
+
   Future<Result<List<String>>> getSuggestions({required String lang});
 
   Future<Result<List<SandyConversationEntity>>> getConversations();
@@ -23,4 +29,20 @@ abstract interface class SandyRepository {
   });
 
   Future<Result<void>> deleteConversation(String conversationId);
+
+  Future<Result<SandyDocumentAnalyzeResultEntity>> analyzeDocument({
+    required String filePath,
+    String? note,
+    String? conversationId,
+    String? lang,
+  });
+
+  Future<Result<SandyDocumentsPageEntity>> getDocuments({
+    int page = 1,
+    int limit = 20,
+  });
+
+  Future<Result<SandyMedicalDocumentEntity>> getDocument(String documentId);
+
+  Future<Result<void>> deleteDocument(String documentId);
 }

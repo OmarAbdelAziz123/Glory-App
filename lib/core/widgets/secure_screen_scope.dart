@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../security/secure_screen_service.dart';
 
-/// Wraps the app to block screenshots and screen recording on all screens.
+/// Wraps the app to block screenshots and screen recording on iOS.
 final class SecureScreenScope extends StatefulWidget {
   const SecureScreenScope({super.key, required this.child});
 

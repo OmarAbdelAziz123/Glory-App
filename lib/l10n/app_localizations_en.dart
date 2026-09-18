@@ -121,7 +121,112 @@ class AppLocalizationsEn extends AppLocalizations {
   String get bmi => 'Body mass index';
 
   @override
-  String get bodyCompositionScan => 'Body composition scan';
+  String get bodyCompositionScan => 'InBody history';
+
+  @override
+  String get inbodySubtitle =>
+      'Every InBody test from the gym device or staff, newest first.';
+
+  @override
+  String get inbodyTotalTests => 'Total tests';
+
+  @override
+  String get inbodyFirstTest => 'First test';
+
+  @override
+  String get inbodyLatestTest => 'Latest test';
+
+  @override
+  String get inbodySinceStarted => 'Since you started';
+
+  @override
+  String get inbodyLatestValues => 'Latest results';
+
+  @override
+  String get inbodyFilterAll => 'All';
+
+  @override
+  String get inbodyFilterDevice => 'Device';
+
+  @override
+  String get inbodyFilterManual => 'Manual';
+
+  @override
+  String get inbodyDateRange => 'Date range';
+
+  @override
+  String get inbodyClearDates => 'Clear dates';
+
+  @override
+  String get inbodyChartWeight => 'Weight';
+
+  @override
+  String get inbodyChartMuscle => 'Muscle';
+
+  @override
+  String get inbodyChartFat => 'Fat %';
+
+  @override
+  String get inbodyEmptyTitle => 'No InBody tests yet';
+
+  @override
+  String get inbodyEmptyDescription =>
+      'When you take a test on the gym InBody device, or staff enter one, it will appear here.';
+
+  @override
+  String get inbodyEmptyFilter => 'No tests match this filter.';
+
+  @override
+  String get inbodyDeviceBadge => 'Device';
+
+  @override
+  String get inbodyManualBadge => 'Manual';
+
+  @override
+  String inbodyEnteredBy(String name) {
+    return 'Entered by $name';
+  }
+
+  @override
+  String get inbodyOpenPdf => 'Open result sheet';
+
+  @override
+  String get inbodyMoreFromDevice => 'More from the device';
+
+  @override
+  String get inbodyBodyWater => 'Body water';
+
+  @override
+  String get inbodyScore => 'InBody score';
+
+  @override
+  String get inbodyHeight => 'Height';
+
+  @override
+  String get inbodyBodyFatMass => 'Body fat mass';
+
+  @override
+  String get inbodyDetailTitle => 'Test details';
+
+  @override
+  String inbodyTestsCount(int count) {
+    return '$count tests';
+  }
+
+  @override
+  String get inbodyUnitKg => 'kg';
+
+  @override
+  String get inbodyUnitCm => 'cm';
+
+  @override
+  String get inbodyUnitKcal => 'kcal';
+
+  @override
+  String get inbodyProgress => 'Progress';
+
+  @override
+  String get inbodyHistorySection => 'All tests';
 
   @override
   String get bodyFatPercentage => 'Body fat percentage';
@@ -268,6 +373,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get confirmLogout => 'Are you sure you want to log out?';
+
+  @override
+  String get confirmDeleteAccount =>
+      'Are you sure you want to delete your account? This action cannot be undone.';
 
   @override
   String get confirmPassword => 'Confirm Password';
@@ -420,6 +529,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get deleteAccount => 'Delete account';
+
+  @override
+  String get accountDeletedSuccess => 'Account deleted successfully';
 
   @override
   String get deleteConfirmMember =>
@@ -1176,7 +1288,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sampleDateMay2026 => '1 May 2026';
 
   @override
-  String get sandyAi => 'Sandy AI';
+  String get sandyAi => 'Sandy';
+
+  @override
+  String get sandyAiSubtitle => 'Your workout and nutrition assistant';
+
+  @override
+  String get sandyWelcomeTitle => 'Hi, I\'m Sandy';
+
+  @override
+  String get sandyWelcomeBody =>
+      'Ask me about workouts, nutrition, or your membership. You can also attach a lab result or an X-ray.';
+
+  @override
+  String get sandyToolbarNew => 'New';
+
+  @override
+  String get sandyToolbarHistory => 'History';
+
+  @override
+  String get sandyToolbarFiles => 'Files';
+
+  @override
+  String get sandyCopyShort => 'Copy';
 
   @override
   String get sandyAskMeHint =>
@@ -1231,6 +1365,97 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get sandyNoConversationsDescription =>
       'Start chatting with Sandy and your conversations will appear here.';
+
+  @override
+  String get sandyDocumentsHint =>
+      'You can also upload a lab result or an X-ray, and Sandy will explain it and keep it in your health files.';
+
+  @override
+  String get sandyUploadMedicalFile => 'Upload a medical file';
+
+  @override
+  String get sandyUploadMedicalFileSubtitle =>
+      'Upload a lab PDF or an X-ray/scan. Sandy explains it and refers you to a doctor when needed.';
+
+  @override
+  String get sandyUploadFromGallery => 'Choose a photo from gallery';
+
+  @override
+  String get sandyUploadFromCamera => 'Take a photo';
+
+  @override
+  String get sandyUploadPdf => 'Upload a PDF';
+
+  @override
+  String get sandySendFileToSandy => 'Send file to Sandy';
+
+  @override
+  String get sandyMedicalConsent =>
+      'This file is private to you and Sandy. Coaches and staff cannot see it. Sandy explains and refers — this is not a diagnosis. By continuing you agree to store a private summary on your profile.';
+
+  @override
+  String get sandyDocumentNoteHint =>
+      'Optional note, e.g. I fell on my hand and it hurts';
+
+  @override
+  String get sandySendToSandy => 'Send to Sandy';
+
+  @override
+  String get sandyCopyMessage => 'Copy message';
+
+  @override
+  String get sandyMessageCopied => 'Message copied';
+
+  @override
+  String get sandyHealthFiles => 'My health files';
+
+  @override
+  String get sandyHealthFilesPrivacy =>
+      'These files and summaries are private to you and Sandy. Coaches and staff cannot see them. Sandy explains and refers — this is not a diagnosis.';
+
+  @override
+  String get sandyNoHealthFiles => 'No health files yet';
+
+  @override
+  String get sandyNoHealthFilesDescription =>
+      'Upload a lab result or X-ray from Sandy chat and it will appear here. You can delete any file at any time.';
+
+  @override
+  String get sandyDeleteDocument => 'Delete medical file';
+
+  @override
+  String get sandyDeleteDocumentConfirm =>
+      'This file and Sandy\'s memory of it will be permanently deleted.';
+
+  @override
+  String get sandyDocumentDeleted => 'Medical file deleted';
+
+  @override
+  String get sandyNotADiagnosis =>
+      'This is safety guidance, not a diagnosis or treatment. See a doctor.';
+
+  @override
+  String get sandyTrainingCautionBanner =>
+      'Sandy advised pausing training for an area until a doctor clears it.';
+
+  @override
+  String get sandyTrainingCautionShort =>
+      'Caution: pause training until a doctor check';
+
+  @override
+  String get sandyDocKindLab => 'Lab result';
+
+  @override
+  String get sandyDocKindImaging => 'X-ray / scan';
+
+  @override
+  String get sandyDocKindReport => 'Medical report';
+
+  @override
+  String get sandyDocKindPrescription => 'Prescription';
+
+  @override
+  String get sandyDocKindOther => 'Medical file';
 
   @override
   String get save => 'Save';
@@ -1417,6 +1642,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get verificationCode => 'Verification code';
+
+  @override
+  String get verifyIdentity => 'Verify your identity';
 
   @override
   String get verificationCodeResent => 'Verification code sent again';

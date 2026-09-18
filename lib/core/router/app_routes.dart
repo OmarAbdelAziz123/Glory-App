@@ -22,10 +22,12 @@ abstract final class AppRoutes {
 
   // ── Profile ───────────────────────────────────────────
   static const String profile = '/profile';
+  static const String deleteAccountOtp = '/delete-account/otp';
 
   // ── Body Composition ──────────────────────────────────
   static const String bodyComposition = '/body-composition';
   static const String sizeMeasurements = '/body-composition/measurements';
+  static const String inbodyDetail = '/body-composition/tests/:id';
 
   // ── Subscriptions ────────────────────────────────────
   static const String subscriptions = '/subscriptions';
@@ -43,6 +45,7 @@ abstract final class AppRoutes {
 
   // ── Sandy AI ──────────────────────────────────────────
   static const String sandyConversations = '/sandy-conversations';
+  static const String sandyHealthFiles = '/sandy-health-files';
 
   // ── About ─────────────────────────────────────────────
   static const String about = '/about';

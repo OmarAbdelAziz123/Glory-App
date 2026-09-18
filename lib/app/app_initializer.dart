@@ -1,7 +1,11 @@
+import 'dart:io' show Platform;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
+import 'package:image_picker_android/image_picker_android.dart';
+import 'package:image_picker_platform_interface/image_picker_platform_interface.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../../firebase_options.dart';
@@ -14,12 +18,21 @@ final class AppInitializer {
   AppInitializer._();
 
   static Future<void> initialize() async {
+    _useAndroidPhotoPicker();
     await dotenv.load(fileName: '.env');
     await _initHydratedStorage();
     await setupServiceLocator();
     await LocaleService.bootstrap();
     await NavigationModeService.check3ButtonNavigation();
     await _initializeFirebase();
+  }
+
+  static void _useAndroidPhotoPicker() {
+    if (kIsWeb || !Platform.isAndroid) return;
+    final implementation = ImagePickerPlatform.instance;
+    if (implementation is ImagePickerAndroid) {
+      implementation.useAndroidPhotoPicker = true;
+    }
   }
 
   static Future<void> _initializeFirebase() async {

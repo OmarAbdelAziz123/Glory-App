@@ -27,7 +27,8 @@ Map<String, dynamic> _$OnboardingPrefillModelToJson(
 OnboardingStatusModel _$OnboardingStatusModelFromJson(
   Map<String, dynamic> json,
 ) => OnboardingStatusModel(
-  completed: json['onboardingCompleted'] as bool? ?? false,
+  completed:
+      OnboardingStatusModel._readCompleted(json, 'completed') as bool? ?? false,
   prefill: json['prefill'] == null
       ? null
       : OnboardingPrefillModel.fromJson(
@@ -38,6 +39,6 @@ OnboardingStatusModel _$OnboardingStatusModelFromJson(
 Map<String, dynamic> _$OnboardingStatusModelToJson(
   OnboardingStatusModel instance,
 ) => <String, dynamic>{
-  'onboardingCompleted': instance.completed,
+  'completed': instance.completed,
   'prefill': instance.prefill,
 };

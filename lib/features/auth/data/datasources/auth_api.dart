@@ -4,6 +4,7 @@ import 'package:retrofit/retrofit.dart';
 import '../../../../core/network/endpoints.dart';
 import '../models/auth_api_responses.dart';
 import '../models/complete_registration_request.dart';
+import '../models/confirm_code_request.dart';
 import '../models/forgot_password_request.dart';
 import '../models/login_request.dart';
 import '../models/logout_request.dart';
@@ -58,4 +59,12 @@ abstract class AuthApi {
 
   @POST(Endpoints.logout)
   Future<LogoutApiResponse> logout(@Body() LogoutRequest body);
+
+  @POST(Endpoints.mobileProfileDeleteAccountRequest)
+  Future<OtpSentApiResponse> requestDeleteAccount();
+
+  @DELETE(Endpoints.mobileProfileDeleteAccountConfirm)
+  Future<MessageApiResponse> confirmDeleteAccount(
+    @Body() ConfirmCodeRequest body,
+  );
 }

@@ -84,3 +84,53 @@ final class SandyVoidApiResponse {
   final bool success;
   final String? message;
 }
+
+@JsonSerializable()
+final class SandyAnalyzeDocumentApiResponse {
+  const SandyAnalyzeDocumentApiResponse({
+    required this.success,
+    this.data,
+    this.message,
+  });
+
+  factory SandyAnalyzeDocumentApiResponse.fromJson(Map<String, dynamic> json) =>
+      _$SandyAnalyzeDocumentApiResponseFromJson(json);
+
+  final bool success;
+  final SandyAnalyzeDocumentModel? data;
+  final String? message;
+}
+
+@JsonSerializable()
+final class SandyDocumentsApiResponse {
+  const SandyDocumentsApiResponse({
+    required this.success,
+    this.data,
+    this.meta,
+    this.message,
+  });
+
+  factory SandyDocumentsApiResponse.fromJson(Map<String, dynamic> json) =>
+      _$SandyDocumentsApiResponseFromJson(json);
+
+  final bool success;
+  final List<SandyMedicalDocumentModel>? data;
+  final PaginationMetaModel? meta;
+  final String? message;
+}
+
+@JsonSerializable()
+final class SandyDocumentApiResponse {
+  const SandyDocumentApiResponse({
+    required this.success,
+    this.data,
+    this.message,
+  });
+
+  factory SandyDocumentApiResponse.fromJson(Map<String, dynamic> json) =>
+      _$SandyDocumentApiResponseFromJson(json);
+
+  final bool success;
+  final SandyMedicalDocumentModel? data;
+  final String? message;
+}

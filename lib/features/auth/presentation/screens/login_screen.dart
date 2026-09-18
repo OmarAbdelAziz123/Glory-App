@@ -80,7 +80,12 @@ final class _LoginScreenState extends State<LoginScreen> {
               unawaited(LocaleService.syncFromMember(session.member));
             }
             unawaited(context.read<UserProfileCubit>().fetchProfile());
-            unawaited(navigateAfterAuthentication(context));
+            unawaited(
+              navigateAfterAuthentication(
+                context,
+                onboardingCompleted: session?.member.onboardingCompleted,
+              ),
+            );
             context.read<LoginCubit>().reset();
           }
         },
@@ -124,10 +129,10 @@ final class _LoginScreenState extends State<LoginScreen> {
                           onToggle: () =>
                               setState(() => _termsAccepted = !_termsAccepted),
                         ),
-                        10.vertical,
-                        _ForgotPasswordLink(
-                          onTap: () => context.push(AppRoutes.forgotPassword),
-                        ),
+                        // 10.vertical,
+                        // _ForgotPasswordLink(
+                        //   onTap: () => context.push(AppRoutes.forgotPassword),
+                        // ),
                         16.vertical,
                         // AppDividerLabel(label: context.l10n.quickLoginWith),
                         // 16.vertical,

@@ -23,6 +23,7 @@ MemberModel _$MemberModelFromJson(Map<String, dynamic> json) => MemberModel(
   status: json['status'] as String,
   source: json['source'] as String,
   emailVerifiedAt: json['emailVerifiedAt'] as String?,
+  onboardingCompleted: json['onboardingCompleted'] as bool?,
   createdAt: json['createdAt'] as String,
 );
 
@@ -44,5 +45,6 @@ Map<String, dynamic> _$MemberModelToJson(MemberModel instance) =>
       'status': instance.status,
       'source': instance.source,
       'emailVerifiedAt': instance.emailVerifiedAt,
+      'onboardingCompleted': instance.onboardingCompleted,
       'createdAt': instance.createdAt,
     };

@@ -30,7 +30,10 @@ final class OnboardingStatusModel {
   factory OnboardingStatusModel.fromJson(Map<String, dynamic> json) =>
       _$OnboardingStatusModelFromJson(json);
 
-  @JsonKey(name: 'onboardingCompleted', defaultValue: false)
+  @JsonKey(readValue: _readCompleted, defaultValue: false)
   final bool completed;
   final OnboardingPrefillModel? prefill;
+
+  static Object? _readCompleted(Map<dynamic, dynamic> json, String key) =>
+      json['completed'] ?? json['onboardingCompleted'] ?? false;
 }

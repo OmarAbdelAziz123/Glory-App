@@ -1,9 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../core/utils/phone_utils.dart';
-import '../../../../onboarding/data/models/onboarding_request.dart';
 import '../../../../onboarding/domain/entities/onboarding_prefill_entity.dart';
-import '../../../../onboarding/domain/repositories/onboarding_repository.dart';
 
 part 'questionnaire_state.dart';
 
@@ -39,103 +37,8 @@ final class QuestionnaireCubit extends Cubit<QuestionnaireState> {
     emit(state.copyWith(step: state.step - 1, clearError: true));
   }
 
-  Future<bool> submitOnboarding(OnboardingRepository repository) async {
-    if (!state.canProceed || state.isSubmitting) return false;
-
-    emit(
-      state.copyWith(
-        status: QuestionnaireStatus.submitting,
-        clearError: true,
-      ),
-    );
-
-    final result = await repository.submit(_toRequest());
-
-    return result.when(
-      success: (_) {
-        emit(state.copyWith(status: QuestionnaireStatus.submitted));
-        return true;
-      },
-      failure: (failure) {
-        emit(
-          state.copyWith(
-            status: QuestionnaireStatus.failure,
-            errorMessage: failure.message,
-          ),
-        );
-        return false;
-      },
-    );
-  }
-
   void markSubmittedLocally() {
     emit(state.copyWith(status: QuestionnaireStatus.submitted));
-  }
-
-  OnboardingRequest _toRequest() {
-    final age = int.parse(state.age.trim());
-    final meals = int.parse(state.mealsPerDay.trim());
-    final committedDays = int.parse(state.commitmentDays.trim());
-    final exercising = state.exercisesCurrently == true;
-    final trainedBefore = state.trainedWithPersonalTrainer == true;
-    final parsedPhone = PhoneUtils.splitPhone(
-      phone: state.phone,
-      phoneCountryCode: state.phoneCountryCode,
-    );
-
-    return OnboardingRequest(
-      fullName: state.fullName.trim(),
-      age: age,
-      gender: state.gender!,
-      phoneCountryCode: parsedPhone.dialCode,
-      phone: parsedPhone.localNumber,
-      occupation: state.profession.trim(),
-      hasChronicDisease: state.hasChronicDisease!,
-      takesMedications: state.hasMedications!,
-      hasInjuries: state.hasInjuries!,
-      injuriesDetails: state.hasInjuries == true
-          ? state.injuriesDetails.trim()
-          : null,
-      hadSurgery: state.hasSurgery!,
-      surgeryDetails:
-          state.hasSurgery == true ? state.surgeryDetails.trim() : null,
-      currentlyExercising: exercising,
-      exerciseDaysPerWeek: exercising
-          ? int.parse(state.exerciseDaysPerWeek.trim())
-          : null,
-      exerciseTypes:
-          exercising && state.exerciseTypes.trim().isNotEmpty
-              ? state.exerciseTypes.trim()
-              : null,
-      exercisingSince:
-          exercising && state.exerciseDuration.trim().isNotEmpty
-              ? state.exerciseDuration.trim()
-              : null,
-      followsDiet: state.followsDiet!,
-      mealsPerDay: meals,
-      waterLitersPerDay: state.waterLiters.trim(),
-      usesSupplements: state.usesSupplements!,
-      sleepHours: state.sleepHours.trim(),
-      workNature: state.workNature!,
-      stressLevel: state.stressLevel!,
-      bodyFatPct:
-          state.bodyFat.trim().isNotEmpty ? state.bodyFat.trim() : null,
-      waistCm: state.waist.trim(),
-      chestCm: state.chest.trim(),
-      armCm: state.arm.trim(),
-      thighCm: state.thigh.trim(),
-      photoUrls: state.photoUrls.isEmpty ? null : state.photoUrls,
-      committedDaysPerWeek: committedDays,
-      preferredTime: state.preferredTime!,
-      preferredExerciseType: state.preferredExercises!,
-      trainedWithCoachBefore: trainedBefore,
-      previousCoachDetails: trainedBefore
-          ? state.personalTrainerDetails.trim()
-          : null,
-      goals: state.goals.toList(),
-      otherGoal:
-          state.otherGoal.trim().isNotEmpty ? state.otherGoal.trim() : null,
-    );
   }
 
   void updateFullName(String value) => emit(state.copyWith(fullName: value));

@@ -317,8 +317,206 @@ abstract class AppLocalizations {
   /// No description provided for @bodyCompositionScan.
   ///
   /// In en, this message translates to:
-  /// **'Body composition scan'**
+  /// **'InBody history'**
   String get bodyCompositionScan;
+
+  /// No description provided for @inbodySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Every InBody test from the gym device or staff, newest first.'**
+  String get inbodySubtitle;
+
+  /// No description provided for @inbodyTotalTests.
+  ///
+  /// In en, this message translates to:
+  /// **'Total tests'**
+  String get inbodyTotalTests;
+
+  /// No description provided for @inbodyFirstTest.
+  ///
+  /// In en, this message translates to:
+  /// **'First test'**
+  String get inbodyFirstTest;
+
+  /// No description provided for @inbodyLatestTest.
+  ///
+  /// In en, this message translates to:
+  /// **'Latest test'**
+  String get inbodyLatestTest;
+
+  /// No description provided for @inbodySinceStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Since you started'**
+  String get inbodySinceStarted;
+
+  /// No description provided for @inbodyLatestValues.
+  ///
+  /// In en, this message translates to:
+  /// **'Latest results'**
+  String get inbodyLatestValues;
+
+  /// No description provided for @inbodyFilterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get inbodyFilterAll;
+
+  /// No description provided for @inbodyFilterDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Device'**
+  String get inbodyFilterDevice;
+
+  /// No description provided for @inbodyFilterManual.
+  ///
+  /// In en, this message translates to:
+  /// **'Manual'**
+  String get inbodyFilterManual;
+
+  /// No description provided for @inbodyDateRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Date range'**
+  String get inbodyDateRange;
+
+  /// No description provided for @inbodyClearDates.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear dates'**
+  String get inbodyClearDates;
+
+  /// No description provided for @inbodyChartWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight'**
+  String get inbodyChartWeight;
+
+  /// No description provided for @inbodyChartMuscle.
+  ///
+  /// In en, this message translates to:
+  /// **'Muscle'**
+  String get inbodyChartMuscle;
+
+  /// No description provided for @inbodyChartFat.
+  ///
+  /// In en, this message translates to:
+  /// **'Fat %'**
+  String get inbodyChartFat;
+
+  /// No description provided for @inbodyEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No InBody tests yet'**
+  String get inbodyEmptyTitle;
+
+  /// No description provided for @inbodyEmptyDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'When you take a test on the gym InBody device, or staff enter one, it will appear here.'**
+  String get inbodyEmptyDescription;
+
+  /// No description provided for @inbodyEmptyFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'No tests match this filter.'**
+  String get inbodyEmptyFilter;
+
+  /// No description provided for @inbodyDeviceBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Device'**
+  String get inbodyDeviceBadge;
+
+  /// No description provided for @inbodyManualBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Manual'**
+  String get inbodyManualBadge;
+
+  /// No description provided for @inbodyEnteredBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Entered by {name}'**
+  String inbodyEnteredBy(String name);
+
+  /// No description provided for @inbodyOpenPdf.
+  ///
+  /// In en, this message translates to:
+  /// **'Open result sheet'**
+  String get inbodyOpenPdf;
+
+  /// No description provided for @inbodyMoreFromDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'More from the device'**
+  String get inbodyMoreFromDevice;
+
+  /// No description provided for @inbodyBodyWater.
+  ///
+  /// In en, this message translates to:
+  /// **'Body water'**
+  String get inbodyBodyWater;
+
+  /// No description provided for @inbodyScore.
+  ///
+  /// In en, this message translates to:
+  /// **'InBody score'**
+  String get inbodyScore;
+
+  /// No description provided for @inbodyHeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Height'**
+  String get inbodyHeight;
+
+  /// No description provided for @inbodyBodyFatMass.
+  ///
+  /// In en, this message translates to:
+  /// **'Body fat mass'**
+  String get inbodyBodyFatMass;
+
+  /// No description provided for @inbodyDetailTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Test details'**
+  String get inbodyDetailTitle;
+
+  /// No description provided for @inbodyTestsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} tests'**
+  String inbodyTestsCount(int count);
+
+  /// No description provided for @inbodyUnitKg.
+  ///
+  /// In en, this message translates to:
+  /// **'kg'**
+  String get inbodyUnitKg;
+
+  /// No description provided for @inbodyUnitCm.
+  ///
+  /// In en, this message translates to:
+  /// **'cm'**
+  String get inbodyUnitCm;
+
+  /// No description provided for @inbodyUnitKcal.
+  ///
+  /// In en, this message translates to:
+  /// **'kcal'**
+  String get inbodyUnitKcal;
+
+  /// No description provided for @inbodyProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Progress'**
+  String get inbodyProgress;
+
+  /// No description provided for @inbodyHistorySection.
+  ///
+  /// In en, this message translates to:
+  /// **'All tests'**
+  String get inbodyHistorySection;
 
   /// No description provided for @bodyFatPercentage.
   ///
@@ -580,6 +778,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Are you sure you want to log out?'**
   String get confirmLogout;
+
+  /// No description provided for @confirmDeleteAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete your account? This action cannot be undone.'**
+  String get confirmDeleteAccount;
 
   /// No description provided for @confirmPassword.
   ///
@@ -874,6 +1078,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Delete account'**
   String get deleteAccount;
+
+  /// No description provided for @accountDeletedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Account deleted successfully'**
+  String get accountDeletedSuccess;
 
   /// No description provided for @deleteConfirmMember.
   ///
@@ -2306,8 +2516,50 @@ abstract class AppLocalizations {
   /// No description provided for @sandyAi.
   ///
   /// In en, this message translates to:
-  /// **'Sandy AI'**
+  /// **'Sandy'**
   String get sandyAi;
+
+  /// No description provided for @sandyAiSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your workout and nutrition assistant'**
+  String get sandyAiSubtitle;
+
+  /// No description provided for @sandyWelcomeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hi, I\'m Sandy'**
+  String get sandyWelcomeTitle;
+
+  /// No description provided for @sandyWelcomeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask me about workouts, nutrition, or your membership. You can also attach a lab result or an X-ray.'**
+  String get sandyWelcomeBody;
+
+  /// No description provided for @sandyToolbarNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New'**
+  String get sandyToolbarNew;
+
+  /// No description provided for @sandyToolbarHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get sandyToolbarHistory;
+
+  /// No description provided for @sandyToolbarFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Files'**
+  String get sandyToolbarFiles;
+
+  /// No description provided for @sandyCopyShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get sandyCopyShort;
 
   /// No description provided for @sandyAskMeHint.
   ///
@@ -2398,6 +2650,168 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Start chatting with Sandy and your conversations will appear here.'**
   String get sandyNoConversationsDescription;
+
+  /// No description provided for @sandyDocumentsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'You can also upload a lab result or an X-ray, and Sandy will explain it and keep it in your health files.'**
+  String get sandyDocumentsHint;
+
+  /// No description provided for @sandyUploadMedicalFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload a medical file'**
+  String get sandyUploadMedicalFile;
+
+  /// No description provided for @sandyUploadMedicalFileSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload a lab PDF or an X-ray/scan. Sandy explains it and refers you to a doctor when needed.'**
+  String get sandyUploadMedicalFileSubtitle;
+
+  /// No description provided for @sandyUploadFromGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a photo from gallery'**
+  String get sandyUploadFromGallery;
+
+  /// No description provided for @sandyUploadFromCamera.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a photo'**
+  String get sandyUploadFromCamera;
+
+  /// No description provided for @sandyUploadPdf.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload a PDF'**
+  String get sandyUploadPdf;
+
+  /// No description provided for @sandySendFileToSandy.
+  ///
+  /// In en, this message translates to:
+  /// **'Send file to Sandy'**
+  String get sandySendFileToSandy;
+
+  /// No description provided for @sandyMedicalConsent.
+  ///
+  /// In en, this message translates to:
+  /// **'This file is private to you and Sandy. Coaches and staff cannot see it. Sandy explains and refers — this is not a diagnosis. By continuing you agree to store a private summary on your profile.'**
+  String get sandyMedicalConsent;
+
+  /// No description provided for @sandyDocumentNoteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional note, e.g. I fell on my hand and it hurts'**
+  String get sandyDocumentNoteHint;
+
+  /// No description provided for @sandySendToSandy.
+  ///
+  /// In en, this message translates to:
+  /// **'Send to Sandy'**
+  String get sandySendToSandy;
+
+  /// No description provided for @sandyCopyMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy message'**
+  String get sandyCopyMessage;
+
+  /// No description provided for @sandyMessageCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Message copied'**
+  String get sandyMessageCopied;
+
+  /// No description provided for @sandyHealthFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'My health files'**
+  String get sandyHealthFiles;
+
+  /// No description provided for @sandyHealthFilesPrivacy.
+  ///
+  /// In en, this message translates to:
+  /// **'These files and summaries are private to you and Sandy. Coaches and staff cannot see them. Sandy explains and refers — this is not a diagnosis.'**
+  String get sandyHealthFilesPrivacy;
+
+  /// No description provided for @sandyNoHealthFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'No health files yet'**
+  String get sandyNoHealthFiles;
+
+  /// No description provided for @sandyNoHealthFilesDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload a lab result or X-ray from Sandy chat and it will appear here. You can delete any file at any time.'**
+  String get sandyNoHealthFilesDescription;
+
+  /// No description provided for @sandyDeleteDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete medical file'**
+  String get sandyDeleteDocument;
+
+  /// No description provided for @sandyDeleteDocumentConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'This file and Sandy\'s memory of it will be permanently deleted.'**
+  String get sandyDeleteDocumentConfirm;
+
+  /// No description provided for @sandyDocumentDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Medical file deleted'**
+  String get sandyDocumentDeleted;
+
+  /// No description provided for @sandyNotADiagnosis.
+  ///
+  /// In en, this message translates to:
+  /// **'This is safety guidance, not a diagnosis or treatment. See a doctor.'**
+  String get sandyNotADiagnosis;
+
+  /// No description provided for @sandyTrainingCautionBanner.
+  ///
+  /// In en, this message translates to:
+  /// **'Sandy advised pausing training for an area until a doctor clears it.'**
+  String get sandyTrainingCautionBanner;
+
+  /// No description provided for @sandyTrainingCautionShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Caution: pause training until a doctor check'**
+  String get sandyTrainingCautionShort;
+
+  /// No description provided for @sandyDocKindLab.
+  ///
+  /// In en, this message translates to:
+  /// **'Lab result'**
+  String get sandyDocKindLab;
+
+  /// No description provided for @sandyDocKindImaging.
+  ///
+  /// In en, this message translates to:
+  /// **'X-ray / scan'**
+  String get sandyDocKindImaging;
+
+  /// No description provided for @sandyDocKindReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Medical report'**
+  String get sandyDocKindReport;
+
+  /// No description provided for @sandyDocKindPrescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Prescription'**
+  String get sandyDocKindPrescription;
+
+  /// No description provided for @sandyDocKindOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Medical file'**
+  String get sandyDocKindOther;
 
   /// No description provided for @save.
   ///
@@ -2758,6 +3172,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Verification code'**
   String get verificationCode;
+
+  /// No description provided for @verifyIdentity.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify your identity'**
+  String get verifyIdentity;
 
   /// No description provided for @verificationCodeResent.
   ///

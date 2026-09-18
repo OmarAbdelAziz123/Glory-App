@@ -9,6 +9,7 @@ import '../../../../core/extensions/extensions.dart';
 import '../../../../core/models/otp_args.dart';
 import '../../../../core/models/questionnaire_args.dart';
 import '../../../../core/router/app_routes.dart';
+import '../../../../core/utils/onboarding_navigation.dart';
 import '../../../../features/onboarding/domain/entities/onboarding_prefill_entity.dart';
 import '../../../../core/widgets/widgets.dart';
 import '../cubits/create_password/create_password_cubit.dart';
@@ -120,6 +121,11 @@ final class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
                 context.read<UserProfileCubit>().setMember(member);
               }
               unawaited(context.read<UserProfileCubit>().fetchProfile());
+              if (member?.onboardingCompleted == true) {
+                unawaited(markOnboardingCompletedLocally());
+                context.go(AppRoutes.home);
+                return;
+              }
               context.go(
                 AppRoutes.subscriptionQuestionnaire,
                 extra: QuestionnaireScreenArgs(

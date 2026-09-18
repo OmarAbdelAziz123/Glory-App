@@ -46,4 +46,15 @@ abstract final class FallbackMessages {
 
   static String get invalidQrCode =>
       _isEnglish ? 'Invalid QR code' : 'رمز QR غير صالح';
+
+  static String get fileTooLarge => _isEnglish
+      ? 'File is too large. Maximum size is 15 MB.'
+      : 'حجم الملف كبير جداً. الحد الأقصى 15 ميجابايت.';
+
+  static String get unsupportedFileType => _isEnglish
+      ? 'Unsupported file. Please upload a PDF or an image.'
+      : 'نوع الملف غير مدعوم. ارفع ملف PDF أو صورة.';
+
+  static String get sandyUploadedFile =>
+      _isEnglish ? 'Uploaded a medical file' : 'تم رفع ملف طبي';
 }

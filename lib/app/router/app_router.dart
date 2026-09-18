@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/l10n/l10n_extension.dart';
 import '../../core/models/content_args.dart';
+import '../../core/models/delete_account_otp_args.dart';
 import '../../core/models/otp_args.dart';
 import '../../core/router/app_routes.dart';
 import '../../features/coach_chat/domain/entities/chat_entities.dart';
@@ -16,6 +17,7 @@ import '../../features/about/presentation/screens/who_we_are_screen.dart';
 import '../../features/home/presentation/screens/class_evaluation_screen.dart';
 import '../../features/workouts/presentation/screens/add_weight_screen.dart';
 import '../../features/auth/presentation/screens/create_password_screen.dart';
+import '../../features/auth/presentation/screens/delete_account_otp_screen.dart';
 import '../../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/otp_screen.dart';
@@ -26,12 +28,14 @@ import '../../features/subscription_questionnaire/presentation/screens/questionn
 import '../../../../core/models/questionnaire_args.dart';
 import '../../features/body_composition/presentation/screens/body_composition_screen.dart';
 import '../../features/body_composition/presentation/screens/size_measurements_screen.dart';
+import '../../features/inbody/presentation/screens/inbody_detail_screen.dart';
 import '../../features/bookings/presentation/screens/bookings_screen.dart';
 import '../../features/family/domain/entities/family_member_entity.dart';
 import '../../features/family/presentation/screens/add_family_member_screen.dart';
 import '../../features/family/presentation/screens/family_screen.dart';
 import '../../features/glory_ai/presentation/screens/glory_ai_screen.dart';
 import '../../features/glory_ai/presentation/screens/sandy_conversations_list_screen.dart';
+import '../../features/glory_ai/presentation/screens/sandy_health_files_screen.dart';
 import '../../features/home/presentation/screens/main_layout.dart';
 import '../../features/notifications/presentation/screens/notifications_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
@@ -169,6 +173,13 @@ final class AppRouter {
       name: 'profile',
       builder: (_, _) => const ProfileScreen(),
     ),
+    GoRoute(
+      path: AppRoutes.deleteAccountOtp,
+      name: 'deleteAccountOtp',
+      builder: (_, state) => DeleteAccountOtpScreen(
+        args: state.extra as DeleteAccountOtpArgs?,
+      ),
+    ),
 
     // ── Body Composition ──────────────────────────────────
     GoRoute(
@@ -180,6 +191,13 @@ final class AppRouter {
       path: AppRoutes.sizeMeasurements,
       name: 'sizeMeasurements',
       builder: (_, _) => const SizeMeasurementsScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.inbodyDetail,
+      name: 'inbodyDetail',
+      builder: (_, state) => InbodyDetailScreen(
+        testId: state.pathParameters['id'] ?? '',
+      ),
     ),
 
     // ── Subscriptions ────────────────────────────────────
@@ -208,6 +226,11 @@ final class AppRouter {
       path: AppRoutes.sandyConversations,
       name: 'sandyConversations',
       builder: (_, _) => const SandyConversationsListScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.sandyHealthFiles,
+      name: 'sandyHealthFiles',
+      builder: (_, _) => const SandyHealthFilesScreen(),
     ),
 
     // ── Coach Chat ────────────────────────────────────────

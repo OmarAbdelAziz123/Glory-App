@@ -21,6 +21,7 @@ final class MemberModel {
     required this.status,
     required this.source,
     this.emailVerifiedAt,
+    this.onboardingCompleted,
     required this.createdAt,
   });
 
@@ -45,5 +46,6 @@ final class MemberModel {
   final String status;
   final String source;
   final String? emailVerifiedAt;
+  final bool? onboardingCompleted;
   final String createdAt;
 }

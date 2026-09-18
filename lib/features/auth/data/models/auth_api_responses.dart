@@ -118,3 +118,17 @@ final class NotificationsApiResponse {
   final NotificationsModel? data;
   final String? message;
 }
+
+@JsonSerializable()
+final class MessageApiResponse {
+  const MessageApiResponse({
+    required this.success,
+    this.message,
+  });
+
+  factory MessageApiResponse.fromJson(Map<String, dynamic> json) =>
+      _$MessageApiResponseFromJson(json);
+
+  final bool success;
+  final String? message;
+}

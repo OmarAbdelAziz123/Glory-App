@@ -39,4 +39,21 @@ abstract class SandyApi {
   Future<SandyVoidApiResponse> deleteConversation(
     @Path('id') String conversationId,
   );
+
+  @POST(Endpoints.mobileSandyDocuments)
+  Future<SandyAnalyzeDocumentApiResponse> analyzeDocument(
+    @Body() SandyAnalyzeDocumentRequest body,
+  );
+
+  @GET(Endpoints.mobileSandyDocuments)
+  Future<SandyDocumentsApiResponse> getDocuments({
+    @Query('page') int page = 1,
+    @Query('limit') int limit = 20,
+  });
+
+  @GET(Endpoints.mobileSandyDocumentById)
+  Future<SandyDocumentApiResponse> getDocument(@Path('id') String documentId);
+
+  @DELETE(Endpoints.mobileSandyDocumentById)
+  Future<SandyVoidApiResponse> deleteDocument(@Path('id') String documentId);
 }
