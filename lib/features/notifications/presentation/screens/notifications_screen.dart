@@ -137,13 +137,10 @@ final class _NotificationsView extends StatelessWidget {
             }
 
             if (state.notifications.isEmpty) {
-              return Center(
-                child: Text(
-                  context.l10n.noNotifications,
-                  style: context.captionRegular.copyWith(
-                    color: AppColors.neutral500,
-                  ),
-                ),
+              return AppEmptyState(
+                icon: AppEmptyIcons.notifications,
+                title: context.l10n.noNotifications,
+                description: context.l10n.emptyNotificationsDescription,
               );
             }
 

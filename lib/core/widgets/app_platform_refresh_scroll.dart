@@ -12,11 +12,16 @@ final class AppPlatformRefreshScroll extends StatelessWidget {
     required this.onRefresh,
     required this.child,
     this.controller,
+    this.fillViewport = false,
   });
 
   final Future<void> Function() onRefresh;
   final Widget child;
   final ScrollController? controller;
+
+  /// When true, the child fills the remaining viewport so empty states
+  /// stay vertically centered while pull-to-refresh still works.
+  final bool fillViewport;
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +31,10 @@ final class AppPlatformRefreshScroll extends StatelessWidget {
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
           CupertinoSliverRefreshControl(onRefresh: onRefresh),
-          SliverToBoxAdapter(child: child),
+          if (fillViewport)
+            SliverFillRemaining(hasScrollBody: false, child: child)
+          else
+            SliverToBoxAdapter(child: child),
         ],
       );
     }
@@ -40,7 +48,11 @@ final class AppPlatformRefreshScroll extends StatelessWidget {
             controller: controller,
             physics: const AlwaysScrollableScrollPhysics(),
             child: ConstrainedBox(
-              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              constraints: BoxConstraints(
+                minHeight: constraints.maxHeight,
+                maxHeight:
+                    fillViewport ? constraints.maxHeight : double.infinity,
+              ),
               child: child,
             ),
           );

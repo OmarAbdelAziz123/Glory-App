@@ -151,14 +151,12 @@ final class _BookingsViewState extends State<_BookingsView> {
 
             if (state.isEmpty) {
               return AppPlatformRefreshScroll(
+                fillViewport: true,
                 onRefresh: refresh,
-                child: Center(
-                  child: Text(
-                    context.l10n.noBookingsCurrently,
-                    style: context.captionRegular.copyWith(
-                      color: AppColors.neutral500,
-                    ),
-                  ),
+                child: AppEmptyState(
+                  icon: AppEmptyIcons.bookings,
+                  title: context.l10n.emptyBookingsTitle,
+                  description: context.l10n.emptyBookingsDescription,
                 ),
               );
             }

@@ -582,6 +582,50 @@ class AppLocalizationsAr extends AppLocalizations {
   String get endDate => 'تاريخ الانتهاء';
 
   @override
+  String get emptyBookingsDescription => 'لما تحجز حصة، هتظهر مواعيدك هنا.';
+
+  @override
+  String get emptyBookingsTitle => 'لا توجد حجوزات بعد';
+
+  @override
+  String get emptyMeasurementsDescription =>
+      'بعد تسجيل قياسات جسمك، هتظهر هنا.';
+
+  @override
+  String get emptyMeasurementsTitle => 'لا توجد قياسات بعد';
+
+  @override
+  String get emptyNotificationsDescription =>
+      'لما يوصلك إشعار من النادي، هيظهر هنا.';
+
+  @override
+  String get emptyQrDescription =>
+      'ولّد كود QR من الزر بالأسفل للدخول إلى الجيم.';
+
+  @override
+  String get emptyQrExpiredDescription =>
+      'ولّد كود جديد من الزر بالأسفل للدخول إلى الجيم.';
+
+  @override
+  String get emptyQrExpiredTitle => 'انتهت صلاحية الكود';
+
+  @override
+  String get emptyQrTitle => 'لا يوجد كود دخول بعد';
+
+  @override
+  String get emptySubscriptionsDescription =>
+      'لما يتم تفعيل اشتراكك، هتظهر تفاصيله هنا.';
+
+  @override
+  String get emptySubscriptionsTitle => 'لا توجد اشتراكات بعد';
+
+  @override
+  String get emptyWorkoutsDescription => 'لما يضيف مدربك تمارين، هتظهر هنا.';
+
+  @override
+  String get emptyWorkoutsTitle => 'لا توجد تمارين بعد';
+
+  @override
   String get english => 'الإنجليزية';
 
   @override
@@ -758,6 +802,9 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get generateNewQrCode => 'توليد QR كود اخر';
+
+  @override
+  String get generateQrCode => 'توليد QR كود';
 
   @override
   String get getToKnowGloryGym => 'تعرف علي جلوري جيم';

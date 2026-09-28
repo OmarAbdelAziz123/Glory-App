@@ -176,26 +176,10 @@ final class _DocumentsEmptyView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(32),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Iconsax.document, size: 48, color: AppColors.primary700),
-          const SizedBox(height: 16),
-          Text(
-            context.l10n.sandyNoHealthFiles,
-            textAlign: TextAlign.center,
-            style: context.highlightBold.copyWith(color: AppColors.neutral900),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            context.l10n.sandyNoHealthFilesDescription,
-            textAlign: TextAlign.center,
-            style: context.captionRegular.copyWith(color: AppColors.neutral600),
-          ),
-        ],
-      ),
+    return AppEmptyState(
+      icon: AppEmptyIcons.documents,
+      title: context.l10n.sandyNoHealthFiles,
+      description: context.l10n.sandyNoHealthFilesDescription,
     );
   }
 }

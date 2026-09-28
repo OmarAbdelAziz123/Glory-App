@@ -9,6 +9,7 @@ import '../../../../core/l10n/l10n_extension.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_styles_extension.dart';
+import '../../../../core/widgets/app_empty_state.dart';
 import '../../../../core/widgets/app_entrance.dart';
 import '../../../../core/widgets/app_member_avatar.dart';
 import '../../../../core/widgets/app_primary_header.dart';
@@ -66,7 +67,8 @@ final class _CoachChatListContent extends StatelessWidget {
               }
 
               if (!state.isLoading && state.isEmpty) {
-                return _EmptyView(
+                return AppEmptyState(
+                  icon: AppEmptyIcons.coach,
                   title: context.l10n.coachChatNotAssignedTitle,
                   description: context.l10n.coachChatNotAssignedDescription,
                 );
@@ -265,67 +267,6 @@ final class _ConversationTileState extends State<_ConversationTile> {
                     ),
                   ],
                 ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-final class _EmptyView extends StatelessWidget {
-  const _EmptyView({
-    required this.title,
-    required this.description,
-  });
-
-  final String title;
-  final String description;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: AppEntrance(
-        child: Padding(
-          padding: const EdgeInsets.all(28),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 96,
-                height: 96,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: LinearGradient(
-                    colors: [
-                      AppColors.primary100,
-                      AppColors.primary200.withValues(alpha: 0.5),
-                    ],
-                  ),
-                ),
-                child: const Icon(
-                  Iconsax.messages_2,
-                  size: 44,
-                  color: AppColors.primary700,
-                ),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: context.highlightBold.copyWith(
-                  color: AppColors.neutral900,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                description,
-                textAlign: TextAlign.center,
-                style: context.captionRegular.copyWith(
-                  color: AppColors.neutral500,
-                  height: 1.55,
-                ),
               ),
             ],
           ),

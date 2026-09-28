@@ -136,6 +136,7 @@ final class _HomeBody extends StatelessWidget {
   Widget _tabContent(BuildContext context) {
     final qrState = context.watch<GymQrCubit>().state;
     final bookingsState = context.watch<BookingsListCubit>().state;
+    final workoutsState = context.watch<WorkoutsListCubit>().state;
     final locale = context.l10n.localeName;
 
     return switch (selectedTabIndex) {
@@ -146,10 +147,14 @@ final class _HomeBody extends StatelessWidget {
           secondsLeft: qrState.secondsLeft,
           isGenerating: qrState.isGenerating,
           canRegenerate: qrState.canRegenerate,
+          isExpired: qrState.status == GymQrStatus.expired,
+          isFirstGenerate: qrState.status == GymQrStatus.initial ||
+              (qrState.status == GymQrStatus.failure && qrState.qrToken == null),
           onGenerateQr: () => context.read<GymQrCubit>().generateQr(),
         ),
       1 => AppPlatformRefreshScroll(
           key: const ValueKey('home-tab-appointments'),
+          fillViewport: bookingsState.bookings.isEmpty,
           onRefresh: () => context.read<BookingsListCubit>().loadBookings(
                 refresh: true,
                 limit: 2,
@@ -170,6 +175,7 @@ final class _HomeBody extends StatelessWidget {
         ),
       _ => AppPlatformRefreshScroll(
           key: const ValueKey('home-tab-classes'),
+          fillViewport: workoutsState.workouts.isEmpty,
           onRefresh: () => context.read<WorkoutsListCubit>().loadWorkouts(
                 refresh: true,
                 limit: 1,

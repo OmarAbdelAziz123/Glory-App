@@ -234,18 +234,26 @@ final class _WorkoutCardsTab extends StatelessWidget {
           );
         }
 
-        final cards = state.isEmpty
-            ? <Widget>[
-                Center(
-                  child: Text(
-                    context.l10n.noWorkouts,
-                    style: context.captionRegular.copyWith(
-                      color: AppColors.neutral500,
-                    ),
+        if (state.isEmpty) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: AppPlatformRefreshScroll(
+                  fillViewport: true,
+                  onRefresh: refresh,
+                  child: AppEmptyState(
+                    icon: AppEmptyIcons.workouts,
+                    title: context.l10n.emptyWorkoutsTitle,
+                    description: context.l10n.emptyWorkoutsDescription,
                   ),
                 ),
-              ]
-            : state.workouts.asMap().entries.map((entry) {
+              ),
+            ],
+          );
+        }
+
+        final cards = state.workouts.asMap().entries.map((entry) {
                 final workout = entry.value;
                 final item = WorkoutUtils.toGroupClassItem(
                   workout,

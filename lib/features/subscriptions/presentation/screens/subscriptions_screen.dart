@@ -76,13 +76,10 @@ final class _SubscriptionsViewState extends State<_SubscriptionsView> {
           }
 
           if (state.isEmpty) {
-            return Center(
-              child: Text(
-                l10n.noData,
-                style: context.captionRegular.copyWith(
-                  color: AppColors.neutral500,
-                ),
-              ),
+            return AppEmptyState(
+              icon: AppEmptyIcons.subscriptions,
+              title: l10n.emptySubscriptionsTitle,
+              description: l10n.emptySubscriptionsDescription,
             );
           }
 

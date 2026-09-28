@@ -585,6 +585,52 @@ class AppLocalizationsEn extends AppLocalizations {
   String get endDate => 'End Date';
 
   @override
+  String get emptyBookingsDescription =>
+      'When you book a class, your appointments will appear here.';
+
+  @override
+  String get emptyBookingsTitle => 'No bookings yet';
+
+  @override
+  String get emptyMeasurementsDescription =>
+      'After your body measurements are recorded, they will appear here.';
+
+  @override
+  String get emptyMeasurementsTitle => 'No measurements yet';
+
+  @override
+  String get emptyNotificationsDescription =>
+      'When the gym sends you a notification, it will appear here.';
+
+  @override
+  String get emptyQrDescription =>
+      'Generate a QR code from the button below to check in at the gym.';
+
+  @override
+  String get emptyQrExpiredDescription =>
+      'Generate a new QR code from the button below to check in.';
+
+  @override
+  String get emptyQrExpiredTitle => 'Code expired';
+
+  @override
+  String get emptyQrTitle => 'No check-in code yet';
+
+  @override
+  String get emptySubscriptionsDescription =>
+      'When your membership is activated, it will appear here.';
+
+  @override
+  String get emptySubscriptionsTitle => 'No subscriptions yet';
+
+  @override
+  String get emptyWorkoutsDescription =>
+      'When your coach assigns workouts, they will appear here.';
+
+  @override
+  String get emptyWorkoutsTitle => 'No workouts yet';
+
+  @override
   String get english => 'English';
 
   @override
@@ -762,6 +808,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get generateNewQrCode => 'Generate new QR code';
+
+  @override
+  String get generateQrCode => 'Generate QR code';
 
   @override
   String get getToKnowGloryGym => 'Get to know Glory Gym';

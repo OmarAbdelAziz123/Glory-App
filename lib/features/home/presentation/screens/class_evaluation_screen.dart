@@ -85,13 +85,9 @@ final class _ClassEvaluationView extends StatelessWidget {
             }
 
             if (state.questions.isEmpty) {
-              return Center(
-                child: Text(
-                  context.l10n.noData,
-                  style: context.captionRegular.copyWith(
-                    color: AppColors.neutral500,
-                  ),
-                ),
+              return AppEmptyState(
+                icon: AppEmptyIcons.bookings,
+                title: context.l10n.noData,
               );
             }
 

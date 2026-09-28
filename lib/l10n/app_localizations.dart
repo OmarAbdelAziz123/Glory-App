@@ -1181,6 +1181,84 @@ abstract class AppLocalizations {
   /// **'End Date'**
   String get endDate;
 
+  /// No description provided for @emptyBookingsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'When you book a class, your appointments will appear here.'**
+  String get emptyBookingsDescription;
+
+  /// No description provided for @emptyBookingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No bookings yet'**
+  String get emptyBookingsTitle;
+
+  /// No description provided for @emptyMeasurementsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'After your body measurements are recorded, they will appear here.'**
+  String get emptyMeasurementsDescription;
+
+  /// No description provided for @emptyMeasurementsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No measurements yet'**
+  String get emptyMeasurementsTitle;
+
+  /// No description provided for @emptyNotificationsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'When the gym sends you a notification, it will appear here.'**
+  String get emptyNotificationsDescription;
+
+  /// No description provided for @emptyQrDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate a QR code from the button below to check in at the gym.'**
+  String get emptyQrDescription;
+
+  /// No description provided for @emptyQrExpiredDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate a new QR code from the button below to check in.'**
+  String get emptyQrExpiredDescription;
+
+  /// No description provided for @emptyQrExpiredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Code expired'**
+  String get emptyQrExpiredTitle;
+
+  /// No description provided for @emptyQrTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No check-in code yet'**
+  String get emptyQrTitle;
+
+  /// No description provided for @emptySubscriptionsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'When your membership is activated, it will appear here.'**
+  String get emptySubscriptionsDescription;
+
+  /// No description provided for @emptySubscriptionsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No subscriptions yet'**
+  String get emptySubscriptionsTitle;
+
+  /// No description provided for @emptyWorkoutsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'When your coach assigns workouts, they will appear here.'**
+  String get emptyWorkoutsDescription;
+
+  /// No description provided for @emptyWorkoutsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No workouts yet'**
+  String get emptyWorkoutsTitle;
+
   /// No description provided for @english.
   ///
   /// In en, this message translates to:
@@ -1522,6 +1600,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Generate new QR code'**
   String get generateNewQrCode;
+
+  /// No description provided for @generateQrCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate QR code'**
+  String get generateQrCode;
 
   /// No description provided for @getToKnowGloryGym.
   ///

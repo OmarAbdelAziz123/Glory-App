@@ -70,13 +70,10 @@ final class _BodyRecordsListViewState extends State<BodyRecordsListView> {
           }
 
           if (state.isEmpty) {
-            return Center(
-              child: Text(
-                l10n.noData,
-                style: context.captionRegular.copyWith(
-                  color: AppColors.neutral500,
-                ),
-              ),
+            return AppEmptyState(
+              icon: AppEmptyIcons.measurements,
+              title: l10n.emptyMeasurementsTitle,
+              description: l10n.emptyMeasurementsDescription,
             );
           }
 

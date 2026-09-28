@@ -209,34 +209,11 @@ final class _FamilyEmptyView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Iconsax.people,
-              size: 72,
-              color: AppColors.neutral300,
-            ),
-            const SizedBox(height: 20),
-            Text(
-              context.l10n.noFamilyMembers,
-              style: context.highlightBold.copyWith(color: AppColors.neutral900),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              context.l10n.familyAddMembersHint,
-              style: context.captionRegular.copyWith(color: AppColors.neutral500),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            AppButton(label: context.l10n.addNewMember, onPressed: onAdd),
-          ],
-        ),
-      ),
+    return AppEmptyState(
+      icon: AppEmptyIcons.family,
+      title: context.l10n.noFamilyMembers,
+      description: context.l10n.familyAddMembersHint,
+      action: AppButton(label: context.l10n.addNewMember, onPressed: onAdd),
     );
   }
 }

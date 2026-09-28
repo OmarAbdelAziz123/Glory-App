@@ -7,6 +7,7 @@ import '../../../../core/di/service_locator.dart';
 import '../../../../core/l10n/l10n_extension.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_styles_extension.dart';
+import '../../../../core/widgets/app_empty_state.dart';
 import '../../../../core/widgets/app_entrance.dart';
 import '../../../../core/widgets/app_scaffold.dart';
 import '../../domain/entities/chat_entities.dart';
@@ -180,8 +181,9 @@ final class _MessagesBody extends StatelessWidget {
     }
 
     if (!isLoading && state.messages.isEmpty) {
-      return _ThreadEmptyView(
-        message: context.l10n.coachChatStartConversation,
+      return AppEmptyState(
+        icon: AppEmptyIcons.chat,
+        title: context.l10n.coachChatStartConversation,
       );
     }
 
@@ -218,55 +220,6 @@ final class _MessagesBody extends StatelessWidget {
             child: _LoadMoreIndicator(),
           ),
       ],
-    );
-  }
-}
-
-final class _ThreadEmptyView extends StatelessWidget {
-  const _ThreadEmptyView({required this.message});
-
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: AppEntrance(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 88,
-                height: 88,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: LinearGradient(
-                    colors: [
-                      AppColors.primary100,
-                      AppColors.primary200.withValues(alpha: 0.6),
-                    ],
-                  ),
-                ),
-                child: const Icon(
-                  Iconsax.messages_2,
-                  size: 40,
-                  color: AppColors.primary600,
-                ),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                message,
-                textAlign: TextAlign.center,
-                style: context.captionRegular.copyWith(
-                  color: AppColors.neutral500,
-                  height: 1.5,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

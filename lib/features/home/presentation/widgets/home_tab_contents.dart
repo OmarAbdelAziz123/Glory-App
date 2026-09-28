@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:glory_gym/core/core.dart';
-import 'package:glory_gym/features/auth/presentation/cubits/user_profile/user_profile_cubit.dart';
 import 'package:glory_gym/features/bookings/domain/entities/booking_entity.dart';
 import 'package:glory_gym/features/bookings/presentation/widgets/booking_card.dart';
 import 'package:glory_gym/features/home/presentation/widgets/group_class_card.dart';
@@ -19,6 +18,8 @@ final class HomeGymRegistrationTabContent extends StatelessWidget {
     required this.secondsLeft,
     required this.isGenerating,
     required this.canRegenerate,
+    required this.isExpired,
+    required this.isFirstGenerate,
     required this.onGenerateQr,
   });
 
@@ -27,12 +28,15 @@ final class HomeGymRegistrationTabContent extends StatelessWidget {
   final int secondsLeft;
   final bool isGenerating;
   final bool canRegenerate;
+  final bool isExpired;
+  final bool isFirstGenerate;
   final VoidCallback onGenerateQr;
 
   @override
   Widget build(BuildContext context) {
     final showQr = hasQr && qrData != null;
     final secondsLabel = secondsLeft.clamp(0, 99).toString().padLeft(2, '0');
+    final l10n = context.l10n;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -49,12 +53,21 @@ final class HomeGymRegistrationTabContent extends StatelessWidget {
             ),
           )
         else
-          const Spacer(),
+          Expanded(
+            child: AppEmptyState(
+              icon: AppEmptyIcons.qr,
+              title: isExpired ? l10n.emptyQrExpiredTitle : l10n.emptyQrTitle,
+              description: isExpired
+                  ? l10n.emptyQrExpiredDescription
+                  : l10n.emptyQrDescription,
+              compact: true,
+            ),
+          ),
         if (showQr) ...[
           AppEntrance(
             delay: const Duration(milliseconds: 140),
             child: Text(
-              context.l10n.codeExpiresInSeconds(secondsLabel),
+              l10n.codeExpiresInSeconds(secondsLabel),
               textAlign: TextAlign.center,
               style: context.captionRegular.copyWith(
                 color: AppColors.neutral1000,
@@ -67,7 +80,9 @@ final class HomeGymRegistrationTabContent extends StatelessWidget {
           delay: Duration(milliseconds: showQr ? 200 : 80),
           offset: const Offset(0, 0.1),
           child: AppButton(
-            label: context.l10n.generateNewQrCode,
+            label: isFirstGenerate
+                ? l10n.generateQrCode
+                : l10n.generateNewQrCode,
             isLoading: isGenerating,
             onPressed: canRegenerate && !isGenerating ? onGenerateQr : null,
           ),
@@ -192,15 +207,14 @@ final class HomeAppointmentsTabContent extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         if (isLoading && bookings.isEmpty)
-          const Center(child: CircularProgressIndicator())
+          const Expanded(child: Center(child: CircularProgressIndicator()))
         else if (bookings.isEmpty)
-          AppEntrance(
-            delay: const Duration(milliseconds: 80),
-            child: Text(
-              context.l10n.noBookingsCurrently,
-              style:
-                  context.captionRegular.copyWith(color: AppColors.neutral500),
-              textAlign: TextAlign.center,
+          Expanded(
+            child: AppEmptyState(
+              icon: AppEmptyIcons.bookings,
+              title: context.l10n.emptyBookingsTitle,
+              description: context.l10n.emptyBookingsDescription,
+              compact: true,
             ),
           )
         else
@@ -242,7 +256,6 @@ final class HomeGroupClassesTabContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final profile = context.watch<UserProfileCubit>().state;
     final locale = context.l10n.localeName;
     final workoutsState = context.watch<WorkoutsListCubit>().state;
 
@@ -274,11 +287,10 @@ final class HomeGroupClassesTabContent extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         if (workoutsState.isLoading && workoutsState.workouts.isEmpty)
-          const Center(child: CircularProgressIndicator())
+          const Expanded(child: Center(child: CircularProgressIndicator()))
         else if (workoutsState.status == WorkoutsListStatus.failure &&
             workoutsState.workouts.isEmpty)
-          AppEntrance(
-            delay: const Duration(milliseconds: 80),
+          Expanded(
             child: Center(
               child: Text(
                 workoutsState.errorMessage ?? context.l10n.errorTryAgain,
@@ -287,15 +299,12 @@ final class HomeGroupClassesTabContent extends StatelessWidget {
             ),
           )
         else if (workoutsState.workouts.isEmpty)
-          AppEntrance(
-            delay: const Duration(milliseconds: 80),
-            child: Center(
-              child: Text(
-                context.l10n.noWorkouts,
-                style: context.captionRegular.copyWith(
-                  color: AppColors.neutral500,
-                ),
-              ),
+          Expanded(
+            child: AppEmptyState(
+              icon: AppEmptyIcons.workouts,
+              title: context.l10n.emptyWorkoutsTitle,
+              description: context.l10n.emptyWorkoutsDescription,
+              compact: true,
             ),
           )
         else

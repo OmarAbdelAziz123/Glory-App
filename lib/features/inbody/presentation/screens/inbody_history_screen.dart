@@ -11,6 +11,7 @@ import '../../../../core/l10n/l10n_extension.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_styles_extension.dart';
+import '../../../../core/widgets/app_empty_state.dart';
 import '../../../../core/widgets/app_entrance.dart';
 import '../../../../core/widgets/app_platform_refresh_scroll.dart';
 import '../../../../core/widgets/app_primary_header.dart';
@@ -130,9 +131,10 @@ final class _InbodyHistoryViewState extends State<_InbodyHistoryView>
   Future<void> _refresh() =>
       context.read<InbodyHistoryCubit>().load(refresh: true);
 
-  Widget _refreshable({required Widget child}) {
+  Widget _refreshable({required Widget child, bool fillViewport = false}) {
     return AppPlatformRefreshScroll(
       onRefresh: _refresh,
+      fillViewport: fillViewport,
       child: child,
     );
   }
@@ -167,6 +169,7 @@ final class _InbodyHistoryViewState extends State<_InbodyHistoryView>
 
     if (state.status == InbodyHistoryStatus.failure && state.isEmpty) {
       return _refreshable(
+        fillViewport: true,
         child: Center(
           child: Padding(
             padding: const EdgeInsets.all(28),
@@ -190,11 +193,11 @@ final class _InbodyHistoryViewState extends State<_InbodyHistoryView>
     if (state.summary?.isEmpty ?? state.tests.isEmpty && !state.hasDateFilter) {
       if (state.source == null && !state.hasDateFilter) {
         return _refreshable(
-          child: const Center(
-            child: Padding(
-              padding: EdgeInsets.all(28),
-              child: _EmptyState(),
-            ),
+          fillViewport: true,
+          child: AppEmptyState(
+            icon: AppEmptyIcons.inbody,
+            title: context.l10n.inbodyEmptyTitle,
+            description: context.l10n.inbodyEmptyDescription,
           ),
         );
       }
@@ -237,17 +240,10 @@ final class _InbodyHistoryViewState extends State<_InbodyHistoryView>
         if (state.tests.isEmpty)
           SliverFillRemaining(
             hasScrollBody: false,
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Text(
-                  context.l10n.inbodyEmptyFilter,
-                  textAlign: TextAlign.center,
-                  style: context.captionRegular.copyWith(
-                    color: AppColors.neutral500,
-                  ),
-                ),
-              ),
+            child: AppEmptyState(
+              icon: AppEmptyIcons.inbody,
+              title: context.l10n.inbodyEmptyFilter,
+              compact: true,
             ),
           )
         else
@@ -404,51 +400,6 @@ final class _SkeletonChartCard extends StatelessWidget {
             decoration: BoxDecoration(
               color: AppColors.neutral100,
               borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-final class _EmptyState extends StatelessWidget {
-  const _EmptyState();
-
-  @override
-  Widget build(BuildContext context) {
-    return AppEntrance(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 96,
-            height: 96,
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                colors: [AppColors.primary100, AppColors.primary200],
-              ),
-            ),
-            child: const Icon(
-              Iconsax.chart_2,
-              size: 42,
-              color: AppColors.primary800,
-            ),
-          ),
-          const SizedBox(height: 20),
-          Text(
-            context.l10n.inbodyEmptyTitle,
-            textAlign: TextAlign.center,
-            style: context.highlightBold.copyWith(color: AppColors.neutral900),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            context.l10n.inbodyEmptyDescription,
-            textAlign: TextAlign.center,
-            style: context.captionRegular.copyWith(
-              color: AppColors.neutral500,
-              height: 1.55,
             ),
           ),
         ],
