@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:glory_gym/core/core.dart';
-import 'package:glory_gym/core/utils/camera_permission_utils.dart';
-import 'package:glory_gym/features/checkin/presentation/cubits/qr_scan/qr_scan_cubit.dart';
-import 'package:glory_gym/features/checkin/presentation/screens/qr_scanner_screen.dart';
+import 'package:glory_gym/features/bookings/presentation/cubits/session_checkin_scan/session_checkin_scan_cubit.dart';
+import 'package:glory_gym/features/bookings/presentation/utils/pt_session_scan_flow.dart';
 import 'package:glory_gym/features/home/presentation/widgets/group_class_card.dart';
 import 'package:glory_gym/features/workouts/presentation/cubits/workouts_list/workouts_list_cubit.dart';
 import 'package:go_router/go_router.dart';
@@ -21,7 +20,7 @@ final class _WorkoutsScreenState extends State<WorkoutsScreen> {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (_) => sl<WorkoutsListCubit>()..loadWorkouts()),
-        BlocProvider(create: (_) => sl<QrScanCubit>()),
+        BlocProvider(create: (_) => sl<SessionCheckinScanCubit>()),
       ],
       child: const _WorkoutsBody(),
     );
@@ -66,47 +65,8 @@ final class _WorkoutsBodyState extends State<_WorkoutsBody> {
         context.l10n.individualSessions,
       ];
 
-  Future<void> _openQrScanner(BuildContext context) async {
-    final granted = await CameraPermissionUtils.ensureGranted(context);
-    if (!granted || !context.mounted) return;
-
-    final rawValue = await Navigator.of(context).push<String>(
-      MaterialPageRoute(builder: (_) => const QrScannerScreen()),
-    );
-
-    if (rawValue == null || !context.mounted) return;
-
-    final success = await context.read<QrScanCubit>().scan(rawValue);
-    if (!context.mounted) return;
-
-    if (success) {
-      final result = context.read<QrScanCubit>().state.result;
-      final days = result?.daysRemaining ?? 0;
-      AppSuccessSheet.show(
-        context,
-        title: context.l10n.individualSessions,
-        headline: context.l10n.qrScanSuccess,
-        highlightWord: context.l10n.successfully,
-        description: days > 0
-            ? context.l10n.subscriptionDaysRemainingWelcome('$days')
-            : context.l10n.qrScanSuccess,
-        buttonLabel: context.l10n.home,
-        badgeAsset:
-            'assets/images/svgs/success_when_create_anew_password_icon.svg',
-        onButtonPressed: () {
-          context.read<QrScanCubit>().reset();
-          Navigator.of(context).pop();
-        },
-      );
-      return;
-    }
-
-    final error = context.read<QrScanCubit>().state.errorMessage;
-    if (error != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error)),
-      );
-    }
+  void _openPtSessionScanner(BuildContext context) {
+    PtSessionScanFlow.openScannerAndSubmit(context);
   }
 
   @override
@@ -180,7 +140,7 @@ final class _WorkoutsBodyState extends State<_WorkoutsBody> {
                           key: const ValueKey('workouts-individual-sessions'),
                           scrollController: _scrollController,
                           showScanButton: true,
-                          onScanPressed: () => _openQrScanner(context),
+                          onScanPressed: () => _openPtSessionScanner(context),
                         ),
                 ),
               ),
@@ -207,7 +167,7 @@ final class _WorkoutCardsTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final locale = context.l10n.localeName;
-    final isScanning = context.watch<QrScanCubit>().state.isSubmitting;
+    final isScanning = context.watch<SessionCheckinScanCubit>().state.isSubmitting;
 
     return BlocBuilder<WorkoutsListCubit, WorkoutsListState>(
       builder: (context, state) {
@@ -279,10 +239,6 @@ final class _WorkoutCardsTab extends StatelessWidget {
                 );
               }).toList();
 
-        final hasPendingWorkout = state.workouts.any(
-          (workout) => WorkoutUtils.isPendingStatus(workout.status),
-        );
-
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -300,10 +256,10 @@ final class _WorkoutCardsTab extends StatelessWidget {
                 },
               ),
             ),
-            if (showScanButton && hasPendingWorkout) ...[
+            if (showScanButton) ...[
               const SizedBox(height: 16),
               AppButton(
-                label: context.l10n.scanQrCode,
+                label: context.l10n.ptScanSessionTitle,
                 isLoading: isScanning,
                 onPressed: isScanning ? null : onScanPressed,
               ),

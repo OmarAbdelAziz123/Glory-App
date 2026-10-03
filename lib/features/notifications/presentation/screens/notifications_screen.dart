@@ -100,6 +100,13 @@ final class _NotificationsView extends StatelessWidget {
     if (title.contains('inbody') || title.contains('إنبودي')) {
       if (!context.mounted) return;
       await context.push(AppRoutes.bodyComposition);
+      return;
+    }
+    if (title.contains('غذائي') ||
+        title.contains('nutrition plan') ||
+        title.contains('🥗')) {
+      if (!context.mounted) return;
+      await context.push(AppRoutes.myNutritionPlan);
     }
   }
 

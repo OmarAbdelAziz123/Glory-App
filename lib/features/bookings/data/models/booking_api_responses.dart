@@ -140,3 +140,51 @@ final class RateBookingRequest {
 
   Map<String, dynamic> toJson() => _$RateBookingRequestToJson(this);
 }
+
+@JsonSerializable()
+final class BookingRatingAnswerModel {
+  const BookingRatingAnswerModel({
+    required this.questionId,
+    required this.questionEn,
+    required this.questionAr,
+    required this.answer,
+  });
+
+  factory BookingRatingAnswerModel.fromJson(Map<String, dynamic> json) =>
+      _$BookingRatingAnswerModelFromJson(json);
+
+  final String questionId;
+  final String questionEn;
+  final String questionAr;
+  final int answer;
+}
+
+@JsonSerializable()
+final class BookingRatingModel {
+  const BookingRatingModel({
+    required this.bookingId,
+    required this.answers,
+  });
+
+  factory BookingRatingModel.fromJson(Map<String, dynamic> json) =>
+      _$BookingRatingModelFromJson(json);
+
+  final String bookingId;
+  final List<BookingRatingAnswerModel> answers;
+}
+
+@JsonSerializable()
+final class BookingRatingApiResponse {
+  const BookingRatingApiResponse({
+    required this.success,
+    this.data,
+    this.message,
+  });
+
+  factory BookingRatingApiResponse.fromJson(Map<String, dynamic> json) =>
+      _$BookingRatingApiResponseFromJson(json);
+
+  final bool success;
+  final BookingRatingModel? data;
+  final String? message;
+}

@@ -4,8 +4,17 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 
 import '../../../../core/core.dart';
 
+/// Camera scanner for codes the member reads (PT session check-in).
+/// Gym entry QR is generated on the home tab — do not reuse that flow here.
 final class QrScannerScreen extends StatefulWidget {
-  const QrScannerScreen({super.key});
+  const QrScannerScreen({
+    super.key,
+    this.title,
+    this.instruction,
+  });
+
+  final String? title;
+  final String? instruction;
 
   @override
   State<QrScannerScreen> createState() => _QrScannerScreenState();
@@ -45,7 +54,7 @@ final class _QrScannerScreenState extends State<QrScannerScreen> {
     return AppScaffold(
       backgroundColor: AppColors.neutral1000,
       appBar: AppPrimaryHeader(
-        title: context.l10n.scanQrCode,
+        title: widget.title ?? context.l10n.scanQrCode,
         showBack: true,
         centerTitle: true,
       ),
@@ -117,7 +126,7 @@ final class _QrScannerScreenState extends State<QrScannerScreen> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      context.l10n.pointCameraAtQr,
+                      widget.instruction ?? context.l10n.pointCameraAtQr,
                       style: context.captionRegular.copyWith(
                         color: AppColors.neutral700,
                         height: 1.4,

@@ -38,8 +38,10 @@ import '../../features/bookings/data/datasources/bookings_api.dart';
 import '../../features/bookings/data/datasources/bookings_remote_api_service.dart';
 import '../../features/bookings/data/repositories/bookings_repository_impl.dart';
 import '../../features/bookings/domain/repositories/bookings_repository.dart';
+import '../../features/bookings/presentation/cubits/booking_detail/booking_detail_cubit.dart';
 import '../../features/bookings/presentation/cubits/bookings_list/bookings_list_cubit.dart';
 import '../../features/bookings/presentation/cubits/class_evaluation/class_evaluation_cubit.dart';
+import '../../features/bookings/presentation/cubits/session_checkin_scan/session_checkin_scan_cubit.dart';
 import '../../features/body_composition/data/datasources/body_records_api.dart';
 import '../../features/body_composition/data/datasources/body_records_remote_api_service.dart';
 import '../../features/body_composition/data/repositories/body_composition_repository_impl.dart';
@@ -50,6 +52,12 @@ import '../../features/inbody/data/repositories/inbody_repository_impl.dart';
 import '../../features/inbody/domain/repositories/inbody_repository.dart';
 import '../../features/inbody/presentation/cubits/inbody_detail/inbody_detail_cubit.dart';
 import '../../features/inbody/presentation/cubits/inbody_history/inbody_history_cubit.dart';
+import '../../features/nutrition_plans/data/datasources/nutrition_plans_remote_api_service.dart';
+import '../../features/nutrition_plans/data/repositories/nutrition_plans_repository_impl.dart';
+import '../../features/nutrition_plans/domain/repositories/nutrition_plans_repository.dart';
+import '../../features/nutrition_plans/presentation/cubits/nutrition_plan_current/nutrition_plan_current_cubit.dart';
+import '../../features/nutrition_plans/presentation/cubits/nutrition_plan_detail/nutrition_plan_detail_cubit.dart';
+import '../../features/nutrition_plans/presentation/cubits/nutrition_plans_list/nutrition_plans_list_cubit.dart';
 import '../../features/subscriptions/data/datasources/subscriptions_api.dart';
 import '../../features/subscriptions/data/datasources/subscriptions_remote_api_service.dart';
 import '../../features/subscriptions/data/repositories/subscriptions_repository_impl.dart';
@@ -91,6 +99,7 @@ import '../../features/glory_ai/domain/repositories/sandy_repository.dart';
 import '../../features/glory_ai/presentation/cubits/sandy_conversations_list/sandy_conversations_list_cubit.dart';
 import '../../features/glory_ai/presentation/cubits/sandy_chat/sandy_chat_cubit.dart';
 import '../../features/glory_ai/presentation/cubits/sandy_documents/sandy_documents_cubit.dart';
+import '../../features/glory_ai/presentation/cubits/sandy_nudges/sandy_nudges_cubit.dart';
 import '../l10n/fallback_messages.dart';
 import '../network/api_client.dart';
 import '../network/endpoints.dart';
@@ -112,6 +121,7 @@ Future<void> setupServiceLocator() async {
   _registerBookings();
   _registerBodyComposition();
   _registerInbody();
+  _registerNutritionPlans();
   _registerSubscriptions();
   _registerNotifications();
   _registerWorkouts();
@@ -251,8 +261,14 @@ void _registerBookings() {
   );
 
   sl.registerFactory<BookingsListCubit>(() => BookingsListCubit(sl()));
+  sl.registerFactory<SessionCheckinScanCubit>(
+    () => SessionCheckinScanCubit(sl()),
+  );
   sl.registerFactoryParam<ClassEvaluationCubit, String, void>(
     (bookingId, _) => ClassEvaluationCubit(sl(), bookingId: bookingId),
+  );
+  sl.registerFactoryParam<BookingDetailCubit, String, void>(
+    (bookingId, _) => BookingDetailCubit(sl(), bookingId: bookingId),
   );
 }
 
@@ -282,6 +298,24 @@ void _registerInbody() {
   sl.registerFactory<InbodyHistoryCubit>(() => InbodyHistoryCubit(sl()));
   sl.registerFactoryParam<InbodyDetailCubit, String, void>(
     (testId, _) => InbodyDetailCubit(sl(), testId: testId),
+  );
+}
+
+void _registerNutritionPlans() {
+  sl.registerLazySingleton<NutritionPlansRemoteApiService>(
+    () => NutritionPlansRemoteApiService(sl()),
+  );
+  sl.registerLazySingleton<NutritionPlansRepository>(
+    () => NutritionPlansRepositoryImpl(sl()),
+  );
+  sl.registerFactory<NutritionPlanCurrentCubit>(
+    () => NutritionPlanCurrentCubit(sl()),
+  );
+  sl.registerFactory<NutritionPlansListCubit>(
+    () => NutritionPlansListCubit(sl()),
+  );
+  sl.registerFactoryParam<NutritionPlanDetailCubit, String, void>(
+    (planId, _) => NutritionPlanDetailCubit(sl(), planId: planId),
   );
 }
 
@@ -372,4 +406,5 @@ void _registerSandyAi() {
     () => SandyConversationsListCubit(sl(), sl()),
   );
   sl.registerFactory<SandyDocumentsCubit>(() => SandyDocumentsCubit(sl()));
+  sl.registerFactory<SandyNudgesCubit>(() => SandyNudgesCubit(sl()));
 }

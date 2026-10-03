@@ -21,6 +21,7 @@ final class ChatConversationEntity {
     this.lastMessageAt,
     required this.instructor,
     required this.unreadCount,
+    this.coachTypes = const [],
   });
 
   final String id;
@@ -30,6 +31,7 @@ final class ChatConversationEntity {
   final DateTime? lastMessageAt;
   final ChatParticipantEntity instructor;
   final int unreadCount;
+  final List<String> coachTypes;
 }
 
 final class ChatMessageEntity {

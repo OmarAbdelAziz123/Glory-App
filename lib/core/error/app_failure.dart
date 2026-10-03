@@ -30,3 +30,28 @@ final class ValidationFailure extends AppFailure {
   ValidationFailure([String? message])
       : super(message ?? FallbackMessages.validationFailed);
 }
+
+enum ScanBookingErrorKind {
+  invalidCode,
+  alreadyUsed,
+  expired,
+  notYourSession,
+  bookingState,
+  outstandingBalance,
+  unknown,
+}
+
+/// Failure from [POST /mobile/session-checkin/scan].
+final class ScanBookingFailure extends AppFailure {
+  ScanBookingFailure({
+    required this.kind,
+    String? message,
+  }) : super(message ?? FallbackMessages.errorTryAgain);
+
+  final ScanBookingErrorKind kind;
+
+  bool get preferServerMessage =>
+      kind == ScanBookingErrorKind.outstandingBalance ||
+      kind == ScanBookingErrorKind.bookingState ||
+      kind == ScanBookingErrorKind.unknown;
+}

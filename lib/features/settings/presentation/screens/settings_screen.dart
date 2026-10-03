@@ -21,6 +21,7 @@ import '../../../auth/presentation/cubits/logout/logout_cubit.dart';
 import '../../../auth/presentation/cubits/user_profile/user_profile_cubit.dart';
 import '../../../coach_chat/data/datasources/coach_chat_socket_service.dart';
 import '../../../coach_chat/presentation/cubits/coach_chat_unread/coach_chat_unread_cubit.dart';
+import '../../../glory_ai/presentation/cubits/sandy_nudges/sandy_nudges_cubit.dart';
 
 final class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -91,6 +92,7 @@ final class _SettingsScreenState extends State<SettingsScreen> {
       providers: [
         BlocProvider(create: (_) => sl<LogoutCubit>()),
         BlocProvider(create: (_) => sl<DeleteAccountCubit>()),
+        BlocProvider(create: (_) => sl<SandyNudgesCubit>()..load()),
       ],
       child: MultiBlocListener(
         listeners: [
@@ -142,6 +144,18 @@ final class _SettingsScreenState extends State<SettingsScreen> {
                 previous.errorMessage != current.errorMessage &&
                 current.errorMessage != null &&
                 current.status == UserProfileStatus.loaded,
+            listener: (context, state) {
+              final message = state.errorMessage;
+              if (message == null) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(message)),
+              );
+            },
+          ),
+          BlocListener<SandyNudgesCubit, SandyNudgesState>(
+            listenWhen: (previous, current) =>
+                previous.errorMessage != current.errorMessage &&
+                current.errorMessage != null,
             listener: (context, state) {
               final message = state.errorMessage;
               if (message == null) return;
@@ -225,6 +239,11 @@ final class _SettingsScreenState extends State<SettingsScreen> {
         onTap: () => context.push(AppRoutes.bodyComposition),
       ),
       _SettingsTile(
+        iconData: Iconsax.cup,
+        label: l10n.myNutritionPlan,
+        onTap: () => context.push(AppRoutes.myNutritionPlan),
+      ),
+      _SettingsTile(
         iconAsset: 'person_icon.svg',
         label: l10n.sizeMeasurements,
         onTap: () => context.push(AppRoutes.sizeMeasurements),
@@ -233,6 +252,11 @@ final class _SettingsScreenState extends State<SettingsScreen> {
         iconAsset: 'bookings_icon.svg',
         label: l10n.subscriptions,
         onTap: () => context.push(AppRoutes.subscriptions),
+      ),
+      _SettingsTile(
+        iconAsset: 'bookings_icon.svg',
+        label: l10n.myPrivateSessions,
+        onTap: () => context.push(AppRoutes.privateSessions),
       ),
       _SettingsTile(
         iconAsset: 'items_family_icon.svg',
@@ -248,6 +272,23 @@ final class _SettingsScreenState extends State<SettingsScreen> {
                 ? _UnreadBadge(count: chatUnread.count)
                 : null,
             onTap: () => context.push(AppRoutes.coachChat),
+          );
+        },
+      ),
+      BlocBuilder<SandyNudgesCubit, SandyNudgesState>(
+        builder: (context, nudges) {
+          return _SettingsTile(
+            iconData: Iconsax.message_notif,
+            label: l10n.sandyNudgesTitle,
+            subtitle: l10n.sandyNudgesSubtitle,
+            showChevron: false,
+            trailing: _SettingsSwitchTrailing(
+              value: nudges.enabled,
+              isLoading: nudges.isLoading || nudges.isUpdating,
+              onChanged: (enabled) => context
+                  .read<SandyNudgesCubit>()
+                  .setEnabled(enabled),
+            ),
           );
         },
       ),
@@ -360,9 +401,11 @@ final class _SettingsTile extends StatelessWidget {
     this.iconAsset,
     this.iconData,
     required this.label,
+    this.subtitle,
     this.trailing,
     this.onTap,
     this.isDestructive = false,
+    this.showChevron = true,
   }) : assert(
           iconAsset != null || iconData != null,
           'Provide either iconAsset or iconData',
@@ -371,9 +414,11 @@ final class _SettingsTile extends StatelessWidget {
   final String? iconAsset;
   final IconData? iconData;
   final String label;
+  final String? subtitle;
   final Widget? trailing;
   final VoidCallback? onTap;
   final bool isDestructive;
+  final bool showChevron;
 
   @override
   Widget build(BuildContext context) {
@@ -396,18 +441,34 @@ final class _SettingsTile extends StatelessWidget {
               ),
             const SizedBox(width: 12),
             Expanded(
-              child: Text(
-                label,
-                style: context.highlightStandard.copyWith(color: color),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: context.highlightStandard.copyWith(color: color),
+                  ),
+                  if (subtitle != null) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle!,
+                      style: context.captionRegular.copyWith(
+                        color: AppColors.neutral500,
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
             if (trailing != null) ...[const SizedBox(width: 12), trailing!],
-            const SizedBox(width: 8),
-            Icon(
-              Icons.arrow_forward_ios,
-              size: 16,
-              color: isDestructive ? AppColors.red : AppColors.neutral1000,
-            ),
+            if (showChevron) ...[
+              const SizedBox(width: 8),
+              Icon(
+                Icons.arrow_forward_ios,
+                size: 16,
+                color: isDestructive ? AppColors.red : AppColors.neutral1000,
+              ),
+            ],
           ],
         ),
       ),
@@ -556,6 +617,32 @@ final class _UnreadBadge extends StatelessWidget {
           color: AppColors.white,
           fontWeight: FontWeight.w700,
         ),
+      ),
+    );
+  }
+}
+
+final class _SettingsSwitchTrailing extends StatelessWidget {
+  const _SettingsSwitchTrailing({
+    required this.value,
+    required this.onChanged,
+    this.isLoading = false,
+  });
+
+  final bool value;
+  final ValueChanged<bool> onChanged;
+  final bool isLoading;
+
+  @override
+  Widget build(BuildContext context) {
+    return Transform.scale(
+      scale: 0.85,
+      child: Switch(
+        value: value,
+        onChanged: isLoading ? null : onChanged,
+        activeThumbColor: AppColors.primary,
+        activeTrackColor: AppColors.primary300,
+        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
     );
   }

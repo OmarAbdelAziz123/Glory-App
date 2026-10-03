@@ -1,9 +1,7 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-
 import '../../../../core/di/service_locator.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../../core/models/otp_args.dart';

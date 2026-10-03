@@ -149,4 +149,11 @@ final class SandyRepositoryImpl implements SandyRepository {
   @override
   Future<Result<void>> deleteDocument(String documentId) =>
       _remote.deleteDocument(documentId);
+
+  @override
+  Future<Result<bool>> getNudgesEnabled() => _remote.getNudgesEnabled();
+
+  @override
+  Future<Result<bool>> setNudgesEnabled({required bool enabled}) =>
+      _remote.setNudgesEnabled(enabled: enabled);
 }

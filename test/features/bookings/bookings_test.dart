@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:glory_gym/core/error/app_failure.dart';
 import 'package:glory_gym/core/result/result.dart';
+import 'package:glory_gym/l10n/app_localizations_ar.dart';
 import 'package:glory_gym/core/utils/booking_utils.dart';
 import 'package:glory_gym/features/bookings/data/mappers/booking_mappers.dart';
 import 'package:glory_gym/features/bookings/data/models/booking_api_responses.dart';
@@ -108,6 +108,24 @@ final class _FakeBookingsRepository implements BookingsRepository {
           }).toResultEntity(),
     );
   }
+
+  @override
+  Future<Result<BookingRatingEntity>> getBookingRating(String bookingId) async {
+    return Success(
+      BookingRatingEntity(
+        bookingId: bookingId,
+        answers: const [],
+      ),
+    );
+  }
+
+  @override
+  Future<Result<BookingEntity>> scanSessionCheckin(String token) async {
+    if (bookings.isEmpty) {
+      return Success(_bookingEntityFromJson(bookingCheckedInJson));
+    }
+    return Success(bookings.first);
+  }
 }
 
 void main() {
@@ -144,15 +162,22 @@ void main() {
   });
 
   group('BookingUtils', () {
+    late AppLocalizationsAr l10n;
+
+    setUp(() {
+      l10n = AppLocalizationsAr();
+    });
+
     test('localizes booking type labels', () {
-      expect(BookingUtils.typeLabel('PT'), 'تدريب شخصي');
-      expect(BookingUtils.typeLabel('CLASS'), 'حصة جماعية');
+      expect(BookingUtils.typeLabel(l10n, 'PT'), 'تدريب شخصي');
+      expect(BookingUtils.typeLabel(l10n, 'CLASS'), 'حصة جماعية');
     });
 
     test('maps entity flags to booking card item', () {
       final entity = _bookingEntityFromJson(bookingJson);
       final item = BookingUtils.toBookingItem(
         entity,
+        l10n: l10n,
         locale: 'ar',
         onCheckIn: () {},
         onCancel: () {},

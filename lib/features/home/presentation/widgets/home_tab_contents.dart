@@ -165,6 +165,8 @@ final class HomeAppointmentsTabContent extends StatelessWidget {
     required this.isLoading,
     this.onViewAll,
     this.onCheckIn,
+    this.onScanSessionQr,
+    this.onOpenDetail,
     this.onCancel,
     this.onEvaluate,
   });
@@ -174,6 +176,8 @@ final class HomeAppointmentsTabContent extends StatelessWidget {
   final bool isLoading;
   final VoidCallback? onViewAll;
   final void Function(String id)? onCheckIn;
+  final VoidCallback? onScanSessionQr;
+  final void Function(String id)? onOpenDetail;
   final void Function(String id)? onCancel;
   final void Function(String id)? onEvaluate;
 
@@ -229,6 +233,11 @@ final class HomeAppointmentsTabContent extends StatelessWidget {
                     entry.value,
                     l10n: context.l10n,
                     locale: locale,
+                    onTap: () => onOpenDetail?.call(entry.value.id),
+                    onScanSessionQr: entry.value.isPrivateTraining &&
+                            entry.value.canCheckIn
+                        ? onScanSessionQr
+                        : null,
                     onCheckIn: entry.value.canCheckIn
                         ? () => onCheckIn?.call(entry.value.id)
                         : null,

@@ -1102,6 +1102,92 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notificationsAlt => 'Notifications';
 
   @override
+  String get myNutritionPlan => 'My nutrition plan';
+
+  @override
+  String get nutritionPlanEmptyTitle => 'No nutrition plan yet';
+
+  @override
+  String get nutritionPlanEmptyDescription =>
+      'After your InBody scan, your coach will prepare your nutrition plan.';
+
+  @override
+  String get nutritionPlanHistory => 'Previous plans';
+
+  @override
+  String get nutritionPlanHistoryEmptyTitle => 'No approved plans yet';
+
+  @override
+  String get nutritionPlanDetail => 'Nutrition plan';
+
+  @override
+  String get nutritionPlanAskSandy => 'Ask Sandy about it';
+
+  @override
+  String get nutritionPlanSummary => 'Summary';
+
+  @override
+  String get nutritionPlanDailyCalories => 'kcal / day';
+
+  @override
+  String get nutritionPlanProtein => 'Protein';
+
+  @override
+  String get nutritionPlanCarbs => 'Carbs';
+
+  @override
+  String get nutritionPlanFat => 'Fat';
+
+  @override
+  String get nutritionPlanWater => 'Water';
+
+  @override
+  String nutritionPlanWaterLiters(String liters) {
+    return '$liters L / day';
+  }
+
+  @override
+  String nutritionPlanMacroGrams(int grams) {
+    return '$grams g';
+  }
+
+  @override
+  String get nutritionPlanMeals => 'Meals';
+
+  @override
+  String get nutritionPlanGuidelines => 'Tips';
+
+  @override
+  String get nutritionPlanAvoid => 'Avoid';
+
+  @override
+  String get nutritionPlanCoachNote => 'Coach note';
+
+  @override
+  String get nutritionPlanCoach => 'Coach';
+
+  @override
+  String get nutritionPlanInbodyTestDate => 'InBody test';
+
+  @override
+  String get nutritionPlanApprovedOn => 'Approved';
+
+  @override
+  String get nutritionPlanGoalFatLoss => 'Fat loss';
+
+  @override
+  String get nutritionPlanGoalMuscleGain => 'Muscle gain';
+
+  @override
+  String get nutritionPlanGoalRecomposition => 'Body recomposition';
+
+  @override
+  String get nutritionPlanGoalMaintenance => 'Maintenance';
+
+  @override
+  String get nutritionPlanGoalUnknown => 'Nutrition goal';
+
+  @override
   String get nutrition => 'Nutrition';
 
   @override
@@ -1195,6 +1281,47 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get personalTraining => 'Personal training';
+
+  @override
+  String get myPrivateSessions => 'My private sessions';
+
+  @override
+  String get sessionDetails => 'Session details';
+
+  @override
+  String get contactPtCoach => 'Chat with your PT coach';
+
+  @override
+  String get viewSessionRating => 'View session rating';
+
+  @override
+  String get emptyPrivateSessionsTitle => 'No private sessions yet';
+
+  @override
+  String get emptyPrivateSessionsDescription =>
+      'When you book a personal training session, it will appear here.';
+
+  @override
+  String get ptScanSessionTitle => 'Scan session QR';
+
+  @override
+  String get ptScanCoachScreenHint =>
+      'Point your camera at the coach\'s screen — not a printed code.';
+
+  @override
+  String get ptScanInvalidCode =>
+      'Invalid code — ask your coach to show a new one.';
+
+  @override
+  String get ptScanAlreadyUsed =>
+      'This code was already used — if you didn\'t check in, speak to your coach.';
+
+  @override
+  String get ptScanExpired =>
+      'This code expired — ask your coach to show it again.';
+
+  @override
+  String get ptScanNotYourSession => 'This session isn\'t yours.';
 
   @override
   String get phaseFour => 'Phase four';
@@ -1335,6 +1462,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sampleDateMay2026 => '1 May 2026';
+
+  @override
+  String get sandyNudgesTitle => 'Messages from Sandy';
+
+  @override
+  String get sandyNudgesSubtitle =>
+      'Sandy can message me with reminders and encouragement';
 
   @override
   String get sandyAi => 'Sandy';

@@ -53,3 +53,19 @@ extension AssessmentQuestionModelX on AssessmentQuestionModel {
         sortOrder: sortOrder,
       );
 }
+
+extension BookingRatingModelX on BookingRatingModel {
+  BookingRatingEntity toEntity() => BookingRatingEntity(
+        bookingId: bookingId,
+        answers: answers
+            .map(
+              (a) => BookingRatingAnswerEntity(
+                questionId: a.questionId,
+                questionAr: a.questionAr,
+                questionEn: a.questionEn,
+                answer: a.answer,
+              ),
+            )
+            .toList(),
+      );
+}

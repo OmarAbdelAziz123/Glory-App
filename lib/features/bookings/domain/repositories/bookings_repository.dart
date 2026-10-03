@@ -21,4 +21,9 @@ abstract interface class BookingsRepository {
     required String bookingId,
     required Map<String, int> answers,
   });
+
+  Future<Result<BookingRatingEntity>> getBookingRating(String bookingId);
+
+  /// Member scans the coach's PT session QR at the studio.
+  Future<Result<BookingEntity>> scanSessionCheckin(String token);
 }

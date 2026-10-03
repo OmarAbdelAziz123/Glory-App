@@ -5,6 +5,9 @@ import 'package:glory_gym/core/utils/greeting_utils.dart';
 import 'package:glory_gym/features/auth/presentation/cubits/user_profile/user_profile_cubit.dart';
 import 'package:glory_gym/features/bookings/presentation/bookings_refresh_notifier.dart';
 import 'package:glory_gym/features/bookings/presentation/cubits/bookings_list/bookings_list_cubit.dart';
+import 'package:glory_gym/features/bookings/presentation/cubits/session_checkin_scan/session_checkin_scan_cubit.dart';
+import 'package:glory_gym/features/bookings/presentation/utils/booking_check_in_ui.dart';
+import 'package:glory_gym/features/bookings/presentation/utils/pt_session_scan_flow.dart';
 import 'package:glory_gym/features/checkin/presentation/cubits/gym_qr/gym_qr_cubit.dart';
 import 'package:glory_gym/features/home/presentation/widgets/home_tab_contents.dart';
 import 'package:glory_gym/features/notifications/presentation/cubits/notifications_unread/notifications_unread_cubit.dart';
@@ -45,6 +48,7 @@ final class _HomeScreenState extends State<HomeScreen> {
         BlocProvider(
           create: (_) => sl<WorkoutsListCubit>()..loadWorkouts(limit: 1),
         ),
+        BlocProvider(create: (_) => sl<SessionCheckinScanCubit>()),
       ],
       child: Builder(
         builder: (providerContext) {
@@ -78,21 +82,15 @@ final class _HomeScreenState extends State<HomeScreen> {
                   final result = state.lastCheckInResult;
                   if (result == null) return;
 
-                  AppSuccessSheet.show(
+                  final canRate = state.bookings
+                      .any((b) => b.id == result.bookingId && b.canRate);
+
+                  BookingCheckInUi.showSuccessSheet(
                     context,
-                    title: context.l10n.trainingCheckIn,
-                    headline: context.l10n.classCheckInSuccess,
-                    highlightWord: context.l10n.successfully,
-                    description:
-                        '${context.l10n.checkinClassWelcomePrefix(result.packageNameAr)}'
-                        '${context.l10n.checkinClassWelcomeSuffix(result.instructorName, '${result.remainingSessions}')}',
-                    buttonLabel: context.l10n.home,
-                    badgeAsset:
-                        'assets/images/svgs/success_when_create_anew_password_icon.svg',
-                    onButtonPressed: () {
-                      context.read<BookingsListCubit>().clearCheckInResult();
-                      Navigator.of(context).pop();
-                    },
+                    result: result,
+                    offerRating: canRate,
+                    onDismiss: () =>
+                        context.read<BookingsListCubit>().clearCheckInResult(),
                   );
                 },
               ),
@@ -170,6 +168,15 @@ final class _HomeBody extends StatelessWidget {
             onEvaluate: (id) => context.push(
               AppRoutes.classEvaluation,
               extra: id,
+            ),
+            onScanSessionQr: () => PtSessionScanFlow.openScannerAndSubmit(
+              context,
+              onBookingUpdated: () => context
+                  .read<BookingsListCubit>()
+                  .loadBookings(refresh: true, limit: 2),
+            ),
+            onOpenDetail: (id) => context.push(
+              AppRoutes.bookingDetail.replaceFirst(':id', id),
             ),
           ),
         ),

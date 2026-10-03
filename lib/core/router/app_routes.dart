@@ -12,6 +12,9 @@ abstract final class AppRoutes {
   // ── Main (Shell) ──────────────────────────────────────
   static const String home = '/home';
   static const String bookings = '/bookings';
+  static const String privateSessions = '/private-sessions';
+  static const String bookingDetail = '/bookings/:id';
+  static const String bookingRating = '/booking-rating';
   static const String gloryAi = '/glory-ai';
   static const String workouts = '/workouts';
   static const String settings = '/settings';
@@ -28,6 +31,11 @@ abstract final class AppRoutes {
   static const String bodyComposition = '/body-composition';
   static const String sizeMeasurements = '/body-composition/measurements';
   static const String inbodyDetail = '/body-composition/tests/:id';
+
+  // ── Nutrition plans ───────────────────────────────────
+  static const String myNutritionPlan = '/nutrition-plan';
+  static const String nutritionPlansHistory = '/nutrition-plans';
+  static const String nutritionPlanDetail = '/nutrition-plans/:id';
 
   // ── Subscriptions ────────────────────────────────────
   static const String subscriptions = '/subscriptions';

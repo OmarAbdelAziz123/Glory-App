@@ -70,6 +70,24 @@ final class BookingsRepositoryImpl implements BookingsRepository {
   }
 
   @override
+  Future<Result<BookingRatingEntity>> getBookingRating(String bookingId) async {
+    final result = await _remote.getBookingRating(bookingId);
+    return switch (result) {
+      Success(:final data) => Success(data.toEntity()),
+      Failure(:final failure) => Failure(failure),
+    };
+  }
+
+  @override
+  Future<Result<BookingEntity>> scanSessionCheckin(String token) async {
+    final result = await _remote.scanSessionCheckin(token);
+    return switch (result) {
+      Success(:final data) => Success(data.toEntity()),
+      Failure(:final failure) => Failure(failure),
+    };
+  }
+
+  @override
   Future<Result<BookingCheckInResultEntity>> rateBooking({
     required String bookingId,
     required Map<String, int> answers,

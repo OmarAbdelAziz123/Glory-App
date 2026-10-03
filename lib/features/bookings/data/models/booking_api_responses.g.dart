@@ -147,3 +147,55 @@ RateBookingRequest _$RateBookingRequestFromJson(Map<String, dynamic> json) =>
 
 Map<String, dynamic> _$RateBookingRequestToJson(RateBookingRequest instance) =>
     <String, dynamic>{'answers': instance.answers};
+
+BookingRatingAnswerModel _$BookingRatingAnswerModelFromJson(
+  Map<String, dynamic> json,
+) => BookingRatingAnswerModel(
+  questionId: json['questionId'] as String,
+  questionEn: json['questionEn'] as String,
+  questionAr: json['questionAr'] as String,
+  answer: (json['answer'] as num).toInt(),
+);
+
+Map<String, dynamic> _$BookingRatingAnswerModelToJson(
+  BookingRatingAnswerModel instance,
+) => <String, dynamic>{
+  'questionId': instance.questionId,
+  'questionEn': instance.questionEn,
+  'questionAr': instance.questionAr,
+  'answer': instance.answer,
+};
+
+BookingRatingModel _$BookingRatingModelFromJson(Map<String, dynamic> json) =>
+    BookingRatingModel(
+      bookingId: json['bookingId'] as String,
+      answers: (json['answers'] as List<dynamic>)
+          .map(
+            (e) => BookingRatingAnswerModel.fromJson(e as Map<String, dynamic>),
+          )
+          .toList(),
+    );
+
+Map<String, dynamic> _$BookingRatingModelToJson(BookingRatingModel instance) =>
+    <String, dynamic>{
+      'bookingId': instance.bookingId,
+      'answers': instance.answers,
+    };
+
+BookingRatingApiResponse _$BookingRatingApiResponseFromJson(
+  Map<String, dynamic> json,
+) => BookingRatingApiResponse(
+  success: json['success'] as bool,
+  data: json['data'] == null
+      ? null
+      : BookingRatingModel.fromJson(json['data'] as Map<String, dynamic>),
+  message: json['message'] as String?,
+);
+
+Map<String, dynamic> _$BookingRatingApiResponseToJson(
+  BookingRatingApiResponse instance,
+) => <String, dynamic>{
+  'success': instance.success,
+  'data': instance.data,
+  'message': instance.message,
+};

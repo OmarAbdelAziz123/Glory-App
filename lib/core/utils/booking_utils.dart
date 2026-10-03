@@ -38,10 +38,15 @@ abstract final class BookingUtils {
     required AppLocalizations l10n,
     required String locale,
     VoidCallback? onCheckIn,
+    VoidCallback? onScanSessionQr,
     VoidCallback? onCancel,
     VoidCallback? onEvaluate,
+    VoidCallback? onTap,
   }) {
     final isCheckedIn = booking.checkedInAt != null;
+
+    final showSessionScan =
+        booking.isPrivateTraining && booking.canCheckIn && onScanSessionQr != null;
 
     return BookingItem(
       packageName: packageName(booking, locale: locale),
@@ -53,9 +58,12 @@ abstract final class BookingUtils {
       canCancel: booking.canCancel,
       canRate: booking.canRate,
       isCheckedIn: isCheckedIn,
+      showSessionScan: showSessionScan,
       onCheckIn: booking.canCheckIn ? onCheckIn : null,
+      onScanSessionQr: showSessionScan ? onScanSessionQr : null,
       onCancel: booking.canCancel ? onCancel : null,
       onEvaluate: booking.canRate ? onEvaluate : null,
+      onTap: onTap,
     );
   }
 

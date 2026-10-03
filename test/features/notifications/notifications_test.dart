@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:glory_gym/core/result/result.dart';
+import 'package:glory_gym/l10n/app_localizations_ar.dart';
 import 'package:glory_gym/core/utils/notification_utils.dart';
 import 'package:glory_gym/features/notifications/data/mappers/notification_mappers.dart';
 import 'package:glory_gym/features/notifications/data/models/notification_model.dart';
@@ -83,7 +84,10 @@ void main() {
         createdAt: DateTime.now(),
       );
 
-      final groups = NotificationUtils.groupByDate([entity]);
+      final groups = NotificationUtils.groupByDate(
+        AppLocalizationsAr(),
+        [entity],
+      );
 
       expect(groups, hasLength(1));
       expect(groups.first.label, 'اليوم');

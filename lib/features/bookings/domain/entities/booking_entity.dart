@@ -74,6 +74,42 @@ final class BookingCheckInResultEntity {
   final int remainingSessions;
 }
 
+final class BookingRatingAnswerEntity {
+  const BookingRatingAnswerEntity({
+    required this.questionId,
+    required this.questionAr,
+    required this.questionEn,
+    required this.answer,
+  });
+
+  final String questionId;
+  final String questionAr;
+  final String questionEn;
+  final int answer;
+}
+
+final class BookingRatingEntity {
+  const BookingRatingEntity({
+    required this.bookingId,
+    required this.answers,
+  });
+
+  final String bookingId;
+  final List<BookingRatingAnswerEntity> answers;
+}
+
+extension BookingEntityCheckInX on BookingEntity {
+  BookingCheckInResultEntity toCheckInResult() => BookingCheckInResultEntity(
+        bookingId: id,
+        packageNameAr: packageNameAr,
+        packageNameEn: packageNameEn,
+        instructorName: instructorName,
+        remainingSessions: remainingSessions ?? 0,
+      );
+
+  bool get isPrivateTraining => type == 'PT';
+}
+
 final class AssessmentQuestionEntity {
   const AssessmentQuestionEntity({
     required this.id,

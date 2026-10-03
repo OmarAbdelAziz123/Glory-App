@@ -15,6 +15,8 @@ final class BookingsListCubit extends Cubit<BookingsListState> {
     bool refresh = false,
     int limit = 10,
     String? sortOrder,
+    String? status,
+    bool privateTrainingOnly = false,
   }) async {
     emit(
       state.copyWith(
@@ -30,17 +32,23 @@ final class BookingsListCubit extends Cubit<BookingsListState> {
       page: 1,
       limit: limit,
       sortOrder: sortOrder,
+      status: status,
     );
 
     result.fold(
-      onSuccess: (page) => emit(
-        state.copyWith(
-          status: BookingsListStatus.loaded,
-          bookings: page.items,
-          page: page.page,
-          totalPages: page.totalPages,
-        ),
-      ),
+      onSuccess: (page) {
+        final items = privateTrainingOnly
+            ? page.items.where((b) => b.isPrivateTraining).toList()
+            : page.items;
+        emit(
+          state.copyWith(
+            status: BookingsListStatus.loaded,
+            bookings: items,
+            page: page.page,
+            totalPages: page.totalPages,
+          ),
+        );
+      },
       onFailure: (failure) => emit(
         state.copyWith(
           status: BookingsListStatus.failure,
@@ -50,7 +58,12 @@ final class BookingsListCubit extends Cubit<BookingsListState> {
     );
   }
 
-  Future<void> loadMore({int limit = 10, String? sortOrder}) async {
+  Future<void> loadMore({
+    int limit = 10,
+    String? sortOrder,
+    String? status,
+    bool privateTrainingOnly = false,
+  }) async {
     if (!state.hasMore || state.isLoadingMore || state.isLoading) return;
 
     emit(state.copyWith(status: BookingsListStatus.loadingMore));
@@ -60,17 +73,23 @@ final class BookingsListCubit extends Cubit<BookingsListState> {
       page: nextPage,
       limit: limit,
       sortOrder: sortOrder,
+      status: status,
     );
 
     result.fold(
-      onSuccess: (page) => emit(
-        state.copyWith(
-          status: BookingsListStatus.loaded,
-          bookings: [...state.bookings, ...page.items],
-          page: page.page,
-          totalPages: page.totalPages,
-        ),
-      ),
+      onSuccess: (page) {
+        final items = privateTrainingOnly
+            ? page.items.where((b) => b.isPrivateTraining).toList()
+            : page.items;
+        emit(
+          state.copyWith(
+            status: BookingsListStatus.loaded,
+            bookings: [...state.bookings, ...items],
+            page: page.page,
+            totalPages: page.totalPages,
+          ),
+        );
+      },
       onFailure: (failure) => emit(
         state.copyWith(
           status: BookingsListStatus.loaded,
@@ -174,5 +193,15 @@ final class BookingsListCubit extends Cubit<BookingsListState> {
 
   void clearCheckInResult() {
     emit(state.copyWith(clearCheckInResult: true));
+  }
+
+  void upsertBooking(BookingEntity booking) {
+    final exists = state.bookings.any((item) => item.id == booking.id);
+    final bookings = exists
+        ? state.bookings
+            .map((item) => item.id == booking.id ? booking : item)
+            .toList()
+        : [booking, ...state.bookings];
+    emit(state.copyWith(bookings: bookings));
   }
 }

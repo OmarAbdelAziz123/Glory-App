@@ -2153,6 +2153,168 @@ abstract class AppLocalizations {
   /// **'Notifications'**
   String get notificationsAlt;
 
+  /// No description provided for @myNutritionPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'My nutrition plan'**
+  String get myNutritionPlan;
+
+  /// No description provided for @nutritionPlanEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No nutrition plan yet'**
+  String get nutritionPlanEmptyTitle;
+
+  /// No description provided for @nutritionPlanEmptyDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'After your InBody scan, your coach will prepare your nutrition plan.'**
+  String get nutritionPlanEmptyDescription;
+
+  /// No description provided for @nutritionPlanHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous plans'**
+  String get nutritionPlanHistory;
+
+  /// No description provided for @nutritionPlanHistoryEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No approved plans yet'**
+  String get nutritionPlanHistoryEmptyTitle;
+
+  /// No description provided for @nutritionPlanDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Nutrition plan'**
+  String get nutritionPlanDetail;
+
+  /// No description provided for @nutritionPlanAskSandy.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask Sandy about it'**
+  String get nutritionPlanAskSandy;
+
+  /// No description provided for @nutritionPlanSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Summary'**
+  String get nutritionPlanSummary;
+
+  /// No description provided for @nutritionPlanDailyCalories.
+  ///
+  /// In en, this message translates to:
+  /// **'kcal / day'**
+  String get nutritionPlanDailyCalories;
+
+  /// No description provided for @nutritionPlanProtein.
+  ///
+  /// In en, this message translates to:
+  /// **'Protein'**
+  String get nutritionPlanProtein;
+
+  /// No description provided for @nutritionPlanCarbs.
+  ///
+  /// In en, this message translates to:
+  /// **'Carbs'**
+  String get nutritionPlanCarbs;
+
+  /// No description provided for @nutritionPlanFat.
+  ///
+  /// In en, this message translates to:
+  /// **'Fat'**
+  String get nutritionPlanFat;
+
+  /// No description provided for @nutritionPlanWater.
+  ///
+  /// In en, this message translates to:
+  /// **'Water'**
+  String get nutritionPlanWater;
+
+  /// No description provided for @nutritionPlanWaterLiters.
+  ///
+  /// In en, this message translates to:
+  /// **'{liters} L / day'**
+  String nutritionPlanWaterLiters(String liters);
+
+  /// No description provided for @nutritionPlanMacroGrams.
+  ///
+  /// In en, this message translates to:
+  /// **'{grams} g'**
+  String nutritionPlanMacroGrams(int grams);
+
+  /// No description provided for @nutritionPlanMeals.
+  ///
+  /// In en, this message translates to:
+  /// **'Meals'**
+  String get nutritionPlanMeals;
+
+  /// No description provided for @nutritionPlanGuidelines.
+  ///
+  /// In en, this message translates to:
+  /// **'Tips'**
+  String get nutritionPlanGuidelines;
+
+  /// No description provided for @nutritionPlanAvoid.
+  ///
+  /// In en, this message translates to:
+  /// **'Avoid'**
+  String get nutritionPlanAvoid;
+
+  /// No description provided for @nutritionPlanCoachNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Coach note'**
+  String get nutritionPlanCoachNote;
+
+  /// No description provided for @nutritionPlanCoach.
+  ///
+  /// In en, this message translates to:
+  /// **'Coach'**
+  String get nutritionPlanCoach;
+
+  /// No description provided for @nutritionPlanInbodyTestDate.
+  ///
+  /// In en, this message translates to:
+  /// **'InBody test'**
+  String get nutritionPlanInbodyTestDate;
+
+  /// No description provided for @nutritionPlanApprovedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Approved'**
+  String get nutritionPlanApprovedOn;
+
+  /// No description provided for @nutritionPlanGoalFatLoss.
+  ///
+  /// In en, this message translates to:
+  /// **'Fat loss'**
+  String get nutritionPlanGoalFatLoss;
+
+  /// No description provided for @nutritionPlanGoalMuscleGain.
+  ///
+  /// In en, this message translates to:
+  /// **'Muscle gain'**
+  String get nutritionPlanGoalMuscleGain;
+
+  /// No description provided for @nutritionPlanGoalRecomposition.
+  ///
+  /// In en, this message translates to:
+  /// **'Body recomposition'**
+  String get nutritionPlanGoalRecomposition;
+
+  /// No description provided for @nutritionPlanGoalMaintenance.
+  ///
+  /// In en, this message translates to:
+  /// **'Maintenance'**
+  String get nutritionPlanGoalMaintenance;
+
+  /// No description provided for @nutritionPlanGoalUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Nutrition goal'**
+  String get nutritionPlanGoalUnknown;
+
   /// No description provided for @nutrition.
   ///
   /// In en, this message translates to:
@@ -2332,6 +2494,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Personal training'**
   String get personalTraining;
+
+  /// No description provided for @myPrivateSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'My private sessions'**
+  String get myPrivateSessions;
+
+  /// No description provided for @sessionDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Session details'**
+  String get sessionDetails;
+
+  /// No description provided for @contactPtCoach.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat with your PT coach'**
+  String get contactPtCoach;
+
+  /// No description provided for @viewSessionRating.
+  ///
+  /// In en, this message translates to:
+  /// **'View session rating'**
+  String get viewSessionRating;
+
+  /// No description provided for @emptyPrivateSessionsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No private sessions yet'**
+  String get emptyPrivateSessionsTitle;
+
+  /// No description provided for @emptyPrivateSessionsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'When you book a personal training session, it will appear here.'**
+  String get emptyPrivateSessionsDescription;
+
+  /// No description provided for @ptScanSessionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan session QR'**
+  String get ptScanSessionTitle;
+
+  /// No description provided for @ptScanCoachScreenHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Point your camera at the coach\'s screen — not a printed code.'**
+  String get ptScanCoachScreenHint;
+
+  /// No description provided for @ptScanInvalidCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid code — ask your coach to show a new one.'**
+  String get ptScanInvalidCode;
+
+  /// No description provided for @ptScanAlreadyUsed.
+  ///
+  /// In en, this message translates to:
+  /// **'This code was already used — if you didn\'t check in, speak to your coach.'**
+  String get ptScanAlreadyUsed;
+
+  /// No description provided for @ptScanExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'This code expired — ask your coach to show it again.'**
+  String get ptScanExpired;
+
+  /// No description provided for @ptScanNotYourSession.
+  ///
+  /// In en, this message translates to:
+  /// **'This session isn\'t yours.'**
+  String get ptScanNotYourSession;
 
   /// No description provided for @phaseFour.
   ///
@@ -2596,6 +2830,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'1 May 2026'**
   String get sampleDateMay2026;
+
+  /// No description provided for @sandyNudgesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Messages from Sandy'**
+  String get sandyNudgesTitle;
+
+  /// No description provided for @sandyNudgesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sandy can message me with reminders and encouragement'**
+  String get sandyNudgesSubtitle;
 
   /// No description provided for @sandyAi.
   ///

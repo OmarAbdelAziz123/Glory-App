@@ -1091,6 +1091,92 @@ class AppLocalizationsAr extends AppLocalizations {
   String get notificationsAlt => 'الاشعارات';
 
   @override
+  String get myNutritionPlan => 'نظامي الغذائي';
+
+  @override
+  String get nutritionPlanEmptyTitle => 'ما في نظام غذائي بعد';
+
+  @override
+  String get nutritionPlanEmptyDescription =>
+      'بعد فحص InBody رح يجهزلك كوتشك نظامك الغذائي';
+
+  @override
+  String get nutritionPlanHistory => 'الخطط السابقة';
+
+  @override
+  String get nutritionPlanHistoryEmptyTitle => 'ما في خطط معتمدة بعد';
+
+  @override
+  String get nutritionPlanDetail => 'النظام الغذائي';
+
+  @override
+  String get nutritionPlanAskSandy => 'اسأل ساندي عنه';
+
+  @override
+  String get nutritionPlanSummary => 'الملخص';
+
+  @override
+  String get nutritionPlanDailyCalories => 'سعرة / يوم';
+
+  @override
+  String get nutritionPlanProtein => 'بروتين';
+
+  @override
+  String get nutritionPlanCarbs => 'كربوهيدرات';
+
+  @override
+  String get nutritionPlanFat => 'دهون';
+
+  @override
+  String get nutritionPlanWater => 'الماء';
+
+  @override
+  String nutritionPlanWaterLiters(String liters) {
+    return '$liters لتر / يوم';
+  }
+
+  @override
+  String nutritionPlanMacroGrams(int grams) {
+    return '$grams غ';
+  }
+
+  @override
+  String get nutritionPlanMeals => 'الوجبات';
+
+  @override
+  String get nutritionPlanGuidelines => 'إرشادات';
+
+  @override
+  String get nutritionPlanAvoid => 'تجنّب';
+
+  @override
+  String get nutritionPlanCoachNote => 'ملاحظة الكوتش';
+
+  @override
+  String get nutritionPlanCoach => 'الكوتش';
+
+  @override
+  String get nutritionPlanInbodyTestDate => 'فحص InBody';
+
+  @override
+  String get nutritionPlanApprovedOn => 'اعتمد في';
+
+  @override
+  String get nutritionPlanGoalFatLoss => 'تنزيل دهون';
+
+  @override
+  String get nutritionPlanGoalMuscleGain => 'بناء عضل';
+
+  @override
+  String get nutritionPlanGoalRecomposition => 'إعادة تركيب الجسم';
+
+  @override
+  String get nutritionPlanGoalMaintenance => 'محافظة';
+
+  @override
+  String get nutritionPlanGoalUnknown => 'هدف غذائي';
+
+  @override
   String get nutrition => 'التغذية';
 
   @override
@@ -1186,6 +1272,46 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get personalTraining => 'تدريب شخصي';
+
+  @override
+  String get myPrivateSessions => 'حصصي الخاصة';
+
+  @override
+  String get sessionDetails => 'تفاصيل الحصة';
+
+  @override
+  String get contactPtCoach => 'تواصل مع مدربك الخاص';
+
+  @override
+  String get viewSessionRating => 'عرض تقييم الحصة';
+
+  @override
+  String get emptyPrivateSessionsTitle => 'لا توجد حصص خاصة بعد';
+
+  @override
+  String get emptyPrivateSessionsDescription =>
+      'لما تحجز حصة تدريب شخصي، هتظهر هنا.';
+
+  @override
+  String get ptScanSessionTitle => 'مسح QR الحصة';
+
+  @override
+  String get ptScanCoachScreenHint =>
+      'وجّه الكاميرا على شاشة الكوتش — مش ورقة مطبوعة.';
+
+  @override
+  String get ptScanInvalidCode =>
+      'كود غير صالح — اطلب من الكوتش يعرض الكود من جديد';
+
+  @override
+  String get ptScanAlreadyUsed =>
+      'الكود ده اتستخدم — لو ما سجّلتش دخولك كلّم الكوتش';
+
+  @override
+  String get ptScanExpired => 'الكود انتهت صلاحيته — اطلب من الكوتش يعرضه تاني';
+
+  @override
+  String get ptScanNotYourSession => 'الحصة دي مش بتاعتك';
 
   @override
   String get phaseFour => 'المرحلة الرابعة';
@@ -1326,6 +1452,13 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get sampleDateMay2026 => '١ مايو ٢٠٢٦';
+
+  @override
+  String get sandyNudgesTitle => 'رسائل من ساندي';
+
+  @override
+  String get sandyNudgesSubtitle =>
+      'ساندي تقدر ترسلك تذكيرات وتحفيز على التطبيق';
 
   @override
   String get sandyAi => 'ساندي';

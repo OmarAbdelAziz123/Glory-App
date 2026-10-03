@@ -5,8 +5,10 @@ import '../../../../core/error/app_exception.dart';
 import '../../../../core/error/app_failure.dart';
 import '../../../../core/network/api_service.dart';
 import '../../../../core/result/result.dart';
+import '../../data/utils/scan_booking_error_mapper.dart';
 import '../models/booking_api_responses.dart';
 import '../models/booking_model.dart';
+import '../models/session_checkin_scan_request.dart';
 import 'bookings_api.dart';
 
 final class BookingsRemoteApiService extends ApiService {
@@ -80,6 +82,36 @@ final class BookingsRemoteApiService extends ApiService {
         }
         return Success(response.data!);
       });
+
+  Future<Result<BookingRatingModel>> getBookingRating(String id) =>
+      _guard(() async {
+        final response = await _bookingsApi.getBookingRating(id);
+        if (!response.success || response.data == null) {
+          return Failure(
+            ServerFailure(response.message ?? FallbackMessages.errorTryAgain),
+          );
+        }
+        return Success(response.data!);
+      });
+
+  Future<Result<BookingModel>> scanSessionCheckin(String token) async {
+    try {
+      final response = await _bookingsApi.scanSessionCheckin(
+        SessionCheckinScanRequest(token: token),
+      );
+      return _mapBookingResponse(response);
+    } on DioException catch (e) {
+      final inner = e.error;
+      if (inner is AppException) {
+        return Failure(_mapException(inner));
+      }
+      return Failure(ScanBookingErrorMapper.fromDio(e));
+    } on AppException catch (e) {
+      return Failure(_mapException(e));
+    } catch (e) {
+      return Failure(ServerFailure(e.toString()));
+    }
+  }
 
   Result<BookingModel> _mapBookingResponse(BookingApiResponse response) {
     if (!response.success || response.data == null) {

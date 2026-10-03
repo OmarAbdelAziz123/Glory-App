@@ -81,7 +81,7 @@ void main() {
     test('generateQr surfaces failure', () async {
       final cubit = GymQrCubit(
         _FakeCheckinRepository(
-          generateResult: const Failure(ServerFailure('network error')),
+          generateResult: Failure(ServerFailure('network error')),
         ),
       );
 

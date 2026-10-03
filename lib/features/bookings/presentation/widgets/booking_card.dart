@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_styles_extension.dart';
+import '../../../../../core/widgets/app_button.dart';
 import '../../../../core/l10n/l10n_extension.dart';
 
 // ── Model ─────────────────────────────────────────────────────────────────────
@@ -17,10 +18,13 @@ final class BookingItem {
     this.canCancel = false,
     this.canRate = false,
     this.isCheckedIn = false,
+    this.showSessionScan = false,
     this.trainerAvatarAsset,
     this.onCheckIn,
+    this.onScanSessionQr,
     this.onCancel,
     this.onEvaluate,
+    this.onTap,
   });
 
   final String packageName;
@@ -32,10 +36,13 @@ final class BookingItem {
   final bool canCancel;
   final bool canRate;
   final bool isCheckedIn;
+  final bool showSessionScan;
   final String? trainerAvatarAsset;
   final VoidCallback? onCheckIn;
+  final VoidCallback? onScanSessionQr;
   final VoidCallback? onCancel;
   final VoidCallback? onEvaluate;
+  final VoidCallback? onTap;
 }
 
 // ── Public widget ─────────────────────────────────────────────────────────────
@@ -47,14 +54,16 @@ final class BookingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.white,
+    return Material(
+      color: AppColors.white,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.neutral200),
+        side: const BorderSide(color: AppColors.neutral200),
       ),
       clipBehavior: Clip.hardEdge,
-      child: Column(
+      child: InkWell(
+        onTap: item.onTap,
+        child: Column(
         children: [
           _CardHeader(
             packageName: item.packageName,
@@ -75,14 +84,17 @@ final class BookingCard extends StatelessWidget {
                 const SizedBox(height: 16),
                 _ActionRow(
                   canCheckIn: item.canCheckIn,
+                  showSessionScan: item.showSessionScan,
                   canCancel: item.canCancel,
                   onCheckIn: item.onCheckIn,
+                  onScanSessionQr: item.onScanSessionQr,
                   onCancel: item.onCancel,
                 ),
               ],
             ),
           ),
         ],
+        ),
       ),
     );
   }
@@ -227,18 +239,44 @@ final class _DetailColumn extends StatelessWidget {
 final class _ActionRow extends StatelessWidget {
   const _ActionRow({
     required this.canCheckIn,
+    required this.showSessionScan,
     required this.canCancel,
     this.onCheckIn,
+    this.onScanSessionQr,
     this.onCancel,
   });
 
   final bool canCheckIn;
+  final bool showSessionScan;
   final bool canCancel;
   final VoidCallback? onCheckIn;
+  final VoidCallback? onScanSessionQr;
   final VoidCallback? onCancel;
 
   @override
   Widget build(BuildContext context) {
+    if (showSessionScan) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          AppButton(
+            label: context.l10n.ptScanSessionTitle,
+            height: 48,
+            onPressed: onScanSessionQr,
+          ),
+          if (canCheckIn) ...[
+            const SizedBox(height: 10),
+            AppButton(
+              label: context.l10n.trainingCheckIn,
+              variant: AppButtonVariant.outlined,
+              height: 48,
+              onPressed: onCheckIn,
+            ),
+          ],
+        ],
+      );
+    }
+
     return Row(
       children: [
         Expanded(

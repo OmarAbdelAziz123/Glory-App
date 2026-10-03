@@ -36,6 +36,11 @@ ChatConversationModel _$ChatConversationModelFromJson(
     json['instructor'] as Map<String, dynamic>,
   ),
   unreadCount: (json['unreadCount'] as num).toInt(),
+  coachTypes:
+      (json['coachTypes'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList() ??
+      [],
 );
 
 Map<String, dynamic> _$ChatConversationModelToJson(
@@ -48,6 +53,7 @@ Map<String, dynamic> _$ChatConversationModelToJson(
   'lastMessageAt': instance.lastMessageAt?.toIso8601String(),
   'instructor': instance.instructor,
   'unreadCount': instance.unreadCount,
+  'coachTypes': instance.coachTypes,
 };
 
 ChatMessageModel _$ChatMessageModelFromJson(Map<String, dynamic> json) =>

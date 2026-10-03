@@ -19,6 +19,7 @@ extension ChatConversationModelMapper on ChatConversationModel {
         lastMessageAt: lastMessageAt,
         instructor: instructor.toEntity(),
         unreadCount: unreadCount,
+        coachTypes: coachTypes,
       );
 }
 

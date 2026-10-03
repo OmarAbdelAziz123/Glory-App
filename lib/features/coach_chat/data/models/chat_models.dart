@@ -28,6 +28,7 @@ final class ChatConversationModel {
     this.lastMessageAt,
     required this.instructor,
     required this.unreadCount,
+    this.coachTypes = const [],
   });
 
   factory ChatConversationModel.fromJson(Map<String, dynamic> json) =>
@@ -40,6 +41,8 @@ final class ChatConversationModel {
   final DateTime? lastMessageAt;
   final ChatParticipantModel instructor;
   final int unreadCount;
+  @JsonKey(defaultValue: <String>[])
+  final List<String> coachTypes;
 }
 
 @JsonSerializable()

@@ -43,6 +43,9 @@ abstract final class Endpoints {
   static const String mobileCheckinQrStatus = '/mobile/checkin/qr/{id}';
   static const String mobileCheckinQrScan = '/mobile/checkin/qr/scan';
 
+  /// PT studio: member scans the coach's session QR (not gym entry).
+  static const String mobileSessionCheckinScan = '/mobile/session-checkin/scan';
+
   // ── Mobile Bookings ───────────────────────────────────
   static const String mobileBookings = '/mobile/bookings';
   static const String mobileBookingById = '/mobile/bookings/{id}';
@@ -78,6 +81,13 @@ abstract final class Endpoints {
   static const String mobileInbodyTrends = '/mobile/inbody/trends';
   static const String mobileInbodyById = '/mobile/inbody/{id}';
 
+  // ── Mobile Nutrition plans ──────────────────────────────
+  static const String mobileNutritionPlans = '/mobile/nutrition-plans';
+  static const String mobileNutritionPlansCurrent =
+      '/mobile/nutrition-plans/current';
+  static const String mobileNutritionPlansById =
+      '/mobile/nutrition-plans/{id}';
+
   // ── Mobile Workouts ───────────────────────────────────
   static const String mobileWorkouts = '/mobile/workouts';
   static const String mobileWorkoutById = '/mobile/workouts/{id}';
@@ -95,6 +105,7 @@ abstract final class Endpoints {
       '/mobile/sandy/conversations/{id}';
   static const String mobileSandyDocuments = '/mobile/sandy/documents';
   static const String mobileSandyDocumentById = '/mobile/sandy/documents/{id}';
+  static const String mobileSandyNudges = '/mobile/sandy/nudges';
 
   // ── Members ──────────────────────────────────────────
   static const String members = '/members';

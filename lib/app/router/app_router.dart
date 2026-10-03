@@ -29,7 +29,14 @@ import '../../../../core/models/questionnaire_args.dart';
 import '../../features/body_composition/presentation/screens/body_composition_screen.dart';
 import '../../features/body_composition/presentation/screens/size_measurements_screen.dart';
 import '../../features/inbody/presentation/screens/inbody_detail_screen.dart';
+import '../../features/nutrition_plans/presentation/screens/my_nutrition_plan_screen.dart';
+import '../../features/nutrition_plans/presentation/screens/nutrition_plan_detail_screen.dart';
+import '../../features/nutrition_plans/presentation/screens/nutrition_plans_history_screen.dart';
+import '../../features/nutrition_plans/presentation/utils/nutrition_sandy_launcher.dart';
+import '../../features/bookings/presentation/screens/booking_detail_screen.dart';
+import '../../features/bookings/presentation/screens/booking_rating_screen.dart';
 import '../../features/bookings/presentation/screens/bookings_screen.dart';
+import '../../features/bookings/presentation/screens/private_sessions_screen.dart';
 import '../../features/family/domain/entities/family_member_entity.dart';
 import '../../features/family/presentation/screens/add_family_member_screen.dart';
 import '../../features/family/presentation/screens/family_screen.dart';
@@ -136,9 +143,30 @@ final class AppRouter {
       builder: (_, _) => const BookingsScreen(),
     ),
     GoRoute(
+      path: AppRoutes.privateSessions,
+      name: 'privateSessions',
+      builder: (_, _) => const PrivateSessionsScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.bookingDetail,
+      name: 'bookingDetail',
+      builder: (_, state) => BookingDetailScreen(
+        bookingId: state.pathParameters['id'] ?? '',
+      ),
+    ),
+    GoRoute(
+      path: AppRoutes.bookingRating,
+      name: 'bookingRating',
+      builder: (_, state) => BookingRatingScreen(
+        bookingId: state.extra as String? ?? '',
+      ),
+    ),
+    GoRoute(
       path: AppRoutes.gloryAi,
       name: 'gloryAi',
-      builder: (_, _) => const GloryAiScreen(),
+      builder: (_, _) => const SandyChatRouteScope(
+        child: GloryAiScreen(),
+      ),
     ),
     GoRoute(
       path: AppRoutes.workouts,
@@ -197,6 +225,25 @@ final class AppRouter {
       name: 'inbodyDetail',
       builder: (_, state) => InbodyDetailScreen(
         testId: state.pathParameters['id'] ?? '',
+      ),
+    ),
+
+    // ── Nutrition plans ───────────────────────────────────
+    GoRoute(
+      path: AppRoutes.myNutritionPlan,
+      name: 'myNutritionPlan',
+      builder: (_, _) => const MyNutritionPlanScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.nutritionPlansHistory,
+      name: 'nutritionPlansHistory',
+      builder: (_, _) => const NutritionPlansHistoryScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.nutritionPlanDetail,
+      name: 'nutritionPlanDetail',
+      builder: (_, state) => NutritionPlanDetailScreen(
+        planId: state.pathParameters['id'] ?? '',
       ),
     ),
 

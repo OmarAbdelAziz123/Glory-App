@@ -45,4 +45,9 @@ abstract interface class SandyRepository {
   Future<Result<SandyMedicalDocumentEntity>> getDocument(String documentId);
 
   Future<Result<void>> deleteDocument(String documentId);
+
+  /// Proactive Sandy messages (nudges). Default is enabled when unknown.
+  Future<Result<bool>> getNudgesEnabled();
+
+  Future<Result<bool>> setNudgesEnabled({required bool enabled});
 }

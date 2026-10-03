@@ -8,6 +8,7 @@ import '../../../../core/network/endpoints.dart';
 import '../../../../core/result/result.dart';
 import '../models/sandy_api_responses.dart';
 import '../models/sandy_models.dart';
+import '../models/sandy_nudges_model.dart';
 import 'sandy_api.dart';
 import 'sandy_chat_stream_client.dart';
 
@@ -227,6 +228,36 @@ final class SandyRemoteApiService extends ApiService {
           );
         }
         return const Success(null);
+      });
+
+  Future<Result<bool>> getNudgesEnabled() => _guard(() async {
+        final response = await dio.get<dynamic>(Endpoints.mobileSandyNudges);
+        final data = response.data;
+        if (data is Map && data['success'] == false) {
+          return Failure(
+            ServerFailure(
+              data['message']?.toString() ?? FallbackMessages.errorTryAgain,
+            ),
+          );
+        }
+        return Success(readSandyNudgesEnabled(data));
+      });
+
+  Future<Result<bool>> setNudgesEnabled({required bool enabled}) =>
+      _guard(() async {
+        final response = await dio.patch<dynamic>(
+          Endpoints.mobileSandyNudges,
+          data: {'enabled': enabled},
+        );
+        final data = response.data;
+        if (data is Map && data['success'] == false) {
+          return Failure(
+            ServerFailure(
+              data['message']?.toString() ?? FallbackMessages.errorTryAgain,
+            ),
+          );
+        }
+        return Success(readSandyNudgesEnabled(data));
       });
 
   Future<Result<T>> _guard<T>(Future<Result<T>> Function() call) async {

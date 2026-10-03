@@ -121,6 +121,13 @@ final class _InbodyHistoryViewState extends State<_InbodyHistoryView>
           appBar: AppPrimaryHeader(
             title: context.l10n.bodyCompositionScan,
             centerTitle: true,
+            actions: [
+              IconButton(
+                icon: const Icon(Iconsax.cup, color: AppColors.white),
+                tooltip: context.l10n.myNutritionPlan,
+                onPressed: () => context.push(AppRoutes.myNutritionPlan),
+              ),
+            ],
           ),
           body: _buildBody(context, state),
         );
