@@ -569,7 +569,7 @@ abstract class AppLocalizations {
   /// No description provided for @allowCameraAccess.
   ///
   /// In en, this message translates to:
-  /// **'Allow camera access'**
+  /// **'Continue'**
   String get allowCameraAccess;
 
   /// No description provided for @openSettings.
@@ -1240,6 +1240,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'When your membership is activated, it will appear here.'**
   String get emptySubscriptionsDescription;
+
+  /// No description provided for @emptyContactChannelsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No contact links yet'**
+  String get emptyContactChannelsTitle;
+
+  /// No description provided for @emptyContactChannelsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Social and support links will appear here when available.'**
+  String get emptyContactChannelsDescription;
 
   /// No description provided for @emptySubscriptionsTitle.
   ///

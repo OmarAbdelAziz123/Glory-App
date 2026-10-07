@@ -17,8 +17,8 @@ final class ContactCubit extends Cubit<ContactState> {
     final result = await _repository.getContactLinks();
 
     result.fold(
-      onSuccess: (links) => emit(
-        state.copyWith(status: ContactStatus.loaded, links: links),
+      onSuccess: (channels) => emit(
+        state.copyWith(status: ContactStatus.loaded, channels: channels),
       ),
       onFailure: (failure) => emit(
         state.copyWith(

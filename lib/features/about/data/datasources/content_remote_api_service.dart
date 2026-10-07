@@ -5,7 +5,7 @@ import '../../../../core/error/app_exception.dart';
 import '../../../../core/error/app_failure.dart';
 import '../../../../core/network/api_service.dart';
 import '../../../../core/result/result.dart';
-import '../models/contact_links_model.dart';
+import '../models/contact_channel_model.dart';
 import '../models/faq_model.dart';
 import '../models/feedback_request.dart';
 import '../models/info_page_model.dart';
@@ -37,10 +37,10 @@ final class ContentRemoteApiService extends ApiService {
         },
       );
 
-  Future<Result<ContactLinksModel>> getContactLinks() => _guard(
+  Future<Result<List<ContactChannelModel>>> getContactLinks() => _guard(
         () async {
           final response = await _contentApi.getContactLinks();
-          return _mapSingle(response.success, response.data, response.message);
+          return _mapList(response.success, response.data, response.message);
         },
       );
 

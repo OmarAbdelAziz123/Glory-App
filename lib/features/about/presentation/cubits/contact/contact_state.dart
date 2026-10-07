@@ -5,27 +5,27 @@ enum ContactStatus { initial, loading, loaded, failure }
 final class ContactState extends Equatable {
   const ContactState({
     this.status = ContactStatus.initial,
-    this.links,
+    this.channels = const [],
     this.errorMessage,
   });
 
   final ContactStatus status;
-  final ContactLinksEntity? links;
+  final List<ContactChannelEntity> channels;
   final String? errorMessage;
 
   bool get isLoading => status == ContactStatus.loading;
 
   ContactState copyWith({
     ContactStatus? status,
-    ContactLinksEntity? links,
+    List<ContactChannelEntity>? channels,
     String? errorMessage,
   }) =>
       ContactState(
         status: status ?? this.status,
-        links: links ?? this.links,
+        channels: channels ?? this.channels,
         errorMessage: errorMessage,
       );
 
   @override
-  List<Object?> get props => [status, links, errorMessage];
+  List<Object?> get props => [status, channels, errorMessage];
 }

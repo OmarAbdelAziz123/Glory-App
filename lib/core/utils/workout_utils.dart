@@ -7,7 +7,7 @@ import '../../features/workouts/domain/entities/workout_entity.dart';
 abstract final class WorkoutUtils {
   static String typeLabel(AppLocalizations l10n, String type) => switch (type) {
     'CARDIO' => l10n.cardio,
-    'STRENGTH' => l10n.strength,
+    'STRENGTH' || 'STRENGTH_TRAINING' => l10n.strength,
     'FLEXIBILITY' => l10n.flexibility,
     'HIIT' => 'HIIT',
     _ => type,
@@ -58,9 +58,16 @@ abstract final class WorkoutUtils {
     WorkoutInstructionEntity instruction, {
     String locale = 'ar',
   }) {
-    return locale == 'ar'
-        ? instruction.instructionAr
-        : instruction.instructionEn;
+    if (locale == 'ar') {
+      return displayOrFallback(
+        instruction.instructionAr,
+        instruction.instructionEn,
+      );
+    }
+    return displayOrFallback(
+      instruction.instructionEn,
+      instruction.instructionAr,
+    );
   }
 
   static String displayOrFallback(String? value, String fallback) {
@@ -95,7 +102,9 @@ abstract final class WorkoutUtils {
       startDate: includeExtraDetail && !isUpcoming
           ? formatDate(l10n, assignment.startDate)
           : null,
-      issuedBy: includeExtraDetail && isUpcoming
+      issuedBy: includeExtraDetail &&
+              isUpcoming &&
+              assignment.instructorName.isNotEmpty
           ? assignment.instructorName
           : null,
       status: status,

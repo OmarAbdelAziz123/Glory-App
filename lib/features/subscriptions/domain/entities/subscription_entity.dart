@@ -39,8 +39,12 @@ final class SubscriptionEntity {
   final int? remainingSessions;
   final int? remainingDays;
 
-  String packageName({required bool isArabic}) =>
-      isArabic ? package.nameAr : package.nameEn;
+  String packageName({required bool isArabic}) {
+    if (isArabic) {
+      return package.nameAr.isNotEmpty ? package.nameAr : package.nameEn;
+    }
+    return package.nameEn.isNotEmpty ? package.nameEn : package.nameAr;
+  }
 }
 
 enum SubscriptionStatus { active, expired, cancelled }

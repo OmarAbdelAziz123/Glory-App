@@ -7,7 +7,7 @@ final class BookingPackageModel {
   const BookingPackageModel({
     required this.id,
     required this.nameEn,
-    required this.nameAr,
+    this.nameAr,
     required this.membershipType,
   });
 
@@ -16,7 +16,7 @@ final class BookingPackageModel {
 
   final String id;
   final String nameEn;
-  final String nameAr;
+  final String? nameAr;
   final String membershipType;
 }
 
@@ -24,14 +24,14 @@ final class BookingPackageModel {
 final class BookingBranchModel {
   const BookingBranchModel({
     required this.id,
-    required this.nameEn,
+    this.nameEn,
   });
 
   factory BookingBranchModel.fromJson(Map<String, dynamic> json) =>
       _$BookingBranchModelFromJson(json);
 
   final String id;
-  final String nameEn;
+  final String? nameEn;
 }
 
 @JsonSerializable()
@@ -74,9 +74,9 @@ final class BookingModel {
     required this.dateTime,
     this.checkedInAt,
     required this.package,
-    required this.branch,
-    required this.instructor,
-    required this.subscription,
+    this.branch,
+    this.instructor,
+    this.subscription,
     required this.canCancel,
     required this.canCheckIn,
     required this.canRate,
@@ -92,9 +92,9 @@ final class BookingModel {
   final DateTime dateTime;
   final DateTime? checkedInAt;
   final BookingPackageModel package;
-  final BookingBranchModel branch;
-  final BookingInstructorModel instructor;
-  final BookingSubscriptionModel subscription;
+  final BookingBranchModel? branch;
+  final BookingInstructorModel? instructor;
+  final BookingSubscriptionModel? subscription;
   final bool canCancel;
   final bool canCheckIn;
   final bool canRate;

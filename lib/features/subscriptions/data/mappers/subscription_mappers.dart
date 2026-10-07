@@ -7,7 +7,7 @@ extension SubscriptionPackageModelX on SubscriptionPackageModel {
   SubscriptionPackageEntity toEntity() => SubscriptionPackageEntity(
         id: id,
         nameEn: nameEn,
-        nameAr: nameAr,
+        nameAr: nameAr ?? nameEn,
         membershipType: membershipType,
         durationUnit: durationUnit,
         durationValue: durationValue,

@@ -50,6 +50,25 @@ final class FaqEntity {
       isArabic ? answerAr : answerEn;
 }
 
+final class ContactChannelEntity {
+  const ContactChannelEntity({
+    required this.id,
+    required this.icon,
+    required this.labelEn,
+    required this.labelAr,
+    required this.value,
+  });
+
+  final String id;
+  final String icon;
+  final String labelEn;
+  final String labelAr;
+  final String value;
+
+  String labelFor({required bool isArabic}) =>
+      isArabic ? labelAr : labelEn;
+}
+
 final class ContactLinksEntity {
   const ContactLinksEntity({
     this.whatsapp,

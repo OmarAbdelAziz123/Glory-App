@@ -111,6 +111,68 @@ void main() {
       expect(model.status, 'UPCOMING');
     });
 
+    test('parses assignment when instructor is null', () {
+      final entity = _assignmentFromJson({
+        'id': 'cmux31avz0baa1i58muf84a5k',
+        'status': 'UPCOMING',
+        'workout': {
+          'id': 'cmun3320a00121imdrf5p1epq',
+          'nameEn': 'Ful body',
+          'nameAr': 'Ful body',
+          'type': 'STRENGTH_TRAINING',
+          'level': 'BEGINNER',
+        },
+        'startDate': null,
+        'endDate': null,
+        'durationDays': 40,
+        'instructor': null,
+        'previewVideoUrl': null,
+        'previewThumbnailUrl': null,
+      });
+
+      expect(entity.instructorName, isEmpty);
+      expect(entity.workoutNameAr, 'Ful body');
+    });
+
+    test('parses detail when instructionAr is null', () {
+      final entity = _detailFromJson({
+        'id': 'cmux31avz0baa1i58muf84a5k',
+        'status': 'UPCOMING',
+        'startDate': null,
+        'endDate': null,
+        'durationDays': 40,
+        'remainingDays': null,
+        'suggestedWeight': null,
+        'suggestedWeightLast': null,
+        'userWeight': null,
+        'userWeightLast': null,
+        'canAddWeight': false,
+        'instructor': null,
+        'workout': {
+          'id': 'cmun3320a00121imdrf5p1epq',
+          'nameEn': 'Ful body',
+          'nameAr': 'Ful body',
+          'type': 'STRENGTH_TRAINING',
+          'level': 'BEGINNER',
+          'durationDays': 40,
+        },
+        'instructions': [
+          {
+            'id': 'cmun3320a00131imd5p4ffa6p',
+            'stepNumber': 1,
+            'instructionEn': '[overview] Warm up',
+            'instructionAr': null,
+            'videos': [],
+          },
+        ],
+        'createdAt': '2026-10-06T19:39:23.615Z',
+      });
+
+      expect(entity.instructions, hasLength(1));
+      expect(entity.instructions.first.instructionAr, '[overview] Warm up');
+      expect(entity.instructions.first.instructionEn, '[overview] Warm up');
+    });
+
     test('parses detail with instructions and weight fields', () {
       final entity = _detailFromJson(workoutDetailJson);
 

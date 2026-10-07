@@ -57,22 +57,6 @@ Map<String, dynamic> _$FaqsApiResponseToJson(FaqsApiResponse instance) =>
       'message': instance.message,
     };
 
-ContactApiResponse _$ContactApiResponseFromJson(Map<String, dynamic> json) =>
-    ContactApiResponse(
-      success: json['success'] as bool,
-      data: json['data'] == null
-          ? null
-          : ContactLinksModel.fromJson(json['data'] as Map<String, dynamic>),
-      message: json['message'] as String?,
-    );
-
-Map<String, dynamic> _$ContactApiResponseToJson(ContactApiResponse instance) =>
-    <String, dynamic>{
-      'success': instance.success,
-      'data': instance.data,
-      'message': instance.message,
-    };
-
 FeedbackApiResponse _$FeedbackApiResponseFromJson(Map<String, dynamic> json) =>
     FeedbackApiResponse(
       success: json['success'] as bool,

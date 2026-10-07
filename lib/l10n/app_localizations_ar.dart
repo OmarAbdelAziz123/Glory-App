@@ -255,7 +255,7 @@ class AppLocalizationsAr extends AppLocalizations {
       'افتح الإعدادات وفعّل صلاحية الكاميرا للمتابعة.';
 
   @override
-  String get allowCameraAccess => 'السماح بالكاميرا';
+  String get allowCameraAccess => 'متابعة';
 
   @override
   String get openSettings => 'فتح الإعدادات';
@@ -615,6 +615,13 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get emptySubscriptionsDescription =>
       'لما يتم تفعيل اشتراكك، هتظهر تفاصيله هنا.';
+
+  @override
+  String get emptyContactChannelsTitle => 'لا توجد روابط تواصل بعد';
+
+  @override
+  String get emptyContactChannelsDescription =>
+      'روابط السوشال والدعم رح تظهر هون لما تكون جاهزة.';
 
   @override
   String get emptySubscriptionsTitle => 'لا توجد اشتراكات بعد';

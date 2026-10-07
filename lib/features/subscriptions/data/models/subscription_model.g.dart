@@ -2,6 +2,13 @@
 
 part of 'subscription_model.dart';
 
+String _readSubscriptionPrice(dynamic value) {
+  if (value == null) return '0';
+  if (value is String) return value;
+  if (value is num) return value.toString();
+  return value.toString();
+}
+
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
@@ -11,7 +18,7 @@ SubscriptionPackageModel _$SubscriptionPackageModelFromJson(
 ) => SubscriptionPackageModel(
   id: json['id'] as String,
   nameEn: json['nameEn'] as String,
-  nameAr: json['nameAr'] as String,
+  nameAr: json['nameAr'] as String?,
   membershipType: json['membershipType'] as String,
   durationUnit: json['durationUnit'] as String,
   durationValue: (json['durationValue'] as num).toInt(),
@@ -34,7 +41,7 @@ SubscriptionModel _$SubscriptionModelFromJson(Map<String, dynamic> json) =>
       startDate: DateTime.parse(json['startDate'] as String),
       endDate: DateTime.parse(json['endDate'] as String),
       status: json['status'] as String,
-      price: json['price'] as String,
+      price: _readSubscriptionPrice(json['price']),
       package: SubscriptionPackageModel.fromJson(
         json['package'] as Map<String, dynamic>,
       ),

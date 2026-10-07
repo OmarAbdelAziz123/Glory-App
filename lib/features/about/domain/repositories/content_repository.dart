@@ -8,7 +8,7 @@ abstract interface class ContentRepository {
 
   Future<Result<List<FaqEntity>>> getFaqs();
 
-  Future<Result<ContactLinksEntity>> getContactLinks();
+  Future<Result<List<ContactChannelEntity>>> getContactLinks();
 
   Future<Result<void>> submitFeedback({required String message});
 }

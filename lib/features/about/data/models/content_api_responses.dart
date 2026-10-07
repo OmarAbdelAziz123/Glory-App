@@ -1,6 +1,7 @@
 import 'package:json_annotation/json_annotation.dart';
 
-import 'contact_links_model.dart';
+import 'contact_channel_model.dart';
+import 'contact_links_parser.dart';
 import 'faq_model.dart';
 import 'info_page_model.dart';
 
@@ -54,7 +55,6 @@ final class FaqsApiResponse {
   final String? message;
 }
 
-@JsonSerializable()
 final class ContactApiResponse {
   const ContactApiResponse({
     required this.success,
@@ -62,11 +62,16 @@ final class ContactApiResponse {
     this.message,
   });
 
-  factory ContactApiResponse.fromJson(Map<String, dynamic> json) =>
-      _$ContactApiResponseFromJson(json);
+  factory ContactApiResponse.fromJson(Map<String, dynamic> json) {
+    return ContactApiResponse(
+      success: json['success'] as bool,
+      data: readContactChannelsData(json['data']),
+      message: json['message'] as String?,
+    );
+  }
 
   final bool success;
-  final ContactLinksModel? data;
+  final List<ContactChannelModel>? data;
   final String? message;
 }
 

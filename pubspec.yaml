@@ -3,10 +3,10 @@ description: "Glory Gym Management App"
 publish_to: "none"
 
 # Android version
-# version: 1.0.0+7
+# version: 1.0.0+9
 
 # Apple version
-version: 1.0.0+1
+version: 1.0.0+3
 
 environment:
   sdk: ^3.11.1

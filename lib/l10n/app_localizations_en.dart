@@ -257,7 +257,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Open settings and enable camera access to continue.';
 
   @override
-  String get allowCameraAccess => 'Allow camera access';
+  String get allowCameraAccess => 'Continue';
 
   @override
   String get openSettings => 'Open settings';
@@ -619,6 +619,13 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get emptySubscriptionsDescription =>
       'When your membership is activated, it will appear here.';
+
+  @override
+  String get emptyContactChannelsTitle => 'No contact links yet';
+
+  @override
+  String get emptyContactChannelsDescription =>
+      'Social and support links will appear here when available.';
 
   @override
   String get emptySubscriptionsTitle => 'No subscriptions yet';

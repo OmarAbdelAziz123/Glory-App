@@ -7,7 +7,7 @@ final class SubscriptionPackageModel {
   const SubscriptionPackageModel({
     required this.id,
     required this.nameEn,
-    required this.nameAr,
+    this.nameAr,
     required this.membershipType,
     required this.durationUnit,
     required this.durationValue,
@@ -18,7 +18,7 @@ final class SubscriptionPackageModel {
 
   final String id;
   final String nameEn;
-  final String nameAr;
+  final String? nameAr;
   final String membershipType;
   final String durationUnit;
   final int durationValue;

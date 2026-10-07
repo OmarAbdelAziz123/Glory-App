@@ -10,7 +10,9 @@ import '../../../../core/models/content_args.dart';
 import '../../domain/entities/content_entities.dart';
 import '../cubits/contact/contact_cubit.dart';
 import '../cubits/info_page/info_page_cubit.dart';
+import '../utils/contact_channel_ui.dart';
 import '../../../../core/l10n/l10n_extension.dart';
+import '../../../../core/widgets/app_empty_state.dart';
 
 final class WhoWeAreScreen extends StatefulWidget {
   const WhoWeAreScreen({super.key, this.args});
@@ -175,31 +177,42 @@ final class _SocialTabContent extends StatelessWidget {
           );
         }
 
-        final links = state.links;
-        final platforms = _buildPlatforms(context, links);
+        final isArabic = ContentUtils.isArabic(context);
+        final channels = state.channels;
+
+        if (!state.isLoading && channels.isEmpty) {
+          return AppEmptyState(
+            icon: AppEmptyIcons.documents,
+            title: context.l10n.emptyContactChannelsTitle,
+            description: context.l10n.emptyContactChannelsDescription,
+          );
+        }
 
         return Skeletonizer(
           enabled: state.isLoading,
           child: ListView.separated(
             padding: const EdgeInsets.symmetric(horizontal: 18),
-            itemCount: state.isLoading ? 4 : platforms.length,
+            itemCount: state.isLoading ? 4 : channels.length,
             separatorBuilder: (_, _) =>
                 const Divider(height: 1, color: AppColors.neutral200),
             itemBuilder: (context, index) {
               if (state.isLoading) {
                 return _SocialTile(
-                  platform: _SocialPlatform(
-                    iconAsset: 'facebook_icon.svg',
-                    name: context.l10n.facebook,
-                    handle: context.l10n.appName,
-                  ),
+                  iconAsset: 'facebook_icon.svg',
+                  name: context.l10n.facebook,
+                  subtitle: context.l10n.appName,
                 );
               }
 
-              final platform = platforms[index];
+              final channel = channels[index];
               return _SocialTile(
-                platform: platform,
-                onTap: () => _openUrl(context, platform.url),
+                iconAsset: ContactChannelUi.iconAsset(channel.icon),
+                name: channel.labelFor(isArabic: isArabic),
+                subtitle: channel.value,
+                onTap: () => _openUrl(
+                  context,
+                  ContactChannelUi.launchTarget(channel),
+                ),
               );
             },
           ),
@@ -208,54 +221,8 @@ final class _SocialTabContent extends StatelessWidget {
     );
   }
 
-  List<_SocialPlatform> _buildPlatforms(
-    BuildContext context,
-    ContactLinksEntity? links,
-  ) {
-    if (links == null) return const [];
-
-    final l10n = context.l10n;
-    return [
-      if (links.facebook?.isNotEmpty == true)
-        _SocialPlatform(
-          iconAsset: 'facebook_icon.svg',
-          name: l10n.facebook,
-          handle: l10n.appName,
-          url: links.facebook!,
-        ),
-      if (links.instagram?.isNotEmpty == true)
-        _SocialPlatform(
-          iconAsset: 'instgram_icon.svg',
-          name: l10n.instagram,
-          handle: '@glorygym',
-          url: links.instagram!,
-        ),
-      if (links.twitter?.isNotEmpty == true)
-        _SocialPlatform(
-          iconAsset: 'twitter_icon.svg',
-          name: l10n.twitter,
-          handle: '@glorygym',
-          url: links.twitter!,
-        ),
-      if (links.whatsapp?.isNotEmpty == true)
-        _SocialPlatform(
-          iconAsset: 'whatsapp_icon.svg',
-          name: l10n.whatsapp,
-          handle: links.phone ?? l10n.whatsapp,
-          url: links.whatsapp!,
-        ),
-      if (links.phone?.isNotEmpty == true)
-        _SocialPlatform(
-          iconAsset: 'contact_us_icon.svg',
-          name: l10n.telephone,
-          handle: links.phone!,
-          url: 'tel:${links.phone}',
-        ),
-    ];
-  }
-
-  Future<void> _openUrl(BuildContext context, String? url) async {
-    if (url == null || url.isEmpty) return;
+  Future<void> _openUrl(BuildContext context, String url) async {
+    if (url.isEmpty) return;
 
     final uri = Uri.tryParse(url);
     if (uri == null || !await launchUrl(uri, mode: LaunchMode.externalApplication)) {
@@ -267,24 +234,17 @@ final class _SocialTabContent extends StatelessWidget {
   }
 }
 
-final class _SocialPlatform {
-  const _SocialPlatform({
+final class _SocialTile extends StatelessWidget {
+  const _SocialTile({
     required this.iconAsset,
     required this.name,
-    required this.handle,
-    this.url,
+    required this.subtitle,
+    this.onTap,
   });
 
   final String iconAsset;
   final String name;
-  final String handle;
-  final String? url;
-}
-
-final class _SocialTile extends StatelessWidget {
-  const _SocialTile({required this.platform, this.onTap});
-
-  final _SocialPlatform platform;
+  final String subtitle;
   final VoidCallback? onTap;
 
   @override
@@ -304,7 +264,7 @@ final class _SocialTile extends StatelessWidget {
               ),
               alignment: Alignment.center,
               child: SvgPicture.asset(
-                'assets/images/svgs/${platform.iconAsset}',
+                'assets/images/svgs/$iconAsset',
                 width: 22,
                 height: 22,
                 colorFilter: const ColorFilter.mode(
@@ -319,17 +279,19 @@ final class _SocialTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    platform.name,
+                    name,
                     style: context.captionBold.copyWith(
                       color: AppColors.neutral900,
                     ),
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    platform.handle,
+                    subtitle,
                     style: context.footnoteRegular.copyWith(
                       color: AppColors.neutral500,
                     ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),

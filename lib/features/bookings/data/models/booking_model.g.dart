@@ -10,7 +10,7 @@ BookingPackageModel _$BookingPackageModelFromJson(Map<String, dynamic> json) =>
     BookingPackageModel(
       id: json['id'] as String,
       nameEn: json['nameEn'] as String,
-      nameAr: json['nameAr'] as String,
+      nameAr: json['nameAr'] as String?,
       membershipType: json['membershipType'] as String,
     );
 
@@ -26,7 +26,7 @@ Map<String, dynamic> _$BookingPackageModelToJson(
 BookingBranchModel _$BookingBranchModelFromJson(Map<String, dynamic> json) =>
     BookingBranchModel(
       id: json['id'] as String,
-      nameEn: json['nameEn'] as String,
+      nameEn: json['nameEn'] as String?,
     );
 
 Map<String, dynamic> _$BookingBranchModelToJson(BookingBranchModel instance) =>
@@ -74,13 +74,19 @@ BookingModel _$BookingModelFromJson(Map<String, dynamic> json) => BookingModel(
   package: BookingPackageModel.fromJson(
     json['package'] as Map<String, dynamic>,
   ),
-  branch: BookingBranchModel.fromJson(json['branch'] as Map<String, dynamic>),
-  instructor: BookingInstructorModel.fromJson(
-    json['instructor'] as Map<String, dynamic>,
-  ),
-  subscription: BookingSubscriptionModel.fromJson(
-    json['subscription'] as Map<String, dynamic>,
-  ),
+  branch: json['branch'] == null
+      ? null
+      : BookingBranchModel.fromJson(json['branch'] as Map<String, dynamic>),
+  instructor: json['instructor'] == null
+      ? null
+      : BookingInstructorModel.fromJson(
+          json['instructor'] as Map<String, dynamic>,
+        ),
+  subscription: json['subscription'] == null
+      ? null
+      : BookingSubscriptionModel.fromJson(
+          json['subscription'] as Map<String, dynamic>,
+        ),
   canCancel: json['canCancel'] as bool,
   canCheckIn: json['canCheckIn'] as bool,
   canRate: json['canRate'] as bool,

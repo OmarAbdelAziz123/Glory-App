@@ -5,6 +5,7 @@ import '../l10n/l10n_extension.dart';
 import '../widgets/app_permission_dialog.dart';
 
 abstract final class CameraPermissionUtils {
+  /// iOS/Android system camera prompt first; Settings only after denial.
   static Future<bool> ensureGranted(BuildContext context) async {
     var status = await Permission.camera.status;
 
@@ -12,15 +13,11 @@ abstract final class CameraPermissionUtils {
       return true;
     }
 
-    if (status.isPermanentlyDenied) {
-      if (!context.mounted) return false;
-      await _showSettingsDialog(context);
+    if (status.isRestricted) {
+      if (context.mounted) {
+        await _showRestrictedDialog(context);
+      }
       return false;
-    }
-
-    if (status.isDenied && context.mounted) {
-      final shouldRequest = await _showRationaleDialog(context);
-      if (shouldRequest != true || !context.mounted) return false;
     }
 
     status = await Permission.camera.request();
@@ -37,17 +34,6 @@ abstract final class CameraPermissionUtils {
     }
 
     return false;
-  }
-
-  static Future<bool?> _showRationaleDialog(BuildContext context) {
-    return AppPermissionDialog.show(
-      context,
-      title: context.l10n.cameraPermissionRequired,
-      message: context.l10n.cameraPermissionRationale,
-      primaryLabel: context.l10n.allowCameraAccess,
-      onPrimaryPressed: () {},
-      secondaryLabel: context.l10n.cancel,
-    );
   }
 
   static Future<void> _showSettingsDialog(BuildContext context) {
@@ -67,8 +53,21 @@ abstract final class CameraPermissionUtils {
       title: context.l10n.cameraPermissionRequired,
       message: context.l10n.cameraPermissionDeniedMessage,
       primaryLabel: context.l10n.retry,
-      onPrimaryPressed: () {},
+      onPrimaryPressed: () async {
+        if (!context.mounted) return;
+        await ensureGranted(context);
+      },
       secondaryLabel: context.l10n.cancel,
+    );
+  }
+
+  static Future<void> _showRestrictedDialog(BuildContext context) {
+    return AppPermissionDialog.show(
+      context,
+      title: context.l10n.cameraPermissionRequired,
+      message: context.l10n.cameraPermissionDeniedMessage,
+      primaryLabel: context.l10n.cancel,
+      onPrimaryPressed: () {},
     );
   }
 }

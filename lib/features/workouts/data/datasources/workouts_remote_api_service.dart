@@ -153,11 +153,13 @@ final class WorkoutsRemoteApiService extends ApiService {
               'startDate': item.startDate?.toIso8601String(),
               'endDate': item.endDate?.toIso8601String(),
               'durationDays': item.durationDays,
-              'instructor': {
-                'id': item.instructor.id,
-                'fullName': item.instructor.fullName,
-                'avatarUrl': item.instructor.avatarUrl,
-              },
+              'instructor': item.instructor == null
+                  ? null
+                  : {
+                      'id': item.instructor!.id,
+                      'fullName': item.instructor!.fullName,
+                      'avatarUrl': item.instructor!.avatarUrl,
+                    },
               'previewVideoUrl': item.previewVideoUrl,
               'previewThumbnailUrl': item.previewThumbnailUrl,
             },

@@ -69,8 +69,8 @@ final class WorkoutInstructionModel {
   const WorkoutInstructionModel({
     required this.id,
     required this.stepNumber,
-    required this.instructionEn,
-    required this.instructionAr,
+    this.instructionEn,
+    this.instructionAr,
     required this.videos,
   });
 
@@ -79,8 +79,8 @@ final class WorkoutInstructionModel {
 
   final String id;
   final int stepNumber;
-  final String instructionEn;
-  final String instructionAr;
+  final String? instructionEn;
+  final String? instructionAr;
   final List<WorkoutVideoModel> videos;
 }
 
@@ -93,7 +93,7 @@ final class WorkoutAssignmentListModel {
     this.startDate,
     this.endDate,
     required this.durationDays,
-    required this.instructor,
+    this.instructor,
     this.previewVideoUrl,
     this.previewThumbnailUrl,
   });
@@ -107,7 +107,7 @@ final class WorkoutAssignmentListModel {
   final DateTime? startDate;
   final DateTime? endDate;
   final int durationDays;
-  final WorkoutInstructorModel instructor;
+  final WorkoutInstructorModel? instructor;
   final String? previewVideoUrl;
   final String? previewThumbnailUrl;
 }
@@ -126,7 +126,7 @@ final class WorkoutAssignmentDetailModel {
     this.userWeight,
     this.userWeightLast,
     required this.canAddWeight,
-    required this.instructor,
+    this.instructor,
     required this.workout,
     required this.instructions,
     required this.createdAt,
@@ -146,7 +146,7 @@ final class WorkoutAssignmentDetailModel {
   final String? userWeight;
   final String? userWeightLast;
   final bool canAddWeight;
-  final WorkoutInstructorModel instructor;
+  final WorkoutInstructorModel? instructor;
   final WorkoutInfoModel workout;
   final List<WorkoutInstructionModel> instructions;
   final DateTime createdAt;

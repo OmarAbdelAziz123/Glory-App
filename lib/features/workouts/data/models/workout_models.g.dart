@@ -69,11 +69,13 @@ WorkoutInstructionModel _$WorkoutInstructionModelFromJson(
 ) => WorkoutInstructionModel(
   id: json['id'] as String,
   stepNumber: (json['stepNumber'] as num).toInt(),
-  instructionEn: json['instructionEn'] as String,
-  instructionAr: json['instructionAr'] as String,
-  videos: (json['videos'] as List<dynamic>)
-      .map((e) => WorkoutVideoModel.fromJson(e as Map<String, dynamic>))
-      .toList(),
+  instructionEn: json['instructionEn'] as String?,
+  instructionAr: json['instructionAr'] as String?,
+  videos: json['videos'] == null
+      ? const <WorkoutVideoModel>[]
+      : (json['videos'] as List<dynamic>)
+          .map((e) => WorkoutVideoModel.fromJson(e as Map<String, dynamic>))
+          .toList(),
 );
 
 Map<String, dynamic> _$WorkoutInstructionModelToJson(
@@ -99,9 +101,11 @@ WorkoutAssignmentListModel _$WorkoutAssignmentListModelFromJson(
       ? null
       : DateTime.parse(json['endDate'] as String),
   durationDays: (json['durationDays'] as num).toInt(),
-  instructor: WorkoutInstructorModel.fromJson(
-    json['instructor'] as Map<String, dynamic>,
-  ),
+  instructor: json['instructor'] == null
+      ? null
+      : WorkoutInstructorModel.fromJson(
+          json['instructor'] as Map<String, dynamic>,
+        ),
   previewVideoUrl: json['previewVideoUrl'] as String?,
   previewThumbnailUrl: json['previewThumbnailUrl'] as String?,
 );
@@ -138,9 +142,11 @@ WorkoutAssignmentDetailModel _$WorkoutAssignmentDetailModelFromJson(
   userWeight: json['userWeight'] as String?,
   userWeightLast: json['userWeightLast'] as String?,
   canAddWeight: json['canAddWeight'] as bool,
-  instructor: WorkoutInstructorModel.fromJson(
-    json['instructor'] as Map<String, dynamic>,
-  ),
+  instructor: json['instructor'] == null
+      ? null
+      : WorkoutInstructorModel.fromJson(
+          json['instructor'] as Map<String, dynamic>,
+        ),
   workout: WorkoutInfoModel.fromJson(json['workout'] as Map<String, dynamic>),
   instructions: (json['instructions'] as List<dynamic>)
       .map((e) => WorkoutInstructionModel.fromJson(e as Map<String, dynamic>))

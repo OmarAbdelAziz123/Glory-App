@@ -14,8 +14,8 @@ extension WorkoutAssignmentListModelX on WorkoutAssignmentListModel {
         startDate: startDate,
         endDate: endDate,
         durationDays: durationDays,
-        instructorName: instructor.fullName,
-        instructorAvatarUrl: instructor.avatarUrl,
+        instructorName: instructor?.fullName ?? '',
+        instructorAvatarUrl: instructor?.avatarUrl,
         previewVideoUrl: previewVideoUrl,
         previewThumbnailUrl: previewThumbnailUrl,
       );
@@ -34,8 +34,8 @@ extension WorkoutAssignmentDetailModelX on WorkoutAssignmentDetailModel {
         userWeight: userWeight,
         userWeightLast: userWeightLast,
         canAddWeight: canAddWeight,
-        instructorName: instructor.fullName,
-        instructorAvatarUrl: instructor.avatarUrl,
+        instructorName: instructor?.fullName ?? '',
+        instructorAvatarUrl: instructor?.avatarUrl,
         workoutNameAr: workout.nameAr,
         workoutNameEn: workout.nameEn,
         workoutType: workout.type,
@@ -49,8 +49,8 @@ extension WorkoutInstructionModelX on WorkoutInstructionModel {
   WorkoutInstructionEntity toEntity() => WorkoutInstructionEntity(
         id: id,
         stepNumber: stepNumber,
-        instructionAr: instructionAr,
-        instructionEn: instructionEn,
+        instructionAr: instructionAr ?? instructionEn ?? '',
+        instructionEn: instructionEn ?? instructionAr ?? '',
         videos: videos.map((video) => video.toEntity()).toList(),
       );
 }

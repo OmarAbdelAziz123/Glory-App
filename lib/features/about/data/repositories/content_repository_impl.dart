@@ -3,6 +3,7 @@ import '../../domain/entities/content_entities.dart';
 import '../../domain/repositories/content_repository.dart';
 import '../datasources/content_remote_api_service.dart';
 import '../mappers/content_mappers.dart';
+import '../models/contact_channel_model.dart';
 import '../models/feedback_request.dart';
 
 final class ContentRepositoryImpl implements ContentRepository {
@@ -45,11 +46,12 @@ final class ContentRepositoryImpl implements ContentRepository {
   }
 
   @override
-  Future<Result<ContactLinksEntity>> getContactLinks() async {
+  Future<Result<List<ContactChannelEntity>>> getContactLinks() async {
     final result = await _remote.getContactLinks();
 
     return switch (result) {
-      Success(:final data) => Success(data.toEntity()),
+      Success(:final data) =>
+        Success(data.map((channel) => channel.toEntity()).toList()),
       Failure(:final failure) => Failure(failure),
     };
   }
